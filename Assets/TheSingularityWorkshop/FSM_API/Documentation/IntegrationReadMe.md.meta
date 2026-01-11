@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d55eb90bcd4df384e913b2a2a1a96e5d
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 332450
+  packageName: The Singularity Workshop - FSM API (Advanced)
+  packageVersion: 1.0
+  assetPath: Assets/TheSingularityWorkshop/FSM_API/Documentation/IntegrationReadMe.md
+  uploadId: 808192

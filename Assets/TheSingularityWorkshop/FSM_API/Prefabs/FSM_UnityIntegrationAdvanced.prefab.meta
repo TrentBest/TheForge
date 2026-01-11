@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c65da87c1c974bd46b1a733d366b96d2
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 332450
+  packageName: The Singularity Workshop - FSM API (Advanced)
+  packageVersion: 1.0
+  assetPath: Assets/TheSingularityWorkshop/FSM_API/Prefabs/FSM_UnityIntegrationAdvanced.prefab
+  uploadId: 808192

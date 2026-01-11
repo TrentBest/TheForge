@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: efffac59a777c384ca46747b2b20a108
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: -20
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 332450
+  packageName: The Singularity Workshop - FSM API (Advanced)
+  packageVersion: 1.0
+  assetPath: Assets/TheSingularityWorkshop/FSM_API/Scripts/FSM_UnityIntegrationAdvanced.cs
+  uploadId: 808192

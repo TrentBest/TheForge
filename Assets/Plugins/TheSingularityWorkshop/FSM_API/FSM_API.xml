@@ -1,0 +1,2503 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>FSM_API</name>
+    </assembly>
+    <members>
+        <member name="T:TheSingularityWorkshop.FSM_API.DefaultStateContext">
+            <summary>
+            Provides a default, basic implementation of the <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/> interface.
+            </summary>
+            <remarks>
+            This class is used internally by the FSM API when an <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> is created
+            without a specific <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/> provided by the user.
+            It ensures that every FSM instance always has a valid context object to operate on,
+            even if that context contains no custom data or behavior.
+            As an <c>internal</c> class, it is not intended for direct use or instantiation by external API consumers.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.DefaultStateContext.IsValid">
+            <summary>
+            Gets or sets a value indicating whether this context is considered valid.
+            Always <c>true</c> for <see cref="T:TheSingularityWorkshop.FSM_API.DefaultStateContext"/>.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.DefaultStateContext.Name">
+            <summary>
+            Gets or sets the name of this default context.
+            Always "DefaultStateContext".
+            </summary>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM">
+            <summary>
+            Think of an **FSM** (Finite State Machine) as a master blueprint 🗺️.
+            It lays out all the possible behaviors and rules for how something
+            should act over time. This blueprint defines all the different
+            "states" it can be in, like "Idle," "Walking," or "Attacking,"
+            and how it moves between these states.
+            Think of an **FSM** (Finite State Machine) as a master blueprint 🗺️.
+            It lays out all the possible behaviors and rules for how something
+            should act over time. This blueprint defines all the different
+            "states" it can be in, like "Idle," "Walking," or "Attacking,"
+            and how it moves between these states.
+            <div class="mermaid">
+            graph TD
+                A[FSM Definition] --> B(States);
+                A --> C(Transitions);
+                A --> D(Initial State);
+            </div>
+            </summary>
+            <remarks>
+            This blueprint itself doesn't actually *do* anything directly.
+            Instead, we use it to create **instances** or "copies" of the FSM.
+            Each copy is called an <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> and is managed by
+            our <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/> system.
+            <para>
+            This `FSM` class is mainly for the internal workings of the API.
+            You usually won't create these directly. Instead, you'll use
+            the <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/> to easily design and build your FSM blueprints.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM.Name">
+            <summary>
+            This is the **unique name** for this specific FSM blueprint.
+            </summary>
+            <remarks>
+            This name helps the <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/> system find and use
+            this FSM definition. You typically set this name when you're
+            building your FSM using the <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/>.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM.InitialState">
+            <summary>
+            This is the name of the **first state** your FSM will enter
+            when it starts up.
+            </summary>
+            <remarks>
+            When you create a new FSM instance (an <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/>)
+            from this blueprint, it will always begin in the state specified here.
+            Make sure this state has actually been added to your FSM definition
+            using the <see cref="M:TheSingularityWorkshop.FSM_API.FSM.AddState(TheSingularityWorkshop.FSM_API.FSMState)"/> method.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM.ProcessRate">
+            <summary>
+            This controls how often instances of this FSM blueprint will automatically
+            "think" or "update" themselves.
+            </summary>
+            <remarks>
+            This number tells the <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.TickAll(System.String)"/>
+            method how frequently to call the FSM's <see cref="M:TheSingularityWorkshop.FSM_API.FSM.Step(System.String,TheSingularityWorkshop.FSM_API.IStateContext,System.String@)"/> method
+            within its assigned <see cref="P:TheSingularityWorkshop.FSM_API.FSM.ProcessingGroup"/>.
+            </remarks>
+            <value>
+            <list type="bullet">
+                 <item><term><c>-1</c></term><description>
+                     The FSM will update **every single time** its
+                     <see cref="P:TheSingularityWorkshop.FSM_API.FSM.ProcessingGroup"/> is "ticked"
+                     (e.g., every frame in a game). This is the most frequent update.
+                 </description></item>
+                 <item><term><c>0</c></term><description>
+                     The FSM will **NOT** update automatically. You'll need
+                     to manually tell it to update using events or by directly
+                     calling <see cref="M:TheSingularityWorkshop.FSM_API.FSMHandle.Update(System.String)"/>.
+                 </description></item>
+                 <item><term><c>&gt;0</c></term><description>
+                     The FSM will update **every Nth tick**, where N is this number.
+                     For example, if it's 5, it updates every 5th time
+                     <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.TickAll(System.String)"/> is called.
+                 </description></item>
+            </list>
+            </value>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM.ProcessingGroup">
+            <summary>
+            This is the **category name** that this FSM blueprint belongs to.
+            </summary>
+            <remarks>
+            Processing groups help you organize your FSMs and control when
+            they update. You can manually trigger all FSM instances within a
+            specific <see cref="P:TheSingularityWorkshop.FSM_API.FSM.ProcessingGroup"/> to update by calling
+            <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.Update(System.String)"/>.
+            <para>
+            Imagine you have a large system, like an "Arcade" FSM. You could
+            give it its own update cycle, and within that cycle, it might
+            tell all "PacMan" FSMs (which are in their own processing group)
+            to update. This gives you very precise control over how your
+            FSMs run.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.#ctor">
+            <summary>
+            Creates a new, empty FSM blueprint with some default settings.
+            </summary>
+            <remarks>
+            While you *can* use this directly, it's generally recommended
+            to use the <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/> to create and set up your FSMs.
+            The builder provides an easier, step-by-step way to ensure your
+            FSM is complete and valid.
+            <para>
+            Default values when created:
+            <list type="bullet">
+                 <item><term><see cref="P:TheSingularityWorkshop.FSM_API.FSM.Name"/></term><description> "UnnamedFSM"</description></item>
+                 <item><term><see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/></term><description> "__ANY_STATE__" (a placeholder, should be set to a real state)</description></item>
+                 <item><term><see cref="P:TheSingularityWorkshop.FSM_API.FSM.ProcessingGroup"/></term><description> "Update"</description></item>
+            </list>
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.AddState(TheSingularityWorkshop.FSM_API.FSMState)">
+            <summary>
+            Adds a **state** to this FSM blueprint, or updates it if a state
+            with the same name already exists.
+            </summary>
+            <remarks>
+            If you add a state whose name is already in the FSM, the old
+            definition will be completely replaced by the new one you provide.
+            This lets you change state behaviors even after the FSM is defined.
+            </remarks>
+            <param name="s">The <see cref="T:TheSingularityWorkshop.FSM_API.FSMState"/> object you want to add or update.</param>
+            <exception cref="T:System.ArgumentNullException">
+            This happens if you try to add a state that doesn't exist (it's `null`).
+            An internal API error will also be triggered to help with debugging.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.AddTransition(System.String,System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})">
+            <summary>
+            Adds a **normal transition** between two specific states in your FSM blueprint.
+            </summary>
+            <remarks>
+            A "normal" transition only gets checked if your FSM is currently
+            in the <paramref name="from"/> state. If you add a transition
+            that already exists between the same <paramref name="from"/> and
+            <paramref name="to"/> states, the new one you define will
+            replace the old one.
+            </remarks>
+            <param name="from">The name of the starting state for this transition.</param>
+            <param name="to">The name of the state the FSM will move to if this transition happens.</param>
+            <param name="cond">
+            This is a **condition** (a function that returns `true` or `false`).
+            The FSM will only move from <paramref name="from"/> to <paramref name="to"/>
+            if this condition is `true`. This function receives information about the
+            current FSM situation through an <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/>.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            This happens if you try to add a transition without a condition (the `cond` function is `null`).
+            An internal API error will also be triggered.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.AddAnyStateTransition(System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})">
+            <summary>
+            Adds a **global "Any State" transition** to your FSM blueprint.
+            </summary>
+            <remarks>
+            An "Any State" transition is special because it's checked **no matter
+            what state** your FSM is currently in. If its condition is met,
+            the FSM will immediately switch to the <paramref name="to"/> state.
+            These "Any State" transitions are usually checked *before* any
+            regular, state-specific transitions. If you define an "Any State"
+            transition to a state that already has one, the new definition
+            will replace the old one.
+            </remarks>
+            <param name="to">The name of the state the FSM will move to if this "Any State" transition happens.</param>
+            <param name="cond">
+            This is a **condition** (a function that returns `true` or `false`).
+            The FSM will only move to <paramref name="to"/> if this condition is `true`.
+            This function receives information about the current FSM situation
+            through an <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/>.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            This happens if you try to add an "Any State" transition without a condition (the `cond` function is `null`).
+            An internal API error will also be triggered.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.AddAnyStateTransition(TheSingularityWorkshop.FSM_API.FSMTransition)">
+            <summary>
+            Adds a global "Any State" transition to your FSM blueprint using an existing <see cref="T:TheSingularityWorkshop.FSM_API.FSMTransition"/> object.
+            </summary>
+            <remarks>
+            This method allows for adding or updating "Any State" transitions, which are evaluated
+            regardless of the FSM's current state. If a transition to the same <see cref="P:TheSingularityWorkshop.FSM_API.FSMTransition.To"/>
+            state already exists as an "Any State" transition, it will be replaced by the provided <paramref name="transition"/>.
+            </remarks>
+            <param name="transition">The <see cref="T:TheSingularityWorkshop.FSM_API.FSMTransition"/> object representing the "Any State" transition to add.</param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the provided <paramref name="transition"/> is `null`.
+            An internal API error will also be triggered.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.GetAnyStateTransitions">
+            <summary>
+            Retrieves a list of all "Any State" transitions defined for this FSM blueprint.
+            </summary>
+            <remarks>
+            These transitions are special as they are evaluated irrespective of the FSM's
+            current state.
+            </remarks>
+            <returns>A <see cref="T:System.Collections.Generic.List`1"/> containing all "Any State" transitions. Returns an empty list if none are defined.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.HasState(System.String)">
+            <summary>
+            Checks if a state with the given name exists in this FSM blueprint.
+            </summary>
+            <param name="stateName">The name of the state you want to check for.</param>
+            <returns>
+            <c>true</c> if a state with <paramref name="stateName"/> is part of this FSM's definition;
+            otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.GetAllStates">
+            <summary>
+            Gets a list of all the **states** defined in this FSM blueprint.
+            </summary>
+            <returns>
+            A **read-only list** of all <see cref="T:TheSingularityWorkshop.FSM_API.FSMState"/> objects.
+            You can look at them, but you can't change the FSM's states directly
+            using this list.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.GetAllTransitions">
+            <summary>
+            Gets a list of **all transitions** (both normal and "Any State" transitions)
+            defined within this FSM blueprint.
+            </summary>
+            <returns>
+            A **read-only list** of all <see cref="T:TheSingularityWorkshop.FSM_API.FSMTransition"/> objects.
+            You can examine these transitions, but you can't modify them
+            directly through this list.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.EnterInitial(TheSingularityWorkshop.FSM_API.IStateContext)">
+            <summary>
+            Tells the FSM instance to **enter its initial state**.
+            </summary>
+            <remarks>
+            This method is usually called internally by the system right
+            after an <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> (an FSM instance) is created.
+            It makes sure the FSM starts in the correct <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/>.
+            This also triggers the `Enter` action defined for that initial state.
+            </remarks>
+            <param name="ctx">
+            The **context** object specific to this FSM instance.
+            It holds any data or services the state actions might need.
+            </param>
+            <exception cref="T:System.ArgumentException">
+            This error occurs if the <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/> you set in the FSM blueprint
+            doesn't actually exist as a defined state. This means your FSM blueprint
+            has a setup error. An internal error will also be logged.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.Step(System.String,TheSingularityWorkshop.FSM_API.IStateContext,System.String@)">
+            <summary>
+            Makes the FSM instance take a single "step" or "tick,"
+            which means it evaluates its current situation and potentially
+            moves to a new state.
+            </summary>
+            <remarks>
+            The FSM processes things in a specific order during each step:
+            <list type="number">
+                <item><description>
+                    **1. Check "Any State" Transitions:** The FSM first looks at all
+                    global "Any State" transitions (defined with <see cref="M:TheSingularityWorkshop.FSM_API.FSM.AddAnyStateTransition(System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})"/>).
+                    If any of these conditions are met, the FSM immediately switches
+                    to that target state, and the `Step` process stops for this tick.
+                    Any problems during this check (like a condition causing an error,
+                    or trying to go to a state that doesn't exist) are reported internally,
+                    but the FSM tries to continue or skip the problematic transition.
+                </description></item>
+                <item><description>
+                    **2. Enter State (if needed):** If the current state hasn't been
+                    officially "entered" yet (meaning its `Enter` action hasn't run),
+                    it will run now.
+                </description></item>
+                <item><description>
+                    **3. Run Current State's Update:** The FSM then executes the
+                    `Update` action of its current state. If this action causes an
+                    error, it's caught and reported by <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInternalApiError(System.String,System.Exception)"/>.
+                </description></item>
+                <item><description>
+                    **4. Check Regular Transitions:** Finally, the FSM checks all
+                    transitions that specifically start from the <paramref name="current"/>
+                    state (defined with <see cref="M:TheSingularityWorkshop.FSM_API.FSM.AddTransition(System.String,System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})"/>).
+                    The *first* transition whose condition is `true` will cause the
+                    FSM to move to its target state, and the `Step` process stops.
+                    Errors here are handled similarly to "Any State" transitions.
+                </description></item>
+            </list>
+            If the FSM finds itself in a state that isn't defined in its blueprint,
+            an internal error is logged. As a recovery, it tries to force a transition
+            back to its <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/>.
+            </remarks>
+            <param name="current">The name of the state the FSM instance is currently in.</param>
+            <param name="ctx">The **context** object for this FSM instance.</param>
+            <param name="next">
+            This is an **output** that will contain the name of the state the FSM
+            ends up in after this step. If no transition happens, it will be the
+            same as <paramref name="current"/>.
+            </param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.ForceTransition(System.String,System.String,TheSingularityWorkshop.FSM_API.IStateContext)">
+            <summary>
+            **Forces** an FSM instance to immediately switch from one state to another,
+            completely ignoring any normal transition conditions.
+            </summary>
+            <remarks>
+            This method will first run the `Exit` action of the <paramref name="from"/> state
+            (if that state exists) and then immediately run the `Enter` action of the
+            <paramref name="to"/> state. It's really useful for taking direct control
+            or for fixing an FSM that's in a problematic state.
+            <para>
+            If there are errors during the state's `Exit` or `Enter` actions, they are
+            caught and reported using <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInternalApiError(System.String,System.Exception)"/>.
+            </para>
+            </remarks>
+            <param name="from">
+            The name of the state the FSM is currently in and should exit from.
+            If this state doesn't exist or is empty, no `Exit` action will be performed,
+            but the FSM will still try to enter the <paramref name="to"/> state.
+            </param>
+            <param name="to">
+            The name of the state the FSM should enter. This state **must** be
+            defined in your FSM blueprint.
+            </param>
+            <param name="ctx">The **context** object for this FSM instance.</param>
+            <exception cref="T:System.ArgumentException">
+            This error occurs if the <paramref name="to"/> state you want to force
+            a transition to does not exist in the FSM blueprint. An internal error
+            will also be logged.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.RemoveState(System.String)">
+            <summary>
+            Removes a state with the given name from this FSM blueprint.
+            </summary>
+            <remarks>
+            This method will also remove any regular transitions that start from or end at the removed state.
+            Note that any-state transitions targeting this state will also be removed.
+            </remarks>
+            <param name="name">The name of the state you want to remove.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.HasTransition(System.String,System.String)">
+            <summary>
+            Checks if a regular transition or an Any-State transition exists.
+            </summary>
+            <param name="fromState">The name of the state where the transition starts. Use FSM.AnyStateIdentifier for Any-State transitions.</param>
+            <param name="toState">The name of the state where the transition ends.</param>
+            <returns>
+            <c>true</c> if a transition exists from <paramref name="fromState"/> to
+            <paramref name="toState"/>; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.RemoveTransition(System.String,System.String)">
+            <summary>
+            Removes a specific normal transition between two states from the FSM blueprint.
+            </summary>
+            <param name="from">The name of the state where the transition starts.</param>
+            <param name="to">The name of the state where the transition ends.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.GetState(System.String)">
+            <summary>
+            Gets a specific **state object** from the FSM blueprint by its name.
+            </summary>
+            <param name="name">The name of the state you want to retrieve.</param>
+            <returns>
+            The <see cref="T:TheSingularityWorkshop.FSM_API.FSMState"/> object if a state with that name is found;
+            otherwise, <c>null</c>.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.GetTransition(System.Tuple{System.String,System.String})">
+            <summary>
+            Gets a specific **normal transition object** based on its starting and ending states.
+            </summary>
+            <param name="transition">
+            A special pair of names where the first item (`Item1`) is the target state
+            and the second item (`Item2`) is the source state.
+            </param>
+            <returns>
+            The <see cref="T:TheSingularityWorkshop.FSM_API.FSMTransition"/> object if a matching transition is found;
+            otherwise, <c>null</c>.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM.ToString">
+            <summary>
+             Custom string output for presenting the FSM
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM.AnyStateIdentifier">
+            <summary>
+            This is a special internal text identifier (`"__ANY_STATE__"`)
+            used to represent "Any State."
+            </summary>
+            <remarks>
+            When you define a transition from "Any State," it means that
+            transition can be triggered **no matter what state** the FSM
+            is currently in. It's like a global rule.
+            This unique text prevents it from clashing with any of your
+            actual state names.
+            </remarks>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSMBuilder">
+             <summary>
+             This is your **primary tool for creating and setting up new FSMs (Finite State Machines)**. 🛠️
+             Think of it as a special "construction kit" that lets you easily build complex FSM blueprints step-by-step.
+             <div class="mermaid">
+             graph TD
+                 A(Create.CreateFiniteStateMachine) --> B(State);
+                 B --> B;
+                 B --> C(WithInitialState);
+                 C --> D(Transition);
+                 D --> D;
+                 D --> E(AnyTransition);
+                 E --> E;
+                 E --> F(BuildDefinition);
+             </div>
+             </summary>
+             <remarks>
+             The <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/> is designed to be very **user-friendly**, allowing you to define
+             how your FSM works in a clear, flowing way (this is called a "fluent API").
+             Even if you're not a seasoned coder, you can use this builder to:
+             <list type="bullet">
+                 <item>Define each **state** the FSM can be in (like "Idle" or "Running").</item>
+                 <item>Set up the **rules (transitions)** for moving between these states.</item>
+                 <item>Choose the FSM's **starting state**.</item>
+                 <item>And decide **how often** the FSM should check its rules.</item>
+             </list>
+             <para>
+             You typically use this builder once during your application's setup to create the FSM's blueprint.
+             After the blueprint is built, you then create **instances** of that FSM using an <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/>
+             to actually make things happen in your game or application.
+             </para>
+             <para>
+             The methods in this builder are designed to be "chained" together, making your FSM definitions
+             very readable, almost like telling a story of how your FSM behaves.
+             Once you're done setting everything up, you call <see cref="M:TheSingularityWorkshop.FSM_API.FSMBuilder.BuildDefinition"/> to save your
+             FSM blueprint and make it available for use.
+             </para>
+             <example>
+             Here's a simple example of building an FSM for a player character, showing how readable it can be:
+             <code><![CDATA[
+             // First, define a "context" (a data bag) for your player FSM.
+             // This is where you'll store specific player information like if they are moving or jumping.
+             public class PlayerContext : IStateContext
+             {
+                 public string PlayerName { get; set; } = "Hero";
+                 public bool IsMoving { get; set; } = false;
+                 public bool HasJumped { get; set; } = false;
+             }
+            
+             // Now, use the FSMBuilder to create your "PlayerFSM" blueprint.
+             // We want it to update 60 times per second and be part of the "GameLoop" group.
+             FSM_API.Create.CreateFiniteStateMachine("PlayerFSM", 60, "GameLoop")
+                 // Define the "Idle" state: what happens when entering, during updates, and when exiting.
+                 .State("Idle",
+                     onEnter: (ctx) => Console.WriteLine($"{((PlayerContext)ctx).PlayerName} is now Idle."),
+                     onUpdate: (ctx) => { /* Check for player input to move or jump */ },
+                     onExit: (ctx) => Console.WriteLine($"{((PlayerContext)ctx).PlayerName} stopped being Idle."))
+                 // Define the "Moving" state.
+                 .State("Moving",
+                     onEnter: (ctx) => Console.WriteLine($"{((PlayerContext)ctx).PlayerName} started Moving."),
+                     onUpdate: (ctx) => { /* Handle continuous movement, check if player stops or jumps */ },
+                     onExit: (ctx) => Console.WriteLine($"{((PlayerContext)ctx).PlayerName} stopped Moving."))
+                 // Define the "Jumping" state.
+                 .State("Jumping",
+                     onEnter: (ctx) => Console.WriteLine($"{((PlayerContext)ctx).PlayerName} is Jumping!"),
+                     onUpdate: (ctx) => { /* Apply jump physics, check for landing */ },
+                     onExit: (ctx) => Console.WriteLine($"{((PlayerContext)ctx).PlayerName} landed."))
+                 // Tell the FSM that "Idle" is the very first state a new instance will start in.
+                 .WithInitialState("Idle")
+                 // Set up the rules (transitions) for how the FSM moves between states.
+                 // These conditions check the player's data in the PlayerContext.
+                 .Transition("Idle", "Moving", (ctx) => ((PlayerContext)ctx).IsMoving)
+                 .Transition("Moving", "Idle", (ctx) => !((PlayerContext)ctx).IsMoving)
+                 .Transition("Moving", "Jumping", (ctx) => ((PlayerContext)ctx).HasJumped)
+                 .Transition("Idle", "Jumping", (ctx) => ((PlayerContext)ctx).HasJumped)
+                 // This is an "Any-State" transition: from *any* current state, if the player
+                 // has jumped AND is no longer moving, transition back to "Idle" (e.g., they landed).
+                 .Transition(FSM.AnyStateIdentifier, "Idle", (ctx) => ((PlayerContext)ctx).HasJumped && !((PlayerContext)ctx).IsMoving)
+                 // Finish building and save this FSM blueprint so you can create live instances from it.
+                 .BuildDefinition();
+             ]]></code>
+             </example>
+             </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMBuilder.#ctor(System.String,System.Int32,System.String)">
+            <summary>
+            Starts a new <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/> to help you create a brand-new FSM blueprint.
+            </summary>
+            <remarks>
+            You usually won't call this directly. Instead, you'll use a helper method like
+            <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateFiniteStateMachine(System.String,System.Int32,System.String)"/>, which then uses this behind the scenes.
+            </remarks>
+            <param name="fsmName">The unique name for your new FSM blueprint (e.g., "PlayerMovementFSM").</param>
+            <param name="processRate">How often instances of this FSM should automatically update. See <see cref="P:TheSingularityWorkshop.FSM_API.FSM.ProcessRate"/> for details.</param>
+            <param name="processingGroup">A name for a group this FSM belongs to, which helps organize updates. See <see cref="P:TheSingularityWorkshop.FSM_API.FSM.ProcessingGroup"/> for details.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMBuilder.State(System.String,System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext})">
+            <summary>
+            Adds or updates a **"state"** for your FSM blueprint. This is where you define what happens
+            when your FSM is in a particular condition or mode.
+            </summary>
+            <remarks>
+            Each state needs a unique <paramref name="name"/>. If you try to add a state with the same
+            name twice, you'll get an error.
+            <para>
+            You also define three key actions for each state:
+            <list type="bullet">
+                <item><term><paramref name="onEnter"/>:</term><description>What happens **when the FSM first enters** this state.</description></item>
+                <item><term><paramref name="onUpdate"/>:</term><description>What happens **repeatedly while the FSM is in** this state.</description></item>
+                <item><term><paramref name="onExit"/>:</term><description>What happens **just before the FSM leaves** this state.</description></item>
+            </list>
+            </para>
+            These actions receive a `context` (your <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/> data bag)
+            which lets them interact with the specific object or system that this FSM instance belongs to.
+            You can provide `null` for any action if nothing specific needs to happen at that point.
+            </remarks>
+            <param name="name">The unique name for this state (e.g., "Idle", "Attacking").</param>
+            <param name="onEnter">An optional action to run when entering this state.</param>
+            <param name="onUpdate">An optional action to run repeatedly while in this state.</param>
+            <param name="onExit">An optional action to run when exiting this state.</param>
+            <returns>The builder itself, so you can chain more commands.</returns>
+            <exception cref="T:System.ArgumentException">Happens if the state `name` is empty or a state with that name already exists.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMBuilder.WithProcessRate(System.Int32)">
+            <summary>
+            Sets how often instances of this FSM blueprint should automatically check and update themselves.
+            </summary>
+            <remarks>
+            This controls the **"Process Rate"**. See <see cref="P:TheSingularityWorkshop.FSM_API.FSM.ProcessRate"/> for a detailed explanation:
+            <list type="bullet">
+                <item><term><c>-1</c></term><description>Update **every single time** the FSM's group is processed.</description></item>
+                <item><term><c>0</c></term><description>Update **only when you manually tell it to** (no automatic updates).</description></item>
+                <item><term><c>&gt;0</c></term><description>Update **every Nth time** the FSM's group is processed (e.g., 5 means every 5th update).</description></item>
+            </list>
+            </remarks>
+            <param name="rate">The desired update rate.</param>
+            <returns>The builder itself, for chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMBuilder.WithInitialState(System.String)">
+            <summary>
+            Sets the **starting state** for any new FSM instance created from this blueprint.
+            </summary>
+            <remarks>
+            When an FSM instance is first created, it will immediately enter this state.
+            Make sure you've already defined this state using the <see cref="M:TheSingularityWorkshop.FSM_API.FSMBuilder.State(System.String,System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext})"/> method.
+            </remarks>
+            <param name="stateName">The name of the state that new FSM instances should start in.</param>
+            <returns>The builder itself, for chaining.</returns>
+            <exception cref="T:System.ArgumentException">Happens if the <paramref name="stateName"/> is empty.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMBuilder.Transition(System.String,System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})">
+            <summary>
+            Defines a **rule (transition)** for your FSM to move from one specific state to another.
+            </summary>
+            <remarks>
+            This transition rule will only be considered when the FSM is currently in the `from` state.
+            If you define multiple transitions between the exact same `from` and `to` states,
+            the last one you define will replace any earlier ones.
+            </remarks>
+            <param name="from">The name of the state where this transition starts.</param>
+            <param name="to">The name of the state where this transition leads to.</param>
+            <param name="condition">A function (rule) that must return `true` for this transition to happen.
+            This function receives the <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/> (your FSM's data bag).</param>
+            <returns>The builder itself, for chaining.</returns>
+            <exception cref="T:System.ArgumentException">Happens if `from` or `to` state names are empty, or if the `condition` is `null`.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMBuilder.AnyTransition(System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})">
+            <summary>
+            Adds a **global "Any State" transition** to your FSM blueprint. 🌍
+            </summary>
+            <remarks>
+            An "Any State" transition is unique because its <paramref name="condition"/> is checked
+            **regardless of which state the FSM is currently in**. If the condition returns `true`,
+            the FSM will immediately transition to the specified <paramref name="to"/> state.
+            These transitions are typically evaluated before regular, state-specific transitions.
+            If you add multiple "Any State" transitions that lead to the same <paramref name="to"/> state,
+            the last one added will replace any previous ones leading to that same target.
+            </remarks>
+            <param name="to">The name of the state the FSM will move to if this "Any State" transition's condition is met.</param>
+            <param name="condition">A function (rule) that must return `true` for this global transition to occur.
+            This function receives the <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/> (your FSM's data bag) to evaluate the condition.</param>
+            <returns>The builder itself, for chaining more commands.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the <paramref name="to"/> state name is empty.</exception>
+            <exception cref="T:System.ArgumentNullException">Thrown if the <paramref name="condition"/> function is `null`.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMBuilder.BuildDefinition">
+            <summary>
+            Finalizes your FSM blueprint and **registers it** with the FSM system. ✅
+            </summary>
+            <remarks>
+            After calling this, your FSM blueprint is complete and saved. You can then start
+            creating live instances of it using <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateInstance(System.String,TheSingularityWorkshop.FSM_API.IStateContext,System.String)"/>.
+            <para>
+            This method checks for common mistakes like:
+            <list type="bullet">
+                <item>If the FSM `Name` is empty.</item>
+                <item>If no states have been added.</item>
+                <item>If the `InitialState` you set actually exists.</item>
+            </list>
+            If an FSM blueprint with the same name already exists in the system when `BuildDefinition` is called,
+            it will be **overwritten** with this new definition.
+            </para>
+            </remarks>
+            <returns>The completed <see cref="T:TheSingularityWorkshop.FSM_API.FSM"/> blueprint.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown if the FSM has no name, no states, or the initial state doesn't exist.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMBuilder.WithProcessingGroup(System.String)">
+            <summary>
+            Sets the **"processing group"** name for this FSM blueprint.
+            </summary>
+            <remarks>
+            This helps organize your FSMs into categories. You can then tell the FSM system
+            to update all FSMs in a specific group at once.
+            See <see cref="P:TheSingularityWorkshop.FSM_API.FSM.ProcessingGroup"/> for more context.
+            </remarks>
+            <param name="groupName">The name of the processing group (e.g., "GameLoop", "UIA", "PhysicsUpdate").</param>
+            <returns>The builder itself, for chaining.</returns>
+            <exception cref="T:System.ArgumentException">Happens if the `groupName` is empty.</exception>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSMHandle">
+             <summary>
+             This is your direct link, or **"handle,"** to a specific, live FSM (Finite State Machine) instance. 🎮
+             Think of it as the remote control for one particular character or object that's using an FSM.
+             <div class="mermaid">
+             classDiagram
+                direction LR
+                class FSMHandle {
+                    +string Name
+                    +string CurrentState
+                    +IStateContext Context
+                }
+                class FSM {
+                    +string Name
+                    +string InitialState
+                }
+                class IStateContext {
+                    &lt;&lt;interface&gt;&gt;
+                    +string Name
+                    +bool IsValid
+                }
+            
+                FSMHandle "1" *-- "1" FSM : &lt;&lt;uses&gt;&gt;
+                FSMHandle "1" *-- "1" IStateContext : &lt;&lt;controls&gt;&gt;
+             </div>
+             <div class="mermaid">
+             graph TD
+                A[FSMHandle (The Logic)] -->|Commands| B[IStateContext (The Data)];
+                B -->|Returns Data/Status| A;
+             </div>
+             <div class="mermaid">
+             sequenceDiagram
+                participant H as FSMHandle
+                participant D as FSMDefinition
+                participant S as CurrentState
+                participant C as Context
+            
+                H->>D: Step(CurrentState, Context)
+                D->>S: Update(Context)
+                note right of S: Performs state logic
+                D->>D: Check Any-State Transitions
+                D->>D: Check Regular Transitions
+                alt If a transition condition is met
+                    D->>S: Exit(Context)
+                    D->>+D: Find New State
+                    D->>-H: Return NewStateName
+                    H->>H: CurrentState = NewStateName
+                    H->>D: ForceTransition(OldState, NewState, Context)
+                    D->>+S: Exit(Context)
+                    S->>+S: Enter(Context)
+                else No transition
+                    D->>H: Return CurrentStateName
+                end
+             </div>
+             !(https://raw.githubusercontent.com/trentbest/fsm_api/FSM_API-72aeabda0e28b301ddd2e675e1f49da584cf105c/Documentation/User%20Guide/Visuals/State_Lifecycle.png)
+             </summary>
+             <remarks>
+             This handle is how you, as a game designer or system integrator, will typically interact with an FSM
+             that's currently running. It allows you to:
+             <list type="bullet">
+                 <item>Find out **what state** the FSM is currently in (<see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState"/>).</item>
+                 <item>Tell the FSM to **change states immediately** (<see cref="M:TheSingularityWorkshop.FSM_API.FSMHandle.TransitionTo(System.String)"/>).</item>
+                 <item>And generally **manage** its life (like starting or stopping it).</item>
+             </list>
+             <para>
+             It also gives you access to the FSM's <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/>, which holds all the unique data
+             for *this specific FSM instance*.
+             </para>
+            
+             **Tips for Using Your FSM Handle:**
+             <list type="bullet">
+                 <item>
+                     ✅ **Safest Way:** Mostly, you'll just want to **check the FSM's <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState"/>**.
+                     For example: `if (myCharacter.CurrentState == "Idle") { /* do something */ }`.
+                     This lets the FSM handle its own internal changes, which is generally best.
+                 </item>
+                 <item>
+                     ⚠️ **Advanced Use (Use with Care!):** You *can* directly access and change the
+                     <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.Context"/> (e.g., `myCharacter.Context.Health = 10;`). This is powerful,
+                     but it means you're stepping outside the FSM's own defined rules, so be careful not to
+                     break its intended behavior! Usually, context changes happen *inside* your FSM's
+                     state actions (<c>OnEnter</c>, <c>OnUpdate</c>, <c>OnExit</c>).
+                 </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMHandle.Id">
+            <summary>
+            Handle's Id
+            </summary>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSMHandle.Definition">
+            <summary>
+            This is the original **blueprint (definition)** of the FSM that this handle is controlling.
+            </summary>
+            <remarks>
+            It's like having the architectural plans for a house. You can look at them to understand
+            the house's design (its states and transitions), but you can't change the house by
+            drawing on these plans here. This is set when the FSM instance is first created.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMHandle.Context">
+            <summary>
+            This is the **data bag** 🎒 (context) specific to *this particular* FSM instance.
+            </summary>
+            <remarks>
+            It holds all the changing information that your FSM's actions need to read from or write to
+            (like a character's health, speed, or inventory). This "data bag" must follow the rules
+            of the <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/> interface.
+            <para>
+            You *can* directly change this context data here (e.g., `handle.Context.Score = 100;`).
+            However, it's generally safer and clearer if these changes happen through the
+            FSM's own `OnEnter`, `OnUpdate`, or `OnExit` actions for each state.
+            Changing it directly from outside might bypass your FSM's carefully planned logic!
+            </para>
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState">
+            <summary>
+            This tells you the **current state name** of this FSM instance.
+            </summary>
+            <remarks>
+            For example, if your FSM is for a character, this might tell you "Idle," "Walking," or "Jumping."
+            This is the **best and safest way** to check what your FSM is doing.
+            This state name is updated automatically when the FSM moves between states.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMHandle.Name">
+            <summary>
+            This is the **name of the FSM blueprint** that this handle is using.
+            </summary>
+            <remarks>
+            It's a quick way to get the name from the <see cref="F:TheSingularityWorkshop.FSM_API.FSMHandle.Definition"/> blueprint itself.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMHandle.IsValid">
+            <summary>
+            Tells you if this FSM handle is currently **active and ready to be used**.
+            </summary>
+            <remarks>
+            It's considered `true` if its <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.Context"/> (data bag) is not empty
+            and that context itself reports that it's valid.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMHandle.HasEnteredCurrentState">
+            <summary>
+            indicates whether this FSM instance has **already entered its current state**.  ToDo:  IsValid should be enough?
+            </summary>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMHandle.#ctor(TheSingularityWorkshop.FSM_API.FSM,TheSingularityWorkshop.FSM_API.IStateContext,System.Int32)">
+            <summary>
+            Sets up a new FSM handle, linking it to an FSM blueprint and its specific data.
+            </summary>
+            <remarks>
+            When you create an FSM handle:
+            <list type="bullet">
+                <item>It needs an `FSM` <paramref name="definition"/> (the blueprint).</item>
+                <item>It needs a `context` (the data bag) specific to this running instance.</item>
+            </list>
+            Upon creation, the handle's <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState"/> property is immediately set to the FSM's <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/>.
+            However, the `OnEnter` action for this state will not be executed until the FSM instance is first stepped or updated, typically
+            by the API's internal tick system. This prevents unexpected behavior from 'OnEnter' actions running during the handle's instantiation.
+            </remarks>
+            <param name="definition">The blueprint (<see cref="T:TheSingularityWorkshop.FSM_API.FSM"/>) for this FSM instance.</param>
+            <param name="context">The data bag (<see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/>) for this specific FSM instance.</param>
+            <param name="id">ID of the handle</param>
+            <exception cref="T:System.ArgumentNullException">
+            This happens if you try to create an FSM handle without a blueprint (`definition` is `null`)
+            or without a data bag (`context` is `null`).
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMHandle.Update(System.String)">
+            <summary>
+            Tells this FSM instance to take one **"step"** or "tick" forward. 🏃
+            </summary>
+            <remarks>
+            During this step:
+            <list type="bullet">
+                <item>The `OnUpdate` action of its <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState"/> will run.</item>
+                <item>It will then check if any transition rules are met to move to a new state.</item>
+            </list>
+            If a transition rule is met, the FSM will exit its current state and enter the new one,
+            and its <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState"/> will be updated.
+            <para>
+            **IMPORTANT: Usually, you won't call this directly!** This method is typically called
+            automatically by the FSM_API's internal system on a regular schedule (like every frame in a game).
+            Only call this manually if you're building a very specific or custom update system for your FSMs.
+            Calling it incorrectly can lead to unexpected behavior.
+            </para>
+            </remarks>
+            <param name="processGroup">
+            An optional name for the group this FSM belongs to, mainly used for error reporting.
+            It defaults to "Update".
+            </param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMHandle.TransitionTo(System.String)">
+            <summary>
+            **Forces** this FSM instance to immediately change to a specific state,
+            ignoring any normal transition rules. 🛑
+            </summary>
+            <remarks>
+            Use this when you need absolute control, like manually setting a character's
+            state to "Dead" regardless of what they were doing.
+            <para>
+            When you force a transition, the FSM will:
+            <list type="bullet">
+                <item>Run the `OnExit` action of its current state.</item>
+                <item>Immediately run the `OnEnter` action of the <paramref name="nextStateName"/>.</item>
+            </list>
+            </para>
+            **Caution:** Bypassing normal FSM logic can sometimes lead to unexpected results
+            if the target state isn't ready for a sudden jump.
+            </remarks>
+            <param name="nextStateName">The name of the state you want the FSM to jump to.</param>
+            <exception cref="T:System.ArgumentException">
+            This happens if the `nextStateName` is empty, or if that state doesn't exist
+            in your FSM's blueprint.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMHandle.ResetFSMInstance">
+            <summary>
+            Resets this FSM instance back to its **very first state** (the <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/>)
+            as defined in its blueprint. ↩️
+            </summary>
+            <remarks>
+            This is like pressing a "restart" button for this specific FSM. It will:
+            <list type="bullet">
+                <item>Run the `OnExit` action of its current state.</item>
+                <item>Then run the `OnEnter` action of its initial state.</item>
+            </list>
+            This is very useful for getting a complex FSM back to a known starting point.
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMHandle.DestroyHandle">
+            <summary>
+            Shuts down this FSM instance, removing it from the API's internal system. 🚫
+            </summary>
+            <remarks>
+            This is extremely important for cleaning up and freeing up computer resources,
+            especially if you have many FSMs running or if your application runs for a long time.
+            After you call `DestroyHandle()`, this FSM handle will no longer be active or managed
+            by the FSM_API, and you should not try to use it anymore.
+            It tells the <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.DestroyInstance(TheSingularityWorkshop.FSM_API.FSMHandle)"/> system to do the actual cleanup.
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMHandle.EvaluateConditions">
+            <summary>
+            Manually checks all the rules (conditions) for leaving the FSM's <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState"/>.
+            </summary>
+            <remarks>
+            This method is particularly useful if your FSM is set up to *not* automatically update
+            (meaning its `ProcessRate` in the FSM blueprint is set to `0`). In such cases,
+            you would call `EvaluateConditions()` yourself whenever something happens that
+            might cause a state change (like a player pressing a button, or an enemy seeing you).
+            <para>
+            If a transition's condition is met, the FSM will move to that new state.
+            Only the *first* transition whose condition is true will be taken in a single evaluation.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSMModifier">
+            <summary>
+            Provides a fluent API for dynamically modifying an existing Finite State Machine (FSM) definition at runtime.
+            </summary>
+            <remarks>
+            This class allows for deferred modifications to an FSM's states, transitions,
+            processing group, or processing rate. Changes are staged using the <c>With</c>
+            and <c>Without</c> methods and are only applied when <see cref="M:TheSingularityWorkshop.FSM_API.FSMModifier.ModifyDefinition"/> is called.
+            <para>
+            Using this modifier ensures that all necessary internal adjustments are made when
+            an FSM definition changes, including handling instances that might be in a state
+            that is being removed.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.#ctor(TheSingularityWorkshop.FSM_API.FSM)">
+            <summary>
+            Initializes a new instance of the <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> class for a specific FSM definition.
+            </summary>
+            <param name="fsm">The <see cref="T:TheSingularityWorkshop.FSM_API.FSM"/> definition to be modified.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithoutState(System.String,System.String)">
+            <summary>
+            Stages a state for removal from the FSM definition.
+            </summary>
+            <remarks>
+            When <see cref="M:TheSingularityWorkshop.FSM_API.FSMModifier.ModifyDefinition"/> is called, if any active FSM instances
+            are currently in the state being removed, they will be transitioned to the
+            specified <paramref name="fallbackStateName"/>.
+            <para>
+            **Important:** If <paramref name="fallbackStateName"/> is null, empty, or consists only of whitespace,
+            instances will instead transition to the FSM's <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/>.
+            It is recommended to provide a valid, existing fallback state to ensure predictable behavior.
+            </para>
+            If the <paramref name="stateName"/> to remove does not exist in the FSM, this staging
+            operation has no effect.
+            </remarks>
+            <param name="stateName">The name of the state to remove.</param>
+            <param name="fallbackStateName">
+            The name of the state to transition existing FSM instances to if they are
+            currently in the state being removed. If not provided (null or empty), instances
+            will default to transitioning to the FSM's <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/>.
+            </param>
+            <returns>The current <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithoutTransition(System.String,System.String)">
+            <summary>
+            Stages a specific transition for removal from the FSM definition.
+            </summary>
+            <remarks>
+            This method targets a transition by its source and destination states.
+            If the transition does not exist in the FSM, this operation has no effect.
+            </remarks>
+            <param name="fromState">The name of the state from which the transition originates.</param>
+            <param name="toState">The name of the state to which the transition leads.</param>
+            <returns>The current <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithState(System.String,System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext})">
+            <summary>
+            Stages a new state for addition to the FSM definition.
+            </summary>
+            <remarks>
+            If a state with the given <paramref name="stateName"/> already exists, this operation
+            will be ignored. To modify an existing state's actions, use <see cref="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithModifiedState(System.String,System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext})"/>.
+            </remarks>
+            <param name="stateName">The unique name of the state to add.</param>
+            <param name="onEnter">An <see cref="T:System.Action`1"/> to execute when entering this state. Can be <c>null</c>.</param>
+            <param name="onUpdate">An <see cref="T:System.Action`1"/> to execute each tick while in this state. Can be <c>null</c>.</param>
+            <param name="onExit">An <see cref="T:System.Action`1"/> to execute when exiting this state. Can be <c>null</c>.</param>
+            <returns>The current <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithModifiedState(System.String,System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext})">
+            <summary>
+            Stages an existing state's actions for modification.
+            </summary>
+            <remarks>
+            This method allows updating the <c>onEnter</c>, <c>onUpdate</c>, and <c>onExit</c>
+            actions of a state that is already part of the FSM definition.
+            If the state does not exist, this operation has no effect.
+            </remarks>
+            <param name="stateName">The name of the state to modify.</param>
+            <param name="onEnter">The new <see cref="T:System.Action`1"/> for when entering this state. Can be <c>null</c>.</param>
+            <param name="onUpdate">The new <see cref="T:System.Action`1"/> for when updating in this state. Can be <c>null</c>.</param>
+            <param name="onExit">The new <see cref="T:System.Action`1"/> for when exiting this state. Can be <c>null</c>.</param>
+            <returns>The current <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithTransition(System.String,System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})">
+            <summary>
+            Stages a new transition for addition to the FSM definition.
+            </summary>
+            <remarks>
+            If a transition from <paramref name="fromState"/> to <paramref name="toState"/>
+            already exists, this operation will be ignored. To modify an existing transition's
+            condition, use <see cref="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithModifiedTransition(System.String,System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})"/>.
+            </remarks>
+            <param name="fromState">The name of the state from which the transition originates.</param>
+            <param name="toState">The name of the state to which the transition leads.</param>
+            <param name="condition">A <see cref="T:System.Func`2"/> that returns <c>true</c> when the transition should occur.</param>
+            <returns>The current <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithModifiedTransition(System.String,System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})">
+            <summary>
+            Stages an existing transition's condition for modification.
+            </summary>
+            <remarks>
+            This method allows updating the transition condition between two existing states.
+            If the transition does not exist, this operation has no effect.
+            </remarks>
+            <param name="fromState">The name of the state from which the transition originates.</param>
+            <param name="toState">The name of the state to which the transition leads.</param>
+            <param name="condition">The new <see cref="T:System.Func`2"/> that returns <c>true</c> when the transition should occur.</param>
+            <returns>The current <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithProcessGroup(System.String)">
+            <summary>
+            Stages a change to the FSM's processing group.
+            </summary>
+            <remarks>
+            When <see cref="M:TheSingularityWorkshop.FSM_API.FSMModifier.ModifyDefinition"/> is called, the FSM and all its instances
+            will be moved from their current processing group to the specified new group.
+            </remarks>
+            <param name="processGroup">The new name of the processing group for this FSM.</param>
+            <returns>The current <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.WithProcessRate(System.Int32)">
+            <summary>
+            Stages a change to the FSM's processing rate.
+            </summary>
+            <remarks>
+            This sets how frequently the FSM instances associated with this definition
+            will be updated when their processing group is ticked by the <c>FSM_API</c>'s
+            internal management system (e.g., <c>FSM_API.Interaction.TickAll</c>).
+            <list type="bullet">
+            <item><c>0</c>: **Event-Driven / Manual Processing.** FSM instances will NOT be automatically
+            updated by <c>FSM_API.Interaction.TickAll</c>. Instead, their <see cref="M:TheSingularityWorkshop.FSM_API.FSMHandle.Update(System.String)"/>
+            or <see cref="M:TheSingularityWorkshop.FSM_API.FSMHandle.EvaluateConditions"/> methods must be explicitly called by the user's application.</item>
+            <item><c>-1</c>: **Process Every Tick.** FSM instances will be processed on every invocation
+            of <c>FSM_API.Interaction.TickAll</c> for their processing group.</item>
+            <item><c>&gt; 0</c>: **Process Every N Ticks (Skipping N-1).** FSM instances will be processed
+            every <c>N</c> ticks. For example, if <c>processRate</c> is <c>2</c>, instances will be processed
+            every second tick (skipping 1 tick in between). If <c>processRate</c> is <c>3</c>, they will be processed
+            every third tick (skipping 2 ticks in between).</item>
+            </list>
+            </remarks>
+            <param name="processRate">The new processing rate. Defaults to <c>0</c>.</param>
+            <returns>The current <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMModifier.ModifyDefinition">
+            <summary>
+            Applies all staged modifications to the FSM definition.
+            </summary>
+            <remarks>
+            This method executes all the changes specified by the preceding <c>With</c> and <c>Without</c>
+            calls. If the FSM definition or its associated bucket cannot be found, the method will
+            gracefully exit without applying changes.
+            <para>
+            **Important Considerations:**
+            <list type="bullet">
+            <item>
+            **State Removal:** If a state is removed, any active <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> instances
+            currently in that state will be immediately transitioned to the FSM's initial state.
+            The <c>OnExit</c> action of the removed state will be executed for these instances.
+            </item>
+            <item>
+            **Process Group/Rate:** Changes to the process group or rate apply to the entire FSM definition
+            and all its instances.
+            </item>
+            <item>
+            **Atomicity:** While modifications are batched, the actual application occurs sequentially.
+            </item>
+            </list>
+            </para>
+            </remarks>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSMState">
+            <summary>
+            This represents a single **"state"** within your FSM (Finite State Machine) blueprint. 🌟
+            Think of it as a specific condition or behavior an object can be in, like "Standing," "Jumping," or "Attacking."
+            <div class="mermaid">
+            sequenceDiagram
+               participant E as onEnter
+               participant U as onUpdate
+               participant X as onExit
+               E->>U: Start state actions
+               U-->>U: Loop actions
+               U->>X: Exit state
+            </div>
+            </summary>
+            <remarks>
+            Each `FSMState` has a unique name and can have three special "actions" linked to it:
+            <list type="bullet">
+                <item><term>OnEnter:</term><description>What happens **when you first arrive** in this state.</description></item>
+                <item><term>OnUpdate:</term><description>What happens **repeatedly while you are** in this state.</description></item>
+                <item><term>OnExit:</term><description>What happens **just before you leave** this state.</description></item>
+            </list>
+            <para>
+            These actions receive an <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/>, which is like a data bag 🎒 containing
+            all the specific information your FSM instance needs to perform its actions.
+            </para>
+            <para>
+            While you'll typically set up your states easily using a builder tool, this class is available
+            for advanced users who might need to create or change states directly in their code.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMState.Name">
+            <summary>
+            This is the **unique name** for this state.
+            Once you create a state with a name, it can't be changed.
+            </summary>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMState.SetOnEnter(System.Action{TheSingularityWorkshop.FSM_API.IStateContext})">
+            <summary>
+            Sets the action that will run **when the FSM first moves into this state.**
+            </summary>
+            <remarks>
+            This action receives a `context` object that provides all the necessary
+            data for this FSM instance. If you don't provide an action (leave it `null`),
+            nothing special will happen when the FSM enters this state.
+            </remarks>
+            <param name="enter">The action (a piece of code) to run when entering, or `null` if no action is needed.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMState.SetOnUpdate(System.Action{TheSingularityWorkshop.FSM_API.IStateContext})">
+            <summary>
+            Sets the action that will run **repeatedly while the FSM is currently in this state.**
+            </summary>
+            <remarks>
+            This action receives a `context` object with the FSM's current data.
+            If you don't provide an action (leave it `null`), nothing special will
+            happen during each update cycle while in this state.
+            </remarks>
+            <param name="update">The action (a piece of code) to run during updates, or `null` if no action is needed.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMState.SetOnExit(System.Action{TheSingularityWorkshop.FSM_API.IStateContext})">
+            <summary>
+            Sets the action that will run **just before the FSM leaves this state.**
+            </summary>
+            <remarks>
+            This action receives a `context` object with the FSM's current data.
+            If you don't provide an action (leave it `null`), nothing special will
+            happen when the FSM exits this state.
+            </remarks>
+            <param name="exit">The action (a piece of code) to run when exiting, or `null` if no action is needed.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMState.#ctor(System.String,System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext})">
+            <summary>
+            Creates a new state definition for your FSM blueprint.
+            </summary>
+            <remarks>
+            When creating a state, you must give it a unique `name`.
+            You can also optionally provide actions to run `onEnter`, `onUpdate`, and `onExit`.
+            If you don't provide an action for any of these, it will simply do nothing.
+            </remarks>
+            <param name="name">The unique name for this state (e.g., "Idle", "Running").</param>
+            <param name="onEnter">An optional action to run when the FSM enters this state. Can be `null`.</param>
+            <param name="onUpdate">An optional action to run repeatedly while in this state. Can be `null`.</param>
+            <param name="onExit">An optional action to run when the FSM leaves this state. Can be `null`.</param>
+            <exception cref="T:System.ArgumentException">
+            This happens if you try to create a state without a proper `name` (it's empty or just spaces).
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMState.Enter(TheSingularityWorkshop.FSM_API.IStateContext)">
+            <summary>
+            Runs the 'OnEnter' action for this state.
+            </summary>
+            <remarks>
+            The FSM system calls this method automatically when an FSM instance transitions into this state.
+            After this method runs, the state's <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.HasEnteredCurrentState"/> flag is set to `true`.
+            </remarks>
+            <param name="c">The context object specific to this FSM instance, providing data access.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMState.Update(TheSingularityWorkshop.FSM_API.IStateContext)">
+            <summary>
+            Runs the 'OnUpdate' action for this state.
+            </summary>
+            <remarks>
+            The FSM system typically calls this method regularly while an FSM instance
+            is staying in this state, often as part of a game's update loop.
+            </remarks>
+            <param name="c">The context object specific to this FSM instance, providing data access.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMState.Exit(TheSingularityWorkshop.FSM_API.IStateContext)">
+            <summary>
+            Runs the 'OnExit' action for this state.
+            </summary>
+            <remarks>
+            The FSM system calls this method automatically just before an FSM instance
+            transitions out of this state to another.
+            </remarks>
+            <param name="c">The context object specific to this FSM instance, providing data access.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMState.ToString">
+            <summary>
+            Gives a simple text description of this state.
+            </summary>
+            <returns>A string that looks like "FSMState: [StateName]".</returns>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM_API">
+            <summary>
+            Provides methods for querying, managing, and interacting with live Finite State Machine (FSM)
+            definitions and their active instances at runtime. This section enables dynamic control
+            over your FSM ecosystem after initial setup.
+            </summary>
+            <remarks>
+            This partial class, alongside others, forms the comprehensive <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/> from The Singularity Workshop.
+            Methods here allow users to check for the existence of FSMs, retrieve lists of defined
+            FSMs or their running instances, initiate the FSM processing loop for specific groups,
+            and gracefully remove FSM definitions or individual instances from the system.
+            <para>
+            **Important:** Modifying or destroying FSM definitions via these methods will
+            immediately affect all active instances derived from those definitions,
+            potentially changing or halting their behavior. Exercise caution, especially
+            in live production environments.
+            </para>
+            </remarks>
+            <summary>
+            This partial class contains the internal data structures and helper methods
+            essential for the operation of the <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/>.
+            </summary>
+            <remarks>
+            While the <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/> class itself is public, the members within this
+            partial file are generally marked <c>private</c> or <c>internal</c>. This
+            ensures that the core mechanics and state management of the FSM system are
+            encapsulated and not directly exposed to external API consumers, maintaining
+            a clean and controlled public interface.
+            <para>
+            **Important:** The declaration <c>public static partial class FSM_API</c> must
+            be consistent across all partial files defining the <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/> class.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM_API.Interaction">
+            <summary>
+            Provides a set of methods for interacting with and managing FSM definitions and instances at runtime.
+            This includes querying their existence, retrieving instances, ticking processing groups,
+            and destroying definitions or individual instances.
+            </summary>
+            <remarks>
+            This static class groups all operations related to the lifecycle and real-time management
+            of FSMs once they have been defined and instantiated. It serves as the primary
+            interface for monitoring and controlling your FSMs after their initial setup.
+            </remarks>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers">
+            <summary>
+            Provides a simple, static utility for managing named timers based on elapsed float time (e.g., seconds)
+            and integer increments (e.g., frames or discrete steps).
+            <para>
+            This class is designed to be time-agnostic; it does not acquire time itself but relies on the
+            calling application to provide delta time (<c>dt</c>) and delta integer (<c>di</c>) values.
+            It serves as a convenience for implementing frequency-based updates or delays, complementing
+            the FSM API's core, untimed step mechanism.
+            </para>
+            </summary>
+            <remarks>
+            Users are responsible for integrating <c>UpdateTimers</c> into their application's main loop
+            and for providing accurate time deltas. Timers must be manually added and checked for expiration.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.FloatTimers">
+            <summary>
+            Gets a dictionary of float-based timers, keyed by a string name.
+            These timers are typically used for time-based delays or frequencies (e.g., seconds).
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.IntTimers">
+            <summary>
+            Gets a dictionary of integer-based timers, keyed by a string name.
+            These timers are typically used for frame-based or discrete step delays/frequencies.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.LastFloatTime">
+            <summary>
+            Stores the last float time value passed to <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.UpdateTimers(System.Single,System.Int32)"/>.
+            This can be used to track total elapsed time or for debugging purposes.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.LastIntTime">
+            <summary>
+            Stores the last integer time value passed to <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.UpdateTimers(System.Single,System.Int32)"/>.
+            This can be used to track total elapsed frames/steps or for debugging purposes.
+            </summary>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.UpdateTimers(System.Single,System.Int32)">
+            <summary>
+            Updates all registered float and integer timers by subtracting the provided delta values.
+            </summary>
+            <param name="dt">The delta float time (e.g., seconds since last update) to subtract from float timers.</param>
+            <param name="di">The delta integer (e.g., frames since last update) to subtract from integer timers.</param>
+            <remarks>
+            This method simply decrements all active timers. It does not check if timers have reached
+            zero or perform any actions based on timer expiration. It is up to the calling code
+            to query individual timers (e.g., <c>FSMTimers.FloatTimers["MyTimer"] &lt;= 0f</c>)
+            and trigger relevant FSM updates or other logic.
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.ResetFloatTimer(System.String,System.Single)">
+            <summary>
+            Resets a specific float timer to its <paramref name="setPoint"/> value.
+            If the timer does not exist, no action is taken.
+            </summary>
+            <param name="timerName">The name of the float timer to reset.</param>
+            <param name="setPoint">The value to reset the timer to (defaults to 1.0f).</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.ResetIntTimer(System.String,System.Int32)">
+            <summary>
+            Resets a specific integer timer to its <paramref name="setPoint"/> value.
+            If the timer does not exist, no action is taken.
+            </summary>
+            <param name="timerName">The name of the integer timer to reset.</param>
+            <param name="setPoint">The value to reset the timer to (defaults to 1).</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.AddOrSetFloatTimer(System.String,System.Single)">
+            <summary>
+            Adds a new float timer or updates an existing one with an initial value.
+            </summary>
+            <param name="timerName">The name of the timer to add or update.</param>
+            <param name="initialValue">The initial value for the timer.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.AddOrSetIntTimer(System.String,System.Int32)">
+            <summary>
+            Adds a new integer timer or updates an existing one with an initial value.
+            </summary>
+            <param name="timerName">The name of the timer to add or update.</param>
+            <param name="initialValue">The initial value for the timer.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.RemoveFloatTimer(System.String)">
+            <summary>
+            Removes a float timer.
+            </summary>
+            <param name="timerName">The name of the timer to remove.</param>
+            <returns><c>true</c> if the timer was successfully found and removed; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.FSMTimers.RemoveIntTimer(System.String)">
+            <summary>
+            Removes an integer timer.
+            </summary>
+            <param name="timerName">The name of the timer to remove.</param>
+            <returns><c>true</c> if the timer was successfully found and removed; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.AddStateToFSM(System.String,System.String,System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.Action{TheSingularityWorkshop.FSM_API.IStateContext},System.String)">
+            <summary>
+            Dynamically adds a new state definition to an existing Finite State Machine blueprint
+            at runtime.
+            </summary>
+            <remarks>
+            This method allows you to extend the behavior of an FSM after it has been defined.
+            It internally uses an <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> to apply the changes.
+            If a state with the given <paramref name="stateName"/> already exists in the FSM,
+            its <c>onEnter</c>, <c>onUpdate</c>, and <c>onExit</c> actions will be updated.
+            All active instances of this FSM definition will immediately reflect the added or
+            updated state when they attempt to transition to or from it, or if they are
+            currently in that state and its actions are modified.
+            </remarks>
+            <param name="fsmName">
+            The unique name of the FSM blueprint to which the state will be added or updated.
+            </param>
+            <param name="stateName">
+            The name of the state to add or update. This must be unique within the FSM.
+            </param>
+            <param name="processingGroup">
+            The name of the processing group where the FSM definition is registered. Defaults to <c>"Update"</c>.
+            </param>
+            <param name="onEnter">
+            An <see cref="T:System.Action`1"/> to execute when an FSM instance enters this state. Can be <c>null</c>.
+            </param>
+            <param name="onUpdate">
+            An <see cref="T:System.Action`1"/> to execute when an FSM instance is in this state during an <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.Update(System.String)"/> call. Can be <c>null</c>.
+            </param>
+            <param name="onExit">
+            An <see cref="T:System.Action`1"/> to execute when an FSM instance exits this state. Can be <c>null</c>.
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/>, <paramref name="stateName"/>, or <paramref name="processingGroup"/>
+            is null, empty, or consists only of white-space characters.
+            </exception>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">
+            Thrown if the FSM definition specified by <paramref name="fsmName"/> and <paramref name="processingGroup"/>
+            cannot be found.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.AddTransition(System.String,System.String,System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean},System.String)">
+            <summary>
+            Dynamically adds a new transition between two states to an existing Finite State Machine blueprint.
+            </summary>
+            <remarks>
+            This method internally uses an <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> to apply the changes.
+            This allows for changing the flow of your FSMs at runtime. If a transition
+            from <paramref name="fromState"/> to <paramref name="toState"/> with the exact
+            same condition already exists, it will be updated with the new <paramref name="condition"/>.
+            </remarks>
+            <param name="fsmName">
+            The unique name of the FSM blueprint to which the transition will be added or updated.
+            </param>
+            <param name="fromState">
+            The name of the state from which the transition originates. Use <see cref="F:TheSingularityWorkshop.FSM_API.FSM.AnyStateIdentifier"/>
+            to define a transition that can occur from any state.
+            </param>
+            <param name="toState">
+            The name of the state to which the transition leads.
+            </param>
+            <param name="condition">
+            A <see cref="T:System.Func`2"/> that returns <c>true</c> when the transition should occur.
+            This function operates on the <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/>.
+            </param>
+            <param name="processingGroup">
+            The name of the processing group where the FSM definition is registered. Defaults to <c>"Update"</c>.
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/>, <paramref name="fromState"/>, <paramref name="toState"/>,
+            or <paramref name="processingGroup"/> is null, empty, or consists only of white-space characters,
+            or if <paramref name="condition"/> is <c>null</c>.
+            </exception>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">
+            Thrown if the FSM definition specified by <paramref name="fsmName"/> and <paramref name="processingGroup"/>
+            cannot be found.
+            </exception>
+            <exception cref="T:System.InvalidOperationException">
+            Thrown if <paramref name="fromState"/> or <paramref name="toState"/> does not exist within the FSM's defined states,
+            unless <paramref name="fromState"/> is <see cref="F:TheSingularityWorkshop.FSM_API.FSM.AnyStateIdentifier"/>.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.DestroyFiniteStateMachine(System.String,System.String)">
+            <summary>
+            Removes a registered FSM definition and all its associated active instances
+            from a specific processing group. This effectively unregisters the FSM blueprint
+            and frees up resources for all its derived instances.
+            </summary>
+            <remarks>
+            This is a **destructive operation** for a specific FSM type. All current instances
+            of this FSM definition will cease to be managed by the API. Their <see cref="M:TheSingularityWorkshop.FSM_API.FSMHandle.DestroyHandle"/>
+            method will be called to ensure proper <c>OnExit</c> logic is executed.
+            Memory will then be eligible for garbage collection once all external references are released.
+            If the FSM definition or group does not exist, a warning will be logged via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInternalApiError(System.String,System.Exception)"/>.
+            </remarks>
+            <param name="fsmName">
+            The name of the FSM definition to destroy.
+            </param>
+            <param name="processingGroup">
+            The processing group where the FSM definition is registered. Defaults to <c>"Update"</c>.
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/> or <paramref name="processingGroup"/> is null, empty,
+            or consists only of white-space characters.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.Exists(System.String,System.String)">
+            <summary>
+            Checks if an FSM definition with the given name exists within the specified processing group.
+            This is useful for verifying if an FSM blueprint has been registered before attempting
+            to create instances or modify its definition.
+            </summary>
+            <param name="fsmName">
+            The unique name of the FSM definition to check for existence.
+            </param>
+            <param name="processingGroup">
+            The name of the processing group to search within. Defaults to <c>"Update"</c>.
+            </param>
+            <returns>
+            <c>true</c> if the FSM definition exists in the specified group; otherwise, <c>false</c>.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/> or <paramref name="processingGroup"/> is null, empty,
+            or consists only of white-space characters.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.GetAllDefinitionNames(System.String)">
+            <summary>
+            Retrieves the names of all FSM definitions currently registered
+            within a specific processing group. This is useful for introspection, debugging, or
+            for building dynamic UI elements that list available FSMs.
+            </summary>
+            <param name="processingGroup">
+            The name of the processing group to query for FSM definitions. Defaults to <c>"Update"</c>.
+            </param>
+            <returns>
+            A read-only collection of strings, where each string is the name of an FSM definition.
+            If the processing group does not exist, an empty collection is returned.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="processingGroup"/> is null, empty, or consists only of white-space characters.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.GetInstances(System.String,System.String)">
+            <summary>
+            Retrieves all active, live instances of a specific FSM definition
+            within a given processing group.
+            </summary>
+            <remarks>
+            Each <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> in the returned list represents a currently
+            running Finite State Machine, bound to its own unique context object.
+            This method allows you to inspect, manage, or interact with all live
+            applications of a particular FSM blueprint.
+            </remarks>
+            <param name="fsmName">
+            The name of the FSM definition whose active instances you want to retrieve.
+            </param>
+            <param name="processingGroup">
+            The name of the processing group where the FSM definition is registered. Defaults to <c>"Update"</c>.
+            </param>
+            <returns>
+            A read-only list of <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> objects, each representing a live
+            FSM instance derived from the specified definition.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/> or <paramref name="processingGroup"/> is null, empty,
+            or consists only of white-space characters.
+            </exception>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">
+            Thrown if the FSM definition specified by <paramref name="fsmName"/> and <paramref name="processingGroup"/>
+            cannot be found. Ensure the FSM has been defined prior to attempting to retrieve its instances.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.RemoveProcessingGroup(System.String)">
+            <summary>
+            Removes an entire FSM processing group from the system, along with all FSM definitions
+            and all their active instances associated with that group.
+            </summary>
+            <remarks>
+            This is a **destructive operation**. Use this method carefully, typically when
+            an entire subsystem or module that relies on a specific FSM processing group
+            is being unloaded or shut down. All memory and resources tied to FSMs
+            in this group will be released and they will no longer be managed by the API.
+            If the group does not exist, a warning will be logged via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInternalApiError(System.String,System.Exception)"/>.
+            </remarks>
+            <param name="processingGroup">
+            The name of the processing group to remove.
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="processingGroup"/> is null, empty, or consists only of white-space characters.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.Update(System.String)">
+             <summary>
+             Advances the FSM instance by one logical step. This involves executing the 'OnUpdate'
+             action of the <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState"/> and evaluating all defined transitions
+             from the <see cref="P:TheSingularityWorkshop.FSM_API.FSMHandle.CurrentState"/>. If a valid transition is found, the FSM will
+             move to the next state, executing 'OnExit' for the old state and 'OnEnter' for the new state.
+             </summary>
+             <param name="processingGroup">Optional: A string identifying the process group for error reporting, defaults to "Update".</param>
+             <remarks>
+             **The Crucial Step for FSM Processing:**
+             This <c>Update()</c> method is fundamental to the operation of an FSM instance. Without
+             it being called, the FSM will not execute its state's update logic, evaluate transitions,
+             or progress through its defined states. An FSM definition, no matter how intricate,
+             remains static until its instances are actively updated.
+            
+             **How FSMs are "Ticked":**
+             This method is primarily designed to be invoked by the <c>FSM_API</c>'s internal management
+             system (e.g., via <c>FSM_API.Interaction.TickAll(string processingGroup)</c>). The API
+             manages the periodic invocation of this method for all registered FSM instances
+             within a given processing group, respecting their defined <c>ProcessRate</c>.
+            
+             **CAUTION: Manual Invocation (Advanced Use Only):**
+             While publicly accessible, directly calling <c>Update()</c> manually from your application code
+             should only be done by developers who possess a deep understanding of the FSM's internal
+             processing cycle and lifecycle management. Manual invocation outside of the
+             <c>FSM_API</c>'s managed loop can lead to:
+             <list type="bullet">
+                 <item><description>Unpredictable state behavior due to uncontrolled update rates.</description></item>
+                 <item><description>Performance issues if not integrated into an efficient game loop or update scheduler.</description></item>
+                 <item><description>Conflicts with the <c>FSM_API</c>'s internal error handling and instance management.</description></item>
+             </list>
+             Use with extreme care and only when building a highly customized, self-managed FSM update system.
+             </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.DestroyInstance(TheSingularityWorkshop.FSM_API.FSMHandle)">
+            <summary>
+            Unregisters a specific FSM instance from the system, allowing it to be garbage collected
+            if no other references exist. This method searches across all active FSM definitions
+            in all groups to find and deregister the instance.
+            </summary>
+            <remarks>
+            Use this method when a particular object managed by an FSM is no longer needed
+            or is being destroyed (e.g., a game object being despawned), but its FSM definition
+            might still be in use by other instances.
+            <para>
+            The instance's <see cref="M:TheSingularityWorkshop.FSM_API.FSMHandle.DestroyHandle"/> method will be called to ensure
+            any <c>OnExit</c> logic for its current state is executed before it is removed
+            from management.
+            </para>
+            If the instance is not found (e.g., it was already unregistered or never registered),
+            a warning will be logged via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInternalApiError(System.String,System.Exception)"/>.
+            </remarks>
+            <param name="instance">
+            The <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> of the specific live FSM instance to unregister.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the provided <paramref name="instance"/> is <c>null</c>.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.RemoveStateFromFSM(System.String,System.String,System.String,System.String)">
+            <summary>
+            Dynamically removes a state definition from an existing Finite State Machine blueprint at runtime.
+            </summary>
+            <remarks>
+            This method internally uses an <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> to apply the changes.
+            <para>
+            When a state is removed, any active FSM instances currently in that state will be
+            immediately transitioned. The transition target is determined as follows:
+            <list type="bullet">
+                <item><description>If a valid <paramref name="fallbackStateName"/> is provided, instances will transition to that state.</description></item>
+                <item><description>If <paramref name="fallbackStateName"/> is null, empty, or consists only of white-space,
+                      instances will instead transition to the FSM's <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/>.</description></item>
+            </list>
+            The `OnExit` action of the removed state will be called, followed by the `OnEnter` action
+            of the determined fallback or initial state.
+            </para>
+            <para>
+            If the specified state to remove does not exist in the FSM, a warning will be logged
+            via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInternalApiError(System.String,System.Exception)"/>.
+            </para>
+            </remarks>
+            <param name="fsmName">
+            The unique name of the FSM blueprint from which the state will be removed.
+            </param>
+            <param name="stateName">
+            The name of the state to remove.
+            </param>
+            <param name="fallbackStateName">
+            Optional: The name of the state to transition existing FSM instances to if they are
+            currently in the state being removed. If not provided (null or empty), instances
+            will default to transitioning to the FSM's <see cref="P:TheSingularityWorkshop.FSM_API.FSM.InitialState"/>.
+            </param>
+            <param name="processingGroup">
+            The name of the processing group where the FSM definition is registered. Defaults to <c>"Update"</c>.
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/>, <paramref name="stateName"/>, or <paramref name="processingGroup"/>
+            is null, empty, or consists only of white-space characters.
+            </exception>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">
+            Thrown if the FSM definition specified by <paramref name="fsmName"/> and <paramref name="processingGroup"/>
+            cannot be found.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.RemoveTransition(System.String,System.String,System.String,System.String)">
+            <summary>
+            Dynamically removes a specific transition between two states from an existing Finite State Machine blueprint.
+            </summary>
+            <remarks>
+            This method internally uses an <see cref="T:TheSingularityWorkshop.FSM_API.FSMModifier"/> to apply the changes.
+            This allows for removing unwanted or obsolete paths in your FSM's logic at runtime.
+            If the specified transition does not exist, a warning will be logged via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInternalApiError(System.String,System.Exception)"/>.
+            </remarks>
+            <param name="fsmName">
+            The unique name of the FSM blueprint from which the transition will be removed.
+            </param>
+            <param name="fromState">
+            The name of the state from which the transition originates. Use <see cref="F:TheSingularityWorkshop.FSM_API.FSM.AnyStateIdentifier"/>
+            to remove a transition that occurs from any state.
+            </param>
+            <param name="toState">
+            The name of the state to which the transition leads.
+            </param>
+            <param name="processingGroup">
+            The name of the processing group where the FSM definition is registered. Defaults to <c>"Update"</c>.
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/>, <paramref name="fromState"/>, <paramref name="toState"/>,
+            or <paramref name="processingGroup"/> is null, empty, or consists only of white-space characters.
+            </exception>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">
+            Thrown if the FSM definition specified by <paramref name="fsmName"/> and <paramref name="processingGroup"/>
+            cannot be found.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.GetInstance(System.String,TheSingularityWorkshop.FSM_API.IStateContext,System.String)">
+            <summary>
+            Retrieves a live <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> for a specific FSM instance.
+            </summary>
+            <remarks>
+            This is the primary public method to access an existing, running FSM instance.
+            It uses the provided FSM name, the unique context object associated with the instance,
+            and its processing group to locate and return the correct handle. This allows you
+            to check the FSM's current state or manually trigger a transition from outside
+            of the FSM's own logic.
+            </remarks>
+            <param name="testFsmName">The name of the FSM blueprint, e.g., "PlayerMovementFSM".</param>
+            <param name="context">The unique context object (e.g., your character controller or enemy AI object)
+            that identifies a specific FSM instance.</param>
+            <param name="processingGroup">The name of the group that this FSM instance belongs to.</param>
+            <returns>
+            A valid <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> if a matching instance is found; otherwise, <c>null</c>.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.GetFSMDefinition(System.String,System.String)">
+            <summary>
+            Returns the requested definition or a default FSM.
+            </summary>
+            <param name="fsmName">Name of the FSM Definition to Get</param>
+            <param name="processingGroup">Name of the Processing Group to find the FSM in.</param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM_API.Create">
+            <summary>
+            Provides a centralized entry point for defining and creating instances of
+            Finite State Machines (FSMs) within the API.
+            </summary>
+            <remarks>
+            This static class serves as a factory for <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/> objects
+            (used to construct FSM definitions) and for instantiating live FSMs from
+            those definitions. All operations related to the initial setup and creation
+            of FSMs go through the methods provided here.
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateFiniteStateMachine(System.String,System.Int32,System.String)">
+            <summary>
+            Initiates the definition process for a new Finite State Machine (FSM),
+            or provides an <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/> to modify an existing FSM's definition.
+            </summary>
+            <remarks>
+            Use this method to either begin designing a brand new FSM from scratch
+            or to retrieve a builder for an FSM that has already been defined.
+            The <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/> returned is your primary tool for adding states,
+            transitions, and configuring event handlers.
+            <para>
+            If an FSM with the specified <paramref name="fsmName"/> and <paramref name="processingGroup"/>
+            already exists, the builder will be pre-populated with its current definition,
+            allowing for seamless modification.
+            </para>
+            </remarks>
+            <param name="fsmName">
+            A unique, descriptive name for this FSM definition. This name is used to
+            reference the FSM definition when creating instances or modifying it later.
+            Defaults to "UnNamedFSM".
+            </param>
+            <param name="processRate">
+            The default processing rate for instances of this FSM definition.
+            <list type="bullet">
+            <item><term>0 (default)</term><description>Event-driven: FSM instances will only process when explicitly triggered by an event.</description></item>
+            <item><term>&gt; 0</term><description>Tick-based: FSM instances will process at a fixed interval (e.g., in milliseconds), in addition to event triggers.</description></item>
+            <item><term>-1</term><description>Manual: FSM instances require explicit calls to their process method (e.g., FSMHandle.Process()) and are not automatically ticked or purely event-driven.</description></item>
+            </list>
+            Values less than -1 will be silently coerced to 0 (event-driven).
+            </param>
+            <param name="processingGroup">
+            The name of the processing group this FSM definition belongs to.
+            FSMs within the same processing group can be managed and processed collectively.
+            Defaults to "Update".
+            </param>
+            <returns>
+            An <see cref="T:TheSingularityWorkshop.FSM_API.FSMBuilder"/> object, which acts as a fluent API for
+            defining the FSM's states, transitions, and actions.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/> or <paramref name="processingGroup"/> is null, empty, or consists only of white-space characters.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateInstance(System.String,TheSingularityWorkshop.FSM_API.IStateContext,System.String)">
+            <summary>
+            Creates a live instance of a registered FSM definition, binding it to a specific context object.
+            This allows the FSM to manage the state and behaviors of that context dynamically at runtime.
+            </summary>
+            <remarks>
+            After defining an FSM structure using <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateFiniteStateMachine(System.String,System.Int32,System.String)"/>,
+            use this method to create active, runnable instances. Each instance operates independently,
+            maintaining its own current state and executing actions based on its bound context object.
+            <para>
+            The <paramref name="ctx"/> object serves as the 'owner' of the FSM's state. When the FSM
+            transitions, its associated actions and guards typically operate on or retrieve data from this
+            context object.
+            </para>
+            </remarks>
+            <param name="fsmName">
+            The unique name of the FSM definition to instantiate. This must correspond to an FSM
+            previously defined via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateFiniteStateMachine(System.String,System.Int32,System.String)"/>.
+            </param>
+            <param name="ctx">
+            The object that will serve as the FSM's context. This object **must** implement
+            the <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/> interface, which provides a common interface for FSM
+            operations regardless of the specific context type.
+            </param>
+            <param name="processingGroup">
+            The name of the processing group where the FSM definition is registered.
+            This must match the group specified during the FSM's definition.
+            Defaults to "Update".
+            </param>
+            <returns>
+            An <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> that provides control over the newly created FSM instance,
+            allowing you to trigger events, query its current state, and manage its lifecycle.
+            </returns>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="fsmName"/> or <paramref name="processingGroup"/> is null, empty, or consists only of white-space characters.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if the provided <paramref name="ctx"/> (context object) is <c>null</c>.
+            </exception>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">
+            Thrown if the FSM definition specified by <paramref name="fsmName"/> and <paramref name="processingGroup"/>
+            cannot be found. Ensure the FSM has been defined prior to attempting instantiation.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateProcessingGroup(System.String)">
+            <summary>
+            Ensures an FSM processing group exists within the API's internal management system.
+            FSM instances registered under this group will be processed when the corresponding
+            <c>Tick</c> method (e.g., <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.Update(System.String)"/>)
+            is called for that specific group.
+            </summary>
+            <remarks>
+            Calling this method is generally optional, as processing groups are automatically created
+            when an FSM definition or instance is first created within that group. However,
+            you might use this method to pre-initialize a group or to explicitly confirm its existence.
+            </remarks>
+            <param name="processingGroup">
+            The unique name for the processing group to create or ensure exists.
+            Group names are case-sensitive.
+            </param>
+            <exception cref="T:System.ArgumentException">
+            Thrown if <paramref name="processingGroup"/> is null, empty, or consists only of white-space characters.
+            </exception>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM_API.Error">
+            <summary>
+            Provides a centralized system for managing and reporting errors and warnings within the FSM API.
+            This class allows you to configure error thresholds for automatic cleanup of misbehaving FSMs
+            and subscribe to internal diagnostic notifications.
+            </summary>
+            <remarks>
+            The API uses a robust error handling mechanism to ensure system stability.
+            When FSM instances or definitions encounter repeated errors (e.g., exceptions during state entry/exit,
+            or transition evaluation), this system tracks those occurrences. If predefined thresholds are met,
+            the problematic FSM instance or even the entire FSM definition can be automatically removed
+            to prevent ongoing issues or resource consumption.
+            <para>
+            You can also subscribe to the <see cref="E:TheSingularityWorkshop.FSM_API.FSM_API.Error.OnInternalApiError"/> event to receive real-time notifications
+            about non-FSM-specific internal errors, warnings, or significant API events.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Error.InstanceErrorThreshold">
+            <summary>
+            The maximum number of consecutive errors an FSM instance can encounter before it is automatically shut down.
+            </summary>
+            <remarks>
+            Once an FSM instance reaches this error count, it will be automatically unregistered from the system
+            to prevent it from causing further issues.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Error.DefinitionErrorThreshold">
+            <summary>
+            The maximum number of times an FSM definition can cause an instance to be shut down due to errors
+            before the entire definition is scheduled for destruction.
+            </summary>
+            <remarks>
+            If multiple instances of the same FSM definition repeatedly fail (reaching their <see cref="P:TheSingularityWorkshop.FSM_API.FSM_API.Error.InstanceErrorThreshold"/>),
+            it might indicate a fundamental flaw in the FSM's design. When this threshold is met,
+            the problematic FSM definition will be removed from the system, and all its remaining active instances will be shut down.
+            </remarks>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM_API.Error.InternalApiErrorEventHandler">
+            <summary>
+            Represents a delegate for internal API error events.
+            </summary>
+            <param name="message">A descriptive error message.</param>
+            <param name="exception">The exception that occurred, if any.</param>
+        </member>
+        <member name="E:TheSingularityWorkshop.FSM_API.FSM_API.Error.OnInternalApiError">
+            <summary>
+            Occurs when a non-FSM-instance-specific internal error, warning, or significant API event is reported.
+            Subscribe to this event to receive diagnostic notifications about the FSM API's internal operations.
+            </summary>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInternalApiError(System.String,System.Exception)">
+            <summary>
+            Invokes the <see cref="E:TheSingularityWorkshop.FSM_API.FSM_API.Error.OnInternalApiError"/> event.
+            This method is used internally by the FSM API to report critical non-instance-specific issues.
+            </summary>
+            <param name="message">A descriptive message about the error or event.</param>
+            <param name="exception">The associated exception, or null if no exception occurred.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInstanceError(TheSingularityWorkshop.FSM_API.FSMHandle,System.String,System.Exception,System.String)">
+            <summary>
+            Invokes an error specifically related to a misbehaving FSM instance.
+            </summary>
+            <remarks>
+            This method tracks instance-specific errors and will automatically shut down
+            the <paramref name="handle"/> if its error count reaches the <see cref="P:TheSingularityWorkshop.FSM_API.FSM_API.Error.InstanceErrorThreshold"/>.
+            </remarks>
+            <param name="handle">The <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> instance that encountered the error.</param>
+            <param name="message">A descriptive message about the instance error.</param>
+            <param name="exception">The associated exception, or null if no exception occurred.</param>
+            <param name="processGroup">The name of the processing group where the error occurred (default is "Update").</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="handle"/> is null.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeDefinitionError(System.String,System.String)">
+            <summary>
+            Invokes an error specifically related to an FSM definition, typically when an instance
+            derived from it has been shut down due to repeated errors.
+            </summary>
+            <remarks>
+            This method tracks definition-specific errors and will automatically schedule the
+            complete destruction of the FSM definition and all its instances if its error count
+            reaches the <see cref="P:TheSingularityWorkshop.FSM_API.FSM_API.Error.DefinitionErrorThreshold"/>.
+            </remarks>
+            <param name="fsmDefinitionName">The name of the FSM definition that caused the error.</param>
+            <param name="processingGroup">The processing group of the FSM definition.</param>
+            <exception cref="T:System.ArgumentException">Thrown if <paramref name="fsmDefinitionName"/>
+            or <paramref name="processingGroup"/> is null, empty, or whitespace.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.ResetDefinitionErrorCount(System.String)">
+            <summary>
+            Resets the accumulated error count for a specific FSM definition.
+            This is typically called when an FSM definition is explicitly destroyed
+            or reloaded, to clear its error history.
+            </summary>
+            <param name="fsmDefinitionName">The name of the FSM definition whose error count to reset.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.ResetInstanceErrorCount(TheSingularityWorkshop.FSM_API.FSMHandle)">
+            <summary>
+            Resets the accumulated error count for a specific FSMHandle
+            </summary>
+            <param name="handle"></param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.GetErrorCounts">
+            <summary>
+            Provides a read-only dictionary of current instance-specific error counts for active FSM handles.
+            Each entry maps an <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> to the number of errors encountered by that instance.
+            </summary>
+            <remarks>
+            This method is primarily intended for internal monitoring and testing purposes.
+            Error counts are incremented via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInstanceError(TheSingularityWorkshop.FSM_API.FSMHandle,System.String,System.Exception,System.String)"/>.
+            When an FSM instance's error count reaches the <see cref="P:TheSingularityWorkshop.FSM_API.FSM_API.Error.InstanceErrorThreshold"/>,
+            the instance is scheduled for destruction, and its entry is removed from this dictionary.
+            </remarks>
+            <returns>A <see cref="T:System.Collections.Generic.Dictionary`2"/> where keys are <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> instances
+            and values are their respective error counts.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.GetDefinitionErrorCounts">
+            <summary>
+            Provides a read-only dictionary of current definition-specific error counts.
+            Each entry maps an FSM definition name (string) to the number of errors encountered related to that definition.
+            </summary>
+            <remarks>
+            This method is primarily intended for internal monitoring and testing purposes.
+            Definition error counts are incremented via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeDefinitionError(System.String,System.String)"/>.
+            When a definition's error count reaches the <see cref="P:TheSingularityWorkshop.FSM_API.FSM_API.Error.DefinitionErrorThreshold"/>,
+            the FSM definition and all its active instances are scheduled for complete destruction,
+            and its entry is removed from this dictionary.
+            </remarks>
+            <returns>A <see cref="T:System.Collections.Generic.Dictionary`2"/> where keys are FSM definition names (strings)
+            and values are their respective error counts.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.Reset">
+            <summary>
+            Resets all internal error tracking counters for both FSM instances and FSM definitions.
+            </summary>
+            <remarks>
+            This method clears all accumulated instance-specific and definition-specific error counts.
+            It is typically used for internal cleanup or to provide a fresh state, for example,
+            at the start of new test runs or when explicitly resetting the FSM API's error tracking.
+            </remarks>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM_API.Internal">
+            <summary>
+            Provides internal access to the core data structures and operational methods
+            of the FSM API. Members within this class are not intended for direct use
+            by external API consumers.
+            </summary>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket">
+            <summary>
+            Represents an internal container for an FSM definition and all its active instances.
+            </summary>
+            <remarks>
+            This class is used **internally** by the <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/> to efficiently manage
+            FSM definitions and their associated running instances within specific
+            processing groups. It tracks the FSM's blueprint, its live instances,
+            and properties related to its update rate. Being <c>public</c> (nested within an internal class),
+            it's effectively encapsulated within the <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/>'s internal structure.
+            </remarks>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket.Definition">
+            <summary>
+            The blueprint (definition) of the Finite State Machine.
+            </summary>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket.Instances">
+            <summary>
+            A list of all active <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> instances created from this definition.
+            </summary>
+            <remarks>
+            Instances are added to this list upon creation and removed upon unregistration
+            or automatic removal due to error thresholds. The list itself is never null.
+            </remarks>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket.ProcessRate">
+            <summary>
+            The desired processing rate for instances of this FSM definition.
+            </summary>
+            <value>
+            <c>-1</c>: Process every frame (or every call to <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.Update(System.String)"/>).
+            <c>0</c>: Event-driven only (will not be processed by <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.Update(System.String)"/>'s internal tick).
+            <c>&gt;0</c>: Process every Nth frame, where N is the value of <c>ProcessRate</c>.
+            </value>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket.Counter">
+            <summary>
+            An internal counter used for frame-skipping when <see cref="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket.ProcessRate"/> is greater than 0.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Internal.AverageFsmDefinitionsPerGroup">
+            <summary>
+            Gets the average number of FSM definitions per processing group.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Internal.AverageFsmHandlesPerDefinition">
+            <summary>
+            Gets the average number of FSM handles per FSM definition (across all definitions).
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Internal.ProcessingGroupCount">
+            <summary>
+            Gets the total number of distinct processing groups (e.g., "Update", "FixedUpdate").
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Internal.TickPerformanceWarningThresholdMs">
+            <summary>
+            Sets a time limit (in milliseconds) for how long an FSM processing group update can take
+            before a warning message is logged via OnInternalApiError. Helps identify performance bottlenecks.
+            Default is 5ms.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Internal.TotalFsmDefinitionCount">
+            <summary>
+            Gets the total number of unique FSM definitions across all processing groups.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSM_API.Internal.TotalFsmHandleCount">
+            <summary>
+            Gets the total number of active FSM instances (handles) across all FSM definitions
+            within all processing groups.
+            </summary>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.DestroyFiniteStateMachine(System.String,System.String)">
+            <summary>
+            Destroys a complete FSM definition and all of its active instances.
+            </summary>
+            <remarks>
+            This is a critical method for cleaning up the FSM system. It first gracefully
+            shuts down all active instances and then removes the FSM definition itself
+            from the API's internal registry.
+            <para>
+            It avoids the common "collection modified" error by first creating a temporary
+            list of all instances to be destroyed, and then iterating over that new list.
+            </para>
+            </remarks>
+            <param name="fsmDefinitionName">The unique name of the FSM definition to destroy.</param>
+            <param name="processingGroup">The name of the processing group where the FSM is registered.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.DestroyInstance(TheSingularityWorkshop.FSM_API.FSMHandle)">
+            <summary>
+            Safely and efficiently destroys a single FSM instance using its handle.
+            </summary>
+            <remarks>
+            This method directly indexes into the internal data structures using
+            the FSMHandle's metadata to avoid inefficient and unsafe collection
+            enumeration. It performs the necessary cleanup actions such as
+            invoking the OnExit state logic and clearing error counts.
+            </remarks>
+            <param name="handle">The FSMHandle instance to destroy.</param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.DoesFsmDefinitionExist(System.String,System.String)">
+            <summary>
+            Checks if a specific FSM definition exists within a given processing group.
+            </summary>
+            <param name="processingGroupName">The name of the processing group to check.</param>
+            <param name="fsmName">The name of the FSM definition to look for.</param>
+            <returns><c>true</c> if the FSM definition exists in the specified group; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetAllFsmHandles">
+            <summary>
+            Gets a flattened list of all active FSM Handles across all processing groups and FSM definitions.
+            </summary>
+            <returns>An enumerable collection of all active <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> instances.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetBucket(System.String,System.String)">
+            <summary>
+            Retrieves the FSM bucket for a specific FSM definition and processing group.
+            </summary>
+            <param name="fsmName">The name of the FSM definition.</param>
+            <param name="processGroup">The name of the processing group.</param>
+            <returns>The <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket"/> if found; otherwise, <c>null</c>.</returns>
+            <remarks>
+            This method provides direct access to the internal FSM bucket structure.
+            It includes safety checks to prevent <see cref="T:System.NullReferenceException"/>
+            and <see cref="T:System.Collections.Generic.KeyNotFoundException"/> if the specified group or FSM name does not exist.
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetBuckets">
+            <summary>
+            Gets the internal collection of FSM processing buckets.
+            </summary>
+            <remarks>
+            This accessor exposes the central internal data structure of the FSM system.
+            It is intended for advanced internal diagnostics or specific integration scenarios
+            and should be used with caution, respecting the single-threaded update model.
+            </remarks>
+            <returns>A nested dictionary representing the core FSM registry.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetFsmDefinitionCountInGroup(System.String)">
+            <summary>
+            Gets the number of FSM definitions within a specific processing group.
+            </summary>
+            <param name="processingGroupName">The name of the processing group.</param>
+            <returns>The count of FSM definitions, or 0 if the group doesn't exist.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetFsmDefinitionNamesInGroup(System.String)">
+            <summary>
+            Gets the names of all FSM definitions within a specific processing group.
+            </summary>
+            <param name="processingGroupName">The name of the processing group.</param>
+            <returns>An enumerable of FSM names, or empty if the group doesn't exist.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetFSMHandle(System.String,TheSingularityWorkshop.FSM_API.IStateContext,System.String)">
+            <summary>
+            Retrieves a specific <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> for a given FSM definition, context, and processing group.
+            </summary>
+            <remarks>
+            This method provides a way to get a live handle to an FSM instance using its unique context object.
+            It's a useful utility for systems that need to interact directly with a specific FSM instance
+            and its state. The method ensures that all components (processing group, FSM definition, and instance)
+            exist before returning a valid handle.
+            </remarks>
+            <param name="fsmDefinitionName">The name of the FSM definition to which the handle belongs.</param>
+            <param name="context">The unique context object associated with the FSM instance.</param>
+            <param name="processingGroup">The processing group the FSM instance is registered under.</param>
+            <returns>
+            The <see cref="T:TheSingularityWorkshop.FSM_API.FSMHandle"/> object if a match is found; otherwise, <c>null</c>.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetFSMHandleCountInGroup(System.String)">
+            <summary>
+            Gets the total number of active FSM instances (handles) within a specific processing group.
+            </summary>
+            <param name="processingGroupName">The name of the processing group.</param>
+            <returns>The count of handles, or 0 if the group doesn't exist.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetProcessingGroupNames">
+            <summary>
+            Gets the names of all currently registered processing groups.
+            </summary>
+            <returns>An enumerable collection of processing group names.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetProcessingGroups">
+            <summary>
+            Gets a list of all currently registered processing groups.
+            </summary>
+            <returns>A new <see cref="T:System.Collections.Generic.List`1"/> containing the names of all processing groups.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.ProcessDeferredModifications">
+            <summary>
+            Executes any pending modifications (e.g., adding/removing FSM instances)
+            that were deferred during the FSM update cycle. This ensures collection safety.
+            </summary>
+            <remarks>
+            This method is called internally by <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Interaction.Update(System.String)"/>
+            and should not typically be called directly by users. It guarantees that
+            structural changes to the FSM system (like unregistering instances that
+            hit an error threshold) happen safely after all FSMs for a given tick
+            have completed their processing.
+            Errors during deferred actions are reported via <see cref="E:TheSingularityWorkshop.FSM_API.FSM_API.Error.OnInternalApiError"/>.
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.ResetAPI(System.Boolean)">
+            <summary>
+            Resets the internal state of the FSM API.
+            </summary>
+            <param name="hardReset">
+            If <c>true</c>, all FSM definitions and instances are completely cleared.
+            If <c>false</c>, all existing FSM instances are unregistered and transitioned to their initial state,
+            and all processing groups are cleared, effectively starting fresh without removing definitions.
+            The deferred modifications queue and error counters are always cleared.
+            </param>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetDefaultFSM">
+            <summary>
+            Gets the internal default FSM definition.
+            </summary>
+            <returns>The static <see cref="T:TheSingularityWorkshop.FSM_API.FSM"/> object used as a default.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetDeferred">
+            <summary>
+            Gets the queue of deferred modifications.
+            </summary>
+            <returns>The internal <see cref="T:System.Collections.Generic.Queue`1"/> of <see cref="T:System.Action"/>s that are deferred.</returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetFSM(System.String,System.String)">
+            <summary>
+            Retrieves a specific Finite State Machine (FSM) definition by its name within a given processing group.
+            </summary>
+            <remarks>
+            This is an **internal-use only** method, primarily utilized by the FSM_API
+            for managing and accessing registered FSM blueprints. It provides a safe mechanism
+            to attempt retrieval of an FSM definition without raising exceptions if the specified
+            processing group or the FSM itself does not currently exist.
+            </remarks>
+            <param name="name">The unique name of the FSM definition to retrieve.</param>
+            <param name="processingGroup">The name of the processing group where the FSM definition is expected to be registered.
+            Defaults to "Update" if not specified.</param>
+            <returns>
+            The <see cref="T:TheSingularityWorkshop.FSM_API.FSM"/> definition object if found; otherwise, <c>null</c> if either the specified
+            <paramref name="processingGroup"/> does not exist or an FSM with the given <paramref name="name"/>
+            is not registered within that group. Returns the <see cref="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal._defaultFSM"/> if the requested FSM or its bucket definition is null.
+            </returns>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetOrCreateBucketProcessingGroup(System.String)">
+            <summary>
+            Internally retrieves the dictionary of <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket"/>s for a given processing group.
+            If the group does not exist, it will be created automatically.
+            </summary>
+            <remarks>
+            This method is designed for **internal use** within the <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API"/> assembly
+            and is not part of the public API surface. It ensures that any requested processing group
+            exists within the internal <c>_buckets</c> dictionary, creating it if necessary,
+            thereby preventing <see cref="T:System.Collections.Generic.KeyNotFoundException"/> when attempting to add FSM definitions
+            to a non-existent group.
+            </remarks>
+            <param name="processingGroup">The name of the processing group (e.g., "Update", "FixedUpdate").</param>
+            <returns>A dictionary containing FSM buckets for the specified processing group, keyed by FSM name.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if <paramref name="processingGroup"/> is null or empty.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.Register(System.String,TheSingularityWorkshop.FSM_API.FSM,System.Int32,System.String)">
+            <summary>
+            Internally registers or updates a fully defined FSM into the system. This method is called by
+            <see cref="M:TheSingularityWorkshop.FSM_API.FSMBuilder.BuildDefinition"/> and should not be invoked directly by users.
+            </summary>
+            <param name="fsmName">The unique name of the FSM definition.</param>
+            <param name="fsm">The complete <see cref="T:TheSingularityWorkshop.FSM_API.FSM"/> definition object.</param>
+            <param name="processRate">The update rate for this FSM.</param>
+            <param name="processingGroup">The processing group this FSM belongs to. Defaults to "Update".</param>
+            <exception cref="T:System.ArgumentException">Thrown if <paramref name="fsmName"/> or <paramref name="processingGroup"/> is null, empty, or consists only of white-space characters.</exception>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="fsm"/> is null.</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.SetProcessGroup(System.String,TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket)">
+            <summary>
+            Internally associates an FSM bucket with a specific processing group.
+            </summary>
+            <remarks>
+            This method is for internal use when re-assigning an existing FsmBucket
+            (which represents an FSM definition and its instances) to a new processing group.
+            It ensures the target processing group exists and handles the removal from the old group.
+            This assumes the bucket *already exists* in some group.
+            </remarks>
+            <param name="processGroup">The name of the target processing group.</param>
+            <param name="bucket">The <see cref="T:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket"/> to associate with the processing group.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="bucket"/> is null.</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown if the <paramref name="bucket"/>'s
+            <see cref="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket.Definition"/> is null, as a bucket must have a defined FSM name to be moved.</exception>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown if the bucket's definition name is not found in any existing processing group
+            when attempting to remove it from its old group (this indicates an internal inconsistency).</exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.TickAll(System.String)">
+            <summary>
+            The internal core method that ticks (updates) all FSM instances within a
+            specified processing group, respecting each FSM's defined process rate.
+            </summary>
+            <param name="processingGroup">The group of FSMs to tick (e.g., "Update", "FixedUpdate").</param>
+            <remarks>
+            This method iterates through all registered FSM definitions in the given
+            <paramref name="processingGroup"/>. For each definition, it checks its
+            <see cref="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal.FsmBucket.ProcessRate"/> and only ticks the instances if
+            the rate criteria are met. Instances with a <c>ProcessRate</c> of <c>0</c>
+            (event-driven) are explicitly skipped by this tick mechanism.
+            Individual FSM instance updates that throw exceptions are caught and
+            reported via <see cref="M:TheSingularityWorkshop.FSM_API.FSM_API.Error.InvokeInstanceError(TheSingularityWorkshop.FSM_API.FSMHandle,System.String,System.Exception,System.String)"/>, leading
+            to automatic removal if error thresholds are exceeded.
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetProcessingGroupTickCount(System.String)">
+            <summary>
+            Provides Internal access to a processing group's tick count
+            </summary>
+            <param name="processingGroup"></param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSM_API.Internal.GetFsmDefinition(System.String,System.String)">
+            <summary>
+            Retrieves a specific FSM definition from the internal API by its name and processing group.
+            </summary>
+            <remarks>
+            This method provides direct access to the FSM's blueprint, allowing you to inspect its
+            states and transitions. If a matching FSM definition cannot be found, the method
+            returns <c>null</c> without throwing an exception.
+            </remarks>
+            <param name="fsmName">The unique name of the FSM definition to retrieve.</param>
+            <param name="processGroup">The name of the processing group where the FSM is registered. Defaults to "Update".</param>
+            <returns>
+            The <see cref="T:TheSingularityWorkshop.FSM_API.FSM"/> definition if found; otherwise, <c>null</c>.
+            </returns>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal._deferredModifications">
+            <summary>
+            A queue of actions representing modifications to the FSM system
+            that are deferred to prevent collection modification errors during iteration.
+            </summary>
+            <remarks>
+            Operations like adding or removing FSM instances/definitions are
+            enqueued and processed at safe points in the update cycle (e.g., after all FSMs have ticked).
+            The queue itself is static and initialized, thus never null.
+            </remarks>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal._buckets">
+            <summary>
+            Stores all FSM definitions and their instances, organized by
+            their processing group (e.g., "Update", "FixedUpdate") and then by FSM name.
+            </summary>
+            <remarks>
+            This nested dictionary forms the central registry for the FSM system,
+            allowing efficient lookup and management of FSM blueprints and their live
+            manifestations. Access to this collection should be strictly confined to the single
+            designated thread where FSM updates occur. The dictionary itself is never null.
+            </remarks>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal._processingGroupTickCounts">
+            <summary>
+            for tracking the tick counts for each processing group.
+            </summary>
+        </member>
+        <member name="F:TheSingularityWorkshop.FSM_API.FSM_API.Internal._defaultFSM">
+            <summary>
+            Represents a default FSM definition for internal API operations.
+            </summary>
+            <remarks>
+            This default instance is used in scenarios where an expected FSM definition
+            is not found or is null, providing a fallback to prevent NullReferenceExceptions
+            while allowing the system to continue functioning with a safe, empty FSM.
+            </remarks>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.FSMTransition">
+            <summary>
+            This class represents a single **"transition rule"** in your FSM (Finite State Machine) blueprint.
+            Think of it as a specific pathway 🛤️ that tells your FSM how to move from one "state"
+            (like "Idle") to another "state" (like "Running").
+            </summary>
+            <remarks>
+            Each transition rule has three main parts:
+            <list type="bullet">
+                <item><term>From:</term><description>The starting state.</description></item>
+                <item><term>To:</term><description>The ending state.</description></item>
+                <item><term>Condition:</term><description>A special check that must be true for the transition to happen.</description></item>
+            </list>
+            <para>
+            While you'll often create these transitions easily using the FSMBuilder,
+            this class is made public for more advanced users who might need to
+            load FSM definitions from files or perform very specific tweaks.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMTransition.From">
+            <summary>
+            This is the **name of the state** where this transition starts.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMTransition.To">
+            <summary>
+            This is the **name of the state** where this transition leads to.
+            </summary>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.FSMTransition.Condition">
+            <summary>
+            This is the **condition** (a function that returns `true` or `false`)
+            that must be true for this transition to actually happen.
+            </summary>
+            <remarks>
+            This function receives an <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/>, which provides
+            important information about the FSM's current situation,
+            helping the condition decide if the transition should occur.
+            </remarks>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMTransition.#ctor(System.String,System.String,System.Func{TheSingularityWorkshop.FSM_API.IStateContext,System.Boolean})">
+            <summary>
+            Creates a new transition rule for your FSM blueprint.
+            </summary>
+            <remarks>
+            When you create a transition, you must tell it:
+            <list type="bullet">
+                <item><term>Where it starts (`from`):</term><description>The state you're leaving.</description></item>
+                <item><term>Where it goes (`to`):</term><description>The state you're entering.</description></item>
+                <item><term>What makes it happen (`condition`):</term><description>The rule that must be true.</description></item>
+            </list>
+            </remarks>
+            <param name="from">The name of the state this transition starts from.</param>
+            <param name="to">The name of the state this transition moves to.</param>
+            <param name="condition">The function that decides if this transition should happen.</param>
+            <exception cref="T:System.ArgumentException">
+            This happens if the `from` or `to` state names are empty or just spaces.
+            It means you haven't given valid names for the states.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            This happens if you don't provide a `condition` (it's `null`).
+            A transition always needs a rule to decide when to move.
+            </exception>
+        </member>
+        <member name="M:TheSingularityWorkshop.FSM_API.FSMTransition.ToString">
+            <summary>
+            Gives a simple text description of this transition rule.
+            </summary>
+            <returns>
+            A string that looks like "StartingState --[Condition]--> EndingState".
+            It helps you quickly see what the transition does.
+            </returns>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.IContext">
+            <summary>
+            Base interface for all fundamental context objects within The Singularity Workshop's API ecosystem.
+            <para>
+            This interface provides a common contract for any object that needs a unique name for identification,
+            debugging, or management purposes across various systems, including but not limited to Finite State Machines.
+            It serves as a foundational building block, allowing for consistent naming conventions for entities
+            that are processed, tracked, or referenced by higher-level abstractions.
+            </para>
+            <para>
+            While primarily used as the base for <see cref="T:TheSingularityWorkshop.FSM_API.IStateContext"/> within the FSM API,
+            <c>IContext</c> is designed to be more general. It lays the groundwork for future modular components
+            (e.g., "Atomic" operations, processing units, or other managed entities) that require
+            a common identity but may not necessarily involve state transitions.
+            </para>
+            </summary>
+            <remarks>
+            Implementing <c>IContext</c> ensures that an object can be easily identified and referenced
+            by name within diagnostic tools, logs, or management interfaces, promoting clarity and traceability
+            throughout your application.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.IContext.Name">
+            <summary>
+            Gets or sets the unique name of the context object.
+            This name is used for identification, debugging, logging, and potentially for grouping or lookup
+            within systems that manage collections of contexts.
+            </summary>
+            <value>A string representing the descriptive name of the context instance.</value>
+        </member>
+        <member name="T:TheSingularityWorkshop.FSM_API.IStateContext">
+            <summary>
+            Represents the "Context" or "Data Model" for an FSM instance.
+            <para>
+            **For Non-Coders/Domain Experts:**
+            Think of this as the "thing" or "object" whose behavior you want to control or describe using a Finite State Machine.
+            For example, if you're building a "Light Switch" FSM, your <c>LightSwitch</c> class would implement this interface.
+            It holds all the relevant data and properties that the FSM will read and potentially modify as it transitions between states.
+            </para>
+            <para>
+            **For Developers:**
+            Implement this interface on any Plain Old C# Object (POCO) that represents the data model
+            or entity you want an FSM to manage. This design promotes a clean separation of concerns,
+            decoupling your FSM logic from your application's core data. Your FSM definitions will
+            operate directly on instances of this context.
+            </para>
+            </summary>
+            <remarks>
+            The `IStateContext` interface ensures your custom data model is compatible with the FSM system.
+            It requires the implementation of an `IsValid` property, which the FSM uses to manage its lifecycle.
+            </remarks>
+        </member>
+        <member name="P:TheSingularityWorkshop.FSM_API.IStateContext.IsValid">
+            <summary>
+            Gets or sets a value indicating whether this context object is currently valid and active.
+            This is crucial for the FSM system to determine if an FSM instance associated with this context
+            should continue to be processed.
+            <para>
+            **For Non-Coders/Domain Experts:**
+            This property tells the FSM if the "thing" it's controlling is still relevant or active.
+            If <c>IsValid</c> becomes <c>false</c>, the FSM will stop processing this particular instance.
+            For example, if your "Light Switch" is physically removed, <c>IsValid</c> might become <c>false</c>.
+            </para>
+            <para>
+            **For Developers:**
+            Your implementation of <c>IsValid</c> should reflect the active status of the underlying object.
+            For Unity, this might involve checking if the GameObject or MonoBehaviour is still active and not destroyed.
+            For plain C# objects, this might involve checking if it has been explicitly "disposed",
+            marked as invalid, or if its dependencies are no longer available.
+            The FSM system relies on this property to prevent processing FSM instances tied to defunct contexts,
+            thereby ensuring error-tolerant FSM lifecycle management.
+            </para>
+            </summary>
+            <value><c>true</c> if the context is valid and active; otherwise, <c>false</c>.</value>
+        </member>
+    </members>
+</doc>

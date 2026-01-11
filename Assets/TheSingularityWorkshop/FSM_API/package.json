@@ -1,0 +1,55 @@
+{
+  "name": "com.thesingularityworkshop.fsmapi-advanced",
+  "version": "1.0.0",
+  "displayName": "The Singularity Workshop FSM API-Advanced",
+  "description": "A powerful, lightweight Finite State Machine API for Unity with fully adjustable game loop.",
+  "unity": "2022.3",
+  "keywords": [
+    "fsm",
+    "state machine",
+    "ai",
+    "api",
+    "advanced",
+    "scripting",
+    "The Singularity Workshop"
+  ],
+  "author": {
+    "name": "The Singularity Workshop",
+    "email": "TheSingularityWorkshop@gmail.com"
+  },
+  "dependencies": {
+    "com.trentbest.fsm_api": "https://github.com/TrentBest/FSM_API_Unity.git#v1.0.11"
+  },
+  "samples": [
+    {
+      "displayName": "Documentation",
+      "description": "The complete user guide and API documentation.",
+      "path": "Documentation~"
+    },
+    {
+      "displayName": "Simple Light Demo - Advanced",
+      "description": "A basic example of using the FSM API to toggle a light with user input for the advanced integration package.",
+      "path": "ASimpleLight~"
+    },
+    {
+      "displayName": "Simple Rotation Demo (FSM Reusability)",
+      "description": "Demonstrates defining a movement FSM once and reusing it across multiple independent game objects.",
+      "path": "SimpleRotationDemo~"
+    },
+    {
+      "displayName": "Simple Scalar Demo (FSM Reusability)",
+      "description": "Demonstrates a reusable FSM for constrained scaling along single or multiple axes.",
+      "path": "SimpleScalarDemo~"
+    },
+    {
+      "displayName": "Simple Translation Demo (FSM Reusability)",
+      "description": "Demonstrates a reusable FSM for constrained linear translation along an axis.",
+      "path": "SimpleTranslationDemo~"
+    },
+    {
+      "displayName": "Rotation/Scalar/Translation (FSM Composition)",
+      "description": "The ultimate demo: showcases multiple concurrent FSMs running simultaneously on the same object for complex motion.",
+      "path": "SimpleRotationScalarTranslationDemo~"
+    }
+  ]
+}
