@@ -1,15 +1,25 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class StudBuilder
 {
     //A stud's dimensions are based upon how it would stabilize, i.e. longest dimension along the ground plane
-    private float width;
-    private float length;
-    private float depth;
-    private BuildingMaterial studMaterial;
-    private bool vertical = false;
-    private float cutLength;
-    private static int studCount = 0;
+    private float width = 1.5f;   // Inches in spec, but your project uses feet? 
+    private float depth = 3.5f;   // Standard 2x4 is 1.5" x 3.5"
+    private float length = 8.0f;  // Standard 8ft
+    private string species = "Douglas Fir";
+    private string grade = "No. 2";
+    private List<DrillData> drillHoles = new List<DrillData>(); // CNC ready: distance from bottom
+    BuildingMaterial studMaterial;
+    public string DisplayName => $"{length}ft {species} {grade} Stud";
+    public int Dimensionality => 2;
+
+    public struct DrillData
+    {
+        public float distanceFromBottom;
+        public float holeDiameter;
+    }
 
     public StudBuilder(BuildingMaterial studMaterial, float width, float length, float depth)
     {
@@ -35,6 +45,13 @@ public class StudBuilder
         this.studMaterial = new BuildingMaterial(); //Default material
     }
 
+    public StudBuilder WithDrillHole(float distanceFromBottom, float holeDiameter)
+    {
+        //Implementation to add a drill hole
+        drillHoles.Add(new DrillData() { distanceFromBottom = distanceFromBottom, holeDiameter = holeDiameter });
+        return this;
+    }
+
     public StudBuilder WithMaterial(BuildingMaterial studMaterial)
     {
         this.studMaterial = studMaterial;
@@ -58,27 +75,11 @@ public class StudBuilder
         return this;
     }
 
-    public StudBuilder AsVertical()
-    {
-        this.vertical = true;
-        return this;
-    }
-
-    public StudBuilder AsHorizontal()
-    {
-        this.vertical = false;
-        return this;
-    }
-
-    public StudBuilder WithCut(float cutLength)
-    {
-        this.cutLength = cutLength;
-        return this;
-    }
+    
 
     public StudContext BuildStud()
     {
         //Implementation to build and return a StudContext
-        return new GameObject($"Stud{studCount++}").AddComponent<StudContext>();
+        return new GameObject($"Stud").AddComponent<StudContext>();
     }
 }
