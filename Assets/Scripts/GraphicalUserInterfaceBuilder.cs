@@ -10,7 +10,7 @@ namespace Assets.Scripts
 {
     public class GraphicalUserInterfaceBuilder : IGuiProvider
     {
-        private bool isEditorMode;
+        private bool isEditorMode = false;
         // Basic props
         private string title = string.Empty;
         private int width;
@@ -219,6 +219,70 @@ namespace Assets.Scripts
         public GraphicalUserInterfaceBuilder OnBuild(Action<VisualElement> onBuildAction)
         { if (onBuildAction != null) onBuildActions.Add(onBuildAction); return this; }
 
+
+        private Wrap flexWrap = Wrap.NoWrap;
+        public GraphicalUserInterfaceBuilder WithFlexWrap(Wrap wrap)
+        {
+            flexWrap = wrap;
+            return this;
+        }
+
+        public GraphicalUserInterfaceBuilder AddIntegerData(string label, int value, Action<int> onValueChange)
+        {
+            return AddChild(ctx => {
+                // Use this builder's specific editor mode
+                if (this.isEditorMode)
+                {
+                    var field = new IntegerField(label) { value = value };
+                    field.RegisterValueChangedCallback(evt => onValueChange?.Invoke(evt.newValue));
+                    return field;
+                }
+                // Display mode: Simple label pair
+                var container = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+                container.Add(new Label($"{label}: ") { style = { unityFontStyleAndWeight = FontStyle.Bold } });
+                container.Add(new Label(value.ToString()));
+                return container;
+            });
+        }
+
+        public GraphicalUserInterfaceBuilder AddFloatData(string label, float value, Action<float> onValueChange)
+        {
+            return AddChild(ctx => {
+                // Use this builder's specific editor mode
+                if (this.isEditorMode)
+                {
+                    var field = new FloatField(label) { value = value };
+                    field.RegisterValueChangedCallback(evt => onValueChange?.Invoke(evt.newValue));
+                    return field;
+                }
+                // Display mode: Simple label pair
+                var container = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+                container.Add(new Label($"{label}: ") { style = { unityFontStyleAndWeight = FontStyle.Bold } });
+                container.Add(new Label(value.ToString("F2")));
+                return container;
+            });
+        }
+
+        public GraphicalUserInterfaceBuilder AddStringData(string label, string value, Action<string> onValueChange)
+        {
+            return AddChild(ctx => {
+                // Use this builder's specific editor mode
+                if (this.isEditorMode)
+                {
+                    var field = new TextField(label) { value = value ?? string.Empty };
+                    field.RegisterValueChangedCallback(evt => onValueChange?.Invoke(evt.newValue));
+                    return field;
+                }
+                // Display mode: Simple label pair
+                var container = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+                container.Add(new Label($"{label}: ") { style = { unityFontStyleAndWeight = FontStyle.Bold } });
+                container.Add(new Label(value ?? string.Empty));
+                return container;
+            });
+        }
+
+
+
         public GraphicalUserInterfaceBuilder WithEditorMode(bool isEditor = false)
         {
             isEditorMode = isEditor;
@@ -314,6 +378,7 @@ namespace Assets.Scripts
                 root.style.flexDirection = flexDirection;
                 root.style.justifyContent = justifyContent;
                 root.style.alignItems = alignItems;
+                root.style.flexWrap = flexWrap;
 
                 // Apply gaps (supported in recent UI Toolkit versions)
                 //root.style.rowGap = rowGap;

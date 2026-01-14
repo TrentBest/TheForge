@@ -15,6 +15,10 @@ namespace Assets.Scripts
         private int protons = 1;
         private int electrons = 1;
         private string symbol = "H";
+        private string oxidationStates = "+2";
+        private string stateAtSTP = "Solid";
+        private string category = "Alkaline Earth Metal";
+
 
         public AtomBuilder(string name, int atomicNumber, string symbol)
         {
@@ -66,6 +70,10 @@ namespace Assets.Scripts
             return this;
         }
 
+        public AtomBuilder WithOxidationStates(string states) { this.oxidationStates = states; return this; }
+        public AtomBuilder WithStateAtSTP(string state) { this.stateAtSTP = state; return this; }
+        public AtomBuilder WithCategory(string category) { this.category = category; return this; }
+
         public Atom Build()
         {
             return new Atom(
@@ -76,7 +84,10 @@ namespace Assets.Scripts
                 electronConfiguration,
                 neutrons,
                 protons,
-                electrons
+                electrons,
+                oxidationStates,
+                                stateAtSTP,
+                                category
             );
         }
 
@@ -85,8 +96,8 @@ namespace Assets.Scripts
 
             var atomGui = new AtomBuilderGui(this);
 
-            return new GraphicalUserInterfaceBuilder("Atom Builder GUI")
-                .WithTitle("Atom Builder")
+            return new GraphicalUserInterfaceBuilder($"{symbol}_Panel")
+                //.WithTitle("Atom Builder")
                 .WithSize(480, 560)
                 .WithPadding(12)                         // set-all padding
                 .WithMargins(8)                           // set-all margin
@@ -94,7 +105,7 @@ namespace Assets.Scripts
                 .WithBorderColor(new Color(0.25f, 0.25f, 0.25f, 1f))
                 .WithBackgroundColor(new Color(0.12f, 0.12f, 0.12f, 1f))
                 .WithBorderRadius(6f)                    // uniform corner radius
-                .WithFlexLayout(FlexDirection.Column, Justify.FlexStart, Align.Stretch)
+                .WithFlexWrap(Wrap.Wrap)               // enable flex wrapping
                 .WithScrollable(true, ScrollViewMode.Vertical)
                 .AddChild(atomGui)                       // inject child builder GUI
                 .WithFooter("Use Apply to push values, then Build to preview.");

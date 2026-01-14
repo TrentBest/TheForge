@@ -1,0 +1,49 @@
+{
+    "id": "vision_audio_touch",
+    "name": "Vision + Audio + Touch Demo",
+    "description": "A simple demo containing Vision, Audio and Touch senses.",
+    "senses": [
+        {
+            "type": "Vision",
+            "provider": "DefaultVision",
+            "config": [
+                {
+                    "key": "resolution",
+                    "value": "1920x1080"
+                },
+                {
+                    "key": "ambientColor",
+                    "value": "#FFFFFF"
+                }
+            ]
+        },
+        {
+            "type": "Audio",
+            "provider": "SpatialAudio",
+            "config": [
+                {
+                    "key": "ambientClip",
+                    "value": "ambient_loop.wav"
+                },
+                {
+                    "key": "volume",
+                    "value": "0.8"
+                }
+            ]
+        },
+        {
+            "type": "Touch",
+            "provider": "HapticsV1",
+            "config": [
+                {
+                    "key": "pattern",
+                    "value": "gentle_pulse"
+                },
+                {
+                    "key": "intensity",
+                    "value": "0.7"
+                }
+            ]
+        }
+    ]
+}
