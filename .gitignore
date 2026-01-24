@@ -12,6 +12,11 @@
 /[Uu]ser[Ss]ettings/
 *.log
 
+# Ignore Canopus Asset Packs (Keep local, do not push)
+# Ignores the folders
+Assets/Canopus*
+# Ignores the meta files for those folders
+Canopus*.meta
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
 *.blend1.meta

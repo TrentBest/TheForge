@@ -2,8 +2,6 @@
     "EnterMethodNames": [
         "TestInit"
     ],
-    "UpdateMethodNames": [
-        "Woot"
-    ],
+    "UpdateMethodNames": [],
     "ExitMethodNames": []
 }
