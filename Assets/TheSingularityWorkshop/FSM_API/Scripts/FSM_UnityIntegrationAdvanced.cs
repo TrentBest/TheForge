@@ -55,14 +55,14 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
 
         // Public setters to allow external (e.g., test) configuration of group names.
         public void SetUpdateProcessingGroup(string processingGroup = "Update") { _updateProcessingGroup[0] = processingGroup; }
-        public void SetAwakeProcessingGroup(string processingGroup = "Awake") { _awakeProcessingGroup[0] =processingGroup; }
+        public void SetAwakeProcessingGroup(string processingGroup = "Awake") { _awakeProcessingGroup[0] = processingGroup; }
         public void SetFixedUpdateProcessingGroup(string processingGroup = "FixedUpdate") { _fixedUpdateProcessingGroup[0] = processingGroup; }
         public void SetLateUpdateProcessingGroup(string processingGroup = "LateUpdate") { _lateUpdateProcessingGroup[0] = processingGroup; }
         public void SetStartProcessingGroup(string processingGroup = "Start") { _startProcessingGroup[0] = processingGroup; }
 
         public void SetOnGUIProcessingGroup(string processingGroup = "OnGUI") { _onGUI_ProcessingGroup[0] = processingGroup; }
         public void SetOnDrawGizmosProcessingGroup(string processingGroup = "OnDrawGizmos") { _onDrawGizmosProcessingGroup[0] = processingGroup; }
-       
+
         public void AddProcessingGroup(string unityMessage = "Update", string processingGroup = "Update")
         {
             switch (unityMessage)
@@ -124,6 +124,37 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
                     Debug.LogWarning($"FSM_UnityIntegrationAdvanced: Unknown Unity message '{unityMessage}' in RemoveProcessingGroup.");
                     break;
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>Added in V1.0.14</remarks>
+        /// <param name="unityMessage"></param>
+        /// <returns></returns>
+        public List<string> GetProcessingGroupsForUnityMessage(string unityMessage = "Update")
+        {
+            switch (unityMessage)
+            {
+                case "Update":
+                    return _updateProcessingGroup;
+                case "Start":
+                    return _startProcessingGroup;
+                case "Awake":
+                    return _awakeProcessingGroup;
+
+                case "FixedUpdate":
+                    return _fixedUpdateProcessingGroup;
+
+                case "LateUpdate":
+                    return _lateUpdateProcessingGroup;
+
+                case "OnGUI":
+                    return _onGUI_ProcessingGroup;
+                case "OnDrawGizmos":
+                    return _onDrawGizmosProcessingGroup;
+            }
+            return new List<string>();
         }
 
 
@@ -273,7 +304,7 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
 
         private void OnGUI()
         {
-           foreach (var group in _onGUI_ProcessingGroup)
+            foreach (var group in _onGUI_ProcessingGroup)
             {
                 FSM_API.Interaction.Update(group);
             }
@@ -282,7 +313,7 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
 
         private void OnDrawGizmos()
         {
-           foreach (var group in _onDrawGizmosProcessingGroup)
+            foreach (var group in _onDrawGizmosProcessingGroup)
             {
                 FSM_API.Interaction.Update(group);
             }
