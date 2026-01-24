@@ -1,0 +1,9 @@
+{
+    "EnterMethodNames": [
+        "TestInit"
+    ],
+    "UpdateMethodNames": [
+        "Woot"
+    ],
+    "ExitMethodNames": []
+}
