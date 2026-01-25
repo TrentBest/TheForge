@@ -12,8 +12,8 @@ namespace Assets.Scripts.Builders.GuiBuilders
         private bool isEditorMode = false;
         // Basic props
         private string title = string.Empty;
-        private int width;
-        private int height;
+        private int width = 0;
+        private int height = 0;
 
         // Padding
         private int paddingAll = 0;
@@ -230,7 +230,8 @@ namespace Assets.Scripts.Builders.GuiBuilders
 
         public GraphicalUserInterfaceBuilder AddIntegerData(string label, int value, Action<int> onValueChange)
         {
-            return AddChild(ctx => {
+            return AddChild(ctx =>
+            {
                 // Use this builder's specific editor mode
                 if (this.isEditorMode)
                 {
@@ -248,7 +249,8 @@ namespace Assets.Scripts.Builders.GuiBuilders
 
         public GraphicalUserInterfaceBuilder AddFloatData(string label, float value, Action<float> onValueChange)
         {
-            return AddChild(ctx => {
+            return AddChild(ctx =>
+            {
                 // Use this builder's specific editor mode
                 if (this.isEditorMode)
                 {
@@ -266,7 +268,8 @@ namespace Assets.Scripts.Builders.GuiBuilders
 
         public GraphicalUserInterfaceBuilder AddStringData(string label, string value, Action<string> onValueChange)
         {
-            return AddChild(ctx => {
+            return AddChild(ctx =>
+            {
                 // Use this builder's specific editor mode
                 if (this.isEditorMode)
                 {
@@ -363,7 +366,7 @@ namespace Assets.Scripts.Builders.GuiBuilders
                 root.style.flexWrap = flexWrap;
 
 
-          
+
                 if (percentWidth > 0f) root.style.width = new Length(percentWidth, LengthUnit.Percent);
                 else if (width > 0) root.style.width = width;
                 else root.style.width = StyleKeyword.Auto;
