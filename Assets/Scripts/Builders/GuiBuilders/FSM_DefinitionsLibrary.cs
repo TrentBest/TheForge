@@ -14,6 +14,8 @@ namespace Assets.Scripts
         private static Dictionary<string, Action<IStateContext>> _enterRegistry = new();
         private static Dictionary<string, Action<IStateContext>> _updateRegistry = new();
         private static Dictionary<string, Action<IStateContext>> _exitRegistry = new();
+        private static Dictionary<string, > _stateRegistry = new();
+
 
         // --- Serialization Data (Manifest) ---
         // We only save the NAMES to disk.
@@ -104,5 +106,15 @@ namespace Assets.Scripts
         public static void BindEnterAction(string name, Action<IStateContext> action) => _enterRegistry[name] = action;
         public static void BindUpdateAction(string name, Action<IStateContext> action) => _updateRegistry[name] = action;
         public static void BindExitAction(string name, Action<IStateContext> action) => _exitRegistry[name] = action;
+
+        public static StateDefinition GetStates()
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void AddState(StateDefinition selectedState)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

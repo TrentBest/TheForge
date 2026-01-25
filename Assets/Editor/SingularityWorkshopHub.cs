@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using Assets.Scripts;
 using Assets.Scripts.Builders.GuiBuilders;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TheSingularityWorkshop.FSM_API;
@@ -39,18 +40,59 @@ public class SingularityWorkshopHub : EditorWindow
     {
         rootVisualElement.Clear();
 
-        // 1. Root Layout
-        var builder = new GraphicalUserInterfaceBuilder("HubRoot")
+        var hubLayout = new GraphicalUserInterfaceBuilder("HubRoot")
             .WithFlexLayout(FlexDirection.Column, Justify.FlexStart, Align.Stretch)
             .WithAutoGrow()
-            .WithBackgroundColor(new Color(0.12f, 0.12f, 0.12f));
+            .WithBackgroundColor(new Color(0.12f, 0.12f, 0.12f))
+            .AddChild(CreateTopTabs())        // Step 1: Horizontal Navigation
+            .AddChild(CreateHeaderBranding()) // Step 2: Metrics & Logo
+            .AddChild(CreateMainViewport());  // Step 3: Tab Content
 
-        // 2. Header (Metrics & Branding)
-        builder.WithPanel("Header")
+        rootVisualElement.Add(hubLayout.Build());
+    }
+
+    private IGuiProvider CreateMainViewport()
+    {
+        return new GraphicalUserInterfaceBuilder("ViewportContainer")
+         .WithFlexLayout(FlexDirection.Column, Justify.FlexStart, Align.Stretch)
+         .WithAutoGrow() // Ensures it pushes to the bottom of the window
+         .AddChild(ctx =>
+         {
+             // We initialize the viewport reference so RenderActiveTab can find it
+             _contentViewport = new VisualElement
+             {
+                 name = "Viewport",
+                 style = { flexGrow = 1 }
+             };
+
+             // Immediately fill it with the current tab's GUI
+             RenderActiveTab();
+
+             return _contentViewport;
+         });
+    }
+
+    private IGuiProvider CreateTopTabs()
+    {
+        var navBar = new GraphicalUserInterfaceBuilder("TopTabs")
+        .WithBackgroundColor(new Color(0.2f, 0.2f, 0.2f))
+        .WithFlexLayout(FlexDirection.Row, Justify.FlexStart, Align.Stretch)
+        .WithBorderBottomWidth(1)
+        .WithBorderColor(Color.black);
+
+        foreach (var tab in _tabs)
+        {
+            navBar.AddChild(ctx => CreateTabButton(tab));
+        }
+
+        return navBar;
+    }
+
+    private IGuiProvider CreateHeaderBranding()
+    {
+        return new GraphicalUserInterfaceBuilder("Header")
             .WithBackgroundColor(new Color(0.08f, 0.08f, 0.08f))
             .WithPadding(10)
-            .WithBorderBottomWidth(2)
-            .WithBorderBottomColor(new Color(0f, 0.7f, 1f)) // Cyan brand color
             .WithFlexLayout(FlexDirection.Row, Justify.SpaceBetween, Align.Center)
             .AddChild(new Label("THE SINGULARITY WORKSHOP")
             {
@@ -61,33 +103,9 @@ public class SingularityWorkshopHub : EditorWindow
                 stats.Add(CreateHeaderStat("FSMs", FSM_API.Internal.TotalFsmDefinitionCount));
                 stats.Add(CreateHeaderStat("Handles", FSM_API.Internal.TotalFsmHandleCount));
                 return stats;
-            })
-            .ContinueWithParentPanel();
-
-        // 3. Tab Navigation Bar (FORCED ROW LAYOUT)
-        builder.WithPanel("NavBar")
-            .WithBackgroundColor(new Color(0.2f, 0.2f, 0.2f))
-            .WithFlexLayout(FlexDirection.Row, Justify.FlexStart, Align.Stretch) // <--- Horizontal Row
-            .WithBorderBottomWidth(1)
-            .WithBorderColor(Color.black);
-
-        // Dynamically create a button for each builder
-        foreach (var tab in _tabs)
-        {
-            builder.AddChild(ctx => CreateTabButton(tab));
-        }
-        builder.ContinueWithParentPanel();
-
-        // 4. Main Content Body
-        builder.AddChild(ctx =>
-        {
-            _contentViewport = new VisualElement { name = "Viewport", style = { flexGrow = 1 } };
-            RenderActiveTab();
-            return _contentViewport;
-        });
-
-        rootVisualElement.Add(builder.Build());
+            });
     }
+
 
     private void RenderActiveTab()
     {

@@ -1,7 +1,12 @@
 {
     "EnterMethodNames": [
-        "TestInit"
+        "TestInit",
+        "Another",
+        "YetAnother",
+        "More"
     ],
-    "UpdateMethodNames": [],
+    "UpdateMethodNames": [
+        "TestUpdate"
+    ],
     "ExitMethodNames": []
 }
