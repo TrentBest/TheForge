@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.MicroPackages.Providers;
+using System.Collections.Generic;
 
 namespace Assets.Scripts.MicroPackages
 {
@@ -24,6 +25,9 @@ namespace Assets.Scripts.MicroPackages
         }
 
         void SubmitArbitration(Arbitration arbitration);
+        void None();
+        void AddProvider(IProvider fsmStateConditionProvider);
+        void LoadPackage(string physicalPackageId);
         //MetaDevData GetAggregatedMetaDev();
     }
 }
