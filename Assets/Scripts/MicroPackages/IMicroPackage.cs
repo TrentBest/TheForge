@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Assets.Scripts.MicroPackages
 {
-    interface IMicroPackage
+    public interface IMicroPackage
     {
         Dictionary<string, List<string>> ProcessGroupsPerUnityMessage { get; }
 

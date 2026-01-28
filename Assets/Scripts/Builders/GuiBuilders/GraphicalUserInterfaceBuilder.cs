@@ -347,6 +347,39 @@ namespace Assets.Scripts.Builders.GuiBuilders
         // ---------- Build ----------
         public VisualElement Build() => CreateGui(new GuiContext());
 
+
+        public GraphicalUserInterfaceBuilder AddSliderData(string label, float min, float max, float current, Action<float> onValueChange)
+        {
+            return AddChild(ctx =>
+            {
+                if (this.isEditorMode)
+                {
+                    var slider = new Slider(label, min, max) { value = current };
+                    slider.RegisterValueChangedCallback(evt => onValueChange?.Invoke(evt.newValue));
+                    return slider;
+                }
+                // Simulation/Display mode
+                var container = new VisualElement { style = { flexDirection = FlexDirection.Row, justifyContent = Justify.SpaceBetween } };
+                container.Add(new Label(label));
+                container.Add(new Label(current.ToString("F1")));
+                return container;
+            });
+        }
+
+        public GraphicalUserInterfaceBuilder AddIntSliderData(string label, int min, int max, int current, Action<int> onValueChange)
+        {
+            return AddChild(ctx =>
+            {
+                if (this.isEditorMode)
+                {
+                    var slider = new SliderInt(label, min, max) { value = current };
+                    slider.RegisterValueChangedCallback(evt => onValueChange?.Invoke(evt.newValue));
+                    return slider;
+                }
+                return new Label($"{label}: {current}");
+            });
+        }
+
         public VisualElement CreateGui(GuiContext context)
         {
             VisualElement root;

@@ -9,144 +9,147 @@ namespace Assets.Scripts.Builders.GuiBuilders
     public class StateMethodsCrudTabBuilder : IHubTabBuilder
     {
         public string TabName => "Method Registry";
-        public string TabIcon => "ƒ"; // Mathematical function symbol
+        public string TabIcon => "ƒ";
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            // Ensure data is loaded
             FSM_DefinitionsLibrary.LoadRegistry();
 
             var root = new GraphicalUserInterfaceBuilder("MethodsRoot")
                 .WithFlexLayout(FlexDirection.Row, Justify.SpaceBetween, Align.Stretch)
-                .WithAutoGrow()
                 .WithPadding(5);
 
-            // Column 1: OnEnter
-            root.AddChild(BuildMethodColumn(
-                "On Enter (Initialization)",
-                new Color(0.2f, 0.4f, 0.2f), // Greenish header
-                FSM_DefinitionsLibrary.GetEnterMethods,
-                FSM_DefinitionsLibrary.AddEnterMethod,
-                FSM_DefinitionsLibrary.RemoveEnterMethod,
-                ctx
-            ));
+            // Columns use flexGrow 1 and flexBasis 0 via BuildMethodColumn internal layout
+            root.AddChild(BuildMethodColumn("On Enter", new Color(0.2f, 0.4f, 0.2f),
+                FSM_DefinitionsLibrary.GetEnterMethods, FSM_DefinitionsLibrary.AddEnterMethod, FSM_DefinitionsLibrary.RemoveEnterMethod, ctx));
 
-            // Column 2: OnUpdate
-            root.AddChild(BuildMethodColumn(
-                "On Update (Execution)",
-                new Color(0.2f, 0.2f, 0.5f), // Blueish header
-                FSM_DefinitionsLibrary.GetUpdateMethods,
-                FSM_DefinitionsLibrary.AddUpdateMethod,
-                FSM_DefinitionsLibrary.RemoveUpdateMethod,
-                ctx
-            ));
+            root.AddChild(BuildMethodColumn("On Update", new Color(0.2f, 0.2f, 0.5f),
+                FSM_DefinitionsLibrary.GetUpdateMethods, FSM_DefinitionsLibrary.AddUpdateMethod, FSM_DefinitionsLibrary.RemoveUpdateMethod, ctx));
 
-            // Column 3: OnExit
-            root.AddChild(BuildMethodColumn(
-                "On Exit (Cleanup)",
-                new Color(0.5f, 0.2f, 0.2f), // Reddish header
-                FSM_DefinitionsLibrary.GetExitMethods,
-                FSM_DefinitionsLibrary.AddExitMethod,
-                FSM_DefinitionsLibrary.RemoveExitMethod,
-                ctx
-            ));
+            root.AddChild(BuildMethodColumn("On Exit", new Color(0.5f, 0.2f, 0.2f),
+                FSM_DefinitionsLibrary.GetExitMethods, FSM_DefinitionsLibrary.AddExitMethod, FSM_DefinitionsLibrary.RemoveExitMethod, ctx));
 
             return root.Build();
         }
 
-        // Generic Column Builder to avoid code duplication
-        private IGuiProvider BuildMethodColumn(
-            string title,
-            Color headerColor,
-            System.Func<List<string>> getList,
-            System.Action<string> onAdd,
-            System.Action<string> onRemove,
-            GuiContext ctx)
+        private IGuiProvider BuildMethodColumn(string title, Color headerColor, System.Func<List<string>> getList,
+            System.Action<string> onAdd, System.Action<string> onRemove, GuiContext ctx)
         {
-            return new GraphicalUserInterfaceBuilder(title.Replace(" ", "") + "Col")
-                
-                
+            var colBuilder = new GraphicalUserInterfaceBuilder(title.Replace(" ", "") + "Col")
                 .WithBackgroundColor(new Color(0.18f, 0.18f, 0.18f))
                 .WithBorderRadius(5)
                 .WithBorderWidth(1)
-                .WithBorderColor(new Color(0.1f, 0.1f, 0.1f))
+                .WithBorderColor(new Color(0.1f, 0.1f, 0.1f));
+               
 
-                // Header
-                .AddChild(new Label(title)
-                {
-                    style = {
-                        fontSize = 14,
-                        unityFontStyleAndWeight = FontStyle.Bold,
-                        
-                        backgroundColor = headerColor,
-                        color = Color.white,
-                        borderTopLeftRadius = 5,
-                        borderTopRightRadius = 5
+            // Force equal column width
+            colBuilder.OnBuild(el => { el.style.flexGrow = 1; el.style.flexBasis = 0; });
+
+            // 1. Header (Pinned)
+            colBuilder.AddChild(new Label(title)
+            {
+                style = {
+                    fontSize = 14, unityFontStyleAndWeight = FontStyle.Bold,
+                    backgroundColor = headerColor, color = Color.white,
+                    paddingLeft = 5, borderTopLeftRadius = 5, borderTopRightRadius = 5
+                }
+            });
+
+            // 2. Add New Input Area (Pinned)
+            colBuilder.AddChild(c => {
+                var row = new VisualElement { style = { flexDirection = FlexDirection.Row, paddingBottom = 5, borderBottomWidth = 1, borderBottomColor = Color.gray } };
+                var input = new TextField { value = "Behavior Name", style = { flexGrow = 1, marginRight = 5 } };
+
+                // Select all text on focus for easy replacement
+                input.RegisterCallback<FocusInEvent>(evt => input.SelectAll());
+
+                var addBtn = new Button(() => {
+                    if (!string.IsNullOrWhiteSpace(input.value) && input.value != "Behavior Name")
+                    {
+                        onAdd(input.value);
+                        ctx.OnBuilt?.Invoke(CreateGui(ctx));
                     }
                 })
+                { text = "+" };
 
-                // Add New Input Field
-                .AddChild(c =>
+                row.Add(input);
+                row.Add(addBtn);
+                return row;
+            });
+
+            // 3. Scrollable List
+            colBuilder.AddChild(c => {
+                var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
+                var items = getList();
+
+                foreach (var item in items)
                 {
-                    var row = new VisualElement { style = { flexDirection = FlexDirection.Row,  borderBottomWidth = 1, borderBottomColor = Color.gray } };
-                    var input = new TextField { style = { flexGrow = 1, marginRight = 5 } };
-                    var addBtn = new Button(() =>
+                    var row = new VisualElement
                     {
-                        if (!string.IsNullOrWhiteSpace(input.value))
+                        style = {
+            flexDirection = FlexDirection.Row,
+            backgroundColor = new Color(0, 0, 0, 0.2f),
+            marginBottom = 2, paddingLeft = 4, minHeight = 25
+        }
+                    };
+
+                    // 1. The Method Name Label
+                    var nameLabel = new Label(item)
+                    {
+                        style = { flexGrow = 0, width = 120, unityTextAlign = TextAnchor.MiddleLeft, unityFontStyleAndWeight = FontStyle.Bold }
+                    };
+                    row.Add(nameLabel);
+
+                    // 2. The Path/Status Label (The new part!)
+                    string currentPath = FSM_DefinitionsLibrary.GetDllPath(item);
+                    bool isMapped = !string.IsNullOrEmpty(currentPath);
+
+                    var pathLabel = new Label(isMapped ? System.IO.Path.GetFileName(currentPath) : "Unmapped")
+                    {
+                        style = {
+            flexGrow = 1,
+            fontSize = 10,
+            opacity = 0.6f,
+            unityTextAlign = TextAnchor.MiddleLeft,
+            color = isMapped ? Color.green : Color.gray
+        }
+                    };
+                    row.Add(pathLabel);
+
+                    // 3. DLL Bind Button
+                    Button bindBtn = null;
+                    bindBtn = new Button(() => {
+                        string path = EditorUtility.OpenFilePanel("Select Behavior DLL", "", "dll");
+                        if (!string.IsNullOrEmpty(path))
                         {
-                            onAdd(input.value);
-                            input.value = "";
-                            ctx.OnBuilt?.Invoke(CreateGui(ctx)); // Trigger Refresh
+                            FSM_DefinitionsLibrary.SetDllPath(item, path);
+                            bindBtn.style.backgroundColor = Color.green;
+                            pathLabel.text = System.IO.Path.GetFileName(path);
+                            pathLabel.style.color = Color.green;
                         }
                     })
-                    { text = "+" };
-
-                    row.Add(input);
-                    row.Add(addBtn);
-                    return row;
-                })
-
-                // Scrolling List
-                .AddChild(c =>
-                {
-                    var listContainer = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1, } };
-                    var items = getList();
-
-                    if (items.Count == 0)
                     {
-                        listContainer.Add(new Label("No methods defined.") { style = { opacity = 0.5f, unityFontStyleAndWeight = FontStyle.Italic } });
-                    }
-                    else
-                    {
-                        foreach (var item in items)
-                        {
-                            var row = new VisualElement
-                            {
-                                style = {
-                                    flexDirection = FlexDirection.Row,
-                                    justifyContent = Justify.SpaceBetween,
-                                    backgroundColor = new Color(0,0,0,0.2f),
-                                    marginBottom = 2,
-                                    
-                                    alignItems = Align.Center
-                                }
-                            };
+                        text = "🔗",
+                        style = {
+            backgroundColor = isMapped ? Color.green : Color.red,
+            marginRight = 2, width = 25
+        }
+                    };
+                    row.Add(bindBtn);
 
-                            row.Add(new Label(item));
+                    // 4. Delete Button
+                    row.Add(new Button(() => {
+                        onRemove(item);
+                        ctx.OnBuilt?.Invoke(CreateGui(ctx));
+                    })
+                    { text = "x", style = { color = Color.red, backgroundColor = Color.clear } });
 
-                            var delBtn = new Button(() =>
-                            {
-                                onRemove(item);
-                                ctx.OnBuilt?.Invoke(CreateGui(ctx));
-                            })
-                            { text = "x", style = { color = new Color(1f, 0.4f, 0.4f), backgroundColor = Color.clear,  } };
+                    scroll.Add(row);
+                }
+                return scroll;
+            });
 
-                            row.Add(delBtn);
-                            listContainer.Add(row);
-                        }
-                    }
-                    return listContainer;
-                });
+            return colBuilder;
         }
     }
 }
