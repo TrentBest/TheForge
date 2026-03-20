@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
-using Assets.Scripts;
-using Assets.Scripts.Builders.GuiBuilders;
+using TheSingularityWorkshop;
+using TheSingularityWorkshop.Builders.GuiBuilders;
+
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +17,7 @@ namespace TheSingularityWorkshop.FSM_API.Editor
 {
     public class FSMBuilderEditorWindow : EditorWindow
     {
-        [MenuItem("Tools/The Singularity Workshop/FSM Builder")]
+        [MenuItem("TheSingularityWorkshop/FSMs/FSM Builder")]
         public static void ShowWindow()
         {
             var wnd = GetWindow<FSMBuilderEditorWindow>();
@@ -109,7 +111,7 @@ namespace TheSingularityWorkshop.FSM_API.Editor
             var row = new VisualElement { style = { flexDirection = FlexDirection.Row, marginBottom = 2 } };
             var fromField = new TextField { value = from, style = { width = 100 } };
             var toField = new TextField { value = to, style = { width = 100 } };
-            var condField = new TextField { value = condition, style = { flexGrow = 1 }, tooltip = "Lambda condition (context) => ..." };
+            var condField = new TextField { value = condition, style = { flexGrow = 1 }, tooltip = "Lambda condition (context) => .." };
             var removeBtn = new Button(() => { _transitionsContainer.Remove(row); _transitionEntries.RemoveAll(x => x.Root == row); }) { text = "X" };
 
             row.Add(new Label("From:")); row.Add(fromField);
@@ -124,7 +126,7 @@ namespace TheSingularityWorkshop.FSM_API.Editor
         private void ExecuteBuild()
         {
             // This mirrors the internal logic of FSMBuilder.BuildDefinition
-            Debug.Log($"Building FSM: {_fsmNameField.value}...");
+            Debug.Log($"Building FSM: {_fsmNameField.value}..");
 
             // In a real implementation, you would use Reflection or a Dynamic Script Engine 
             // to compile the string snippets into Action<IStateContext> and Func<IStateContext, bool>.

@@ -15,7 +15,7 @@ using Unity.Services.CloudSave;
 
 /// <summary>
 /// A comprehensive Unity Services lifecycle wrapper that exposes service initialization,
-/// authentication, health checks, and graceful shutdown through the project's FSM_API.
+/// authentication, health checks, and graceful shutdown through the project's FSM_API.FSM_API.
 /// Designed to be feature-rich but opt-in: actual Unity Services calls are compiled only
 /// when the symbol UNITY_SERVICES_AVAILABLE is defined (add it when you install the Unity Services packages).
 /// </summary>

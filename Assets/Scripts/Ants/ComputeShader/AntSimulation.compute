@@ -1,0 +1,76 @@
+#pragma kernel CSMain
+
+// The 2D texture holding our simulation state.
+// FSM State ID is packed into the R channel (range 0.0 to 1.0)
+RWTexture2D<float4> _SimTexture;
+
+// Defines shared with C# (Must match AntStates.cs)
+#define EMPTY_AIR 0.0
+#define SAND_DIRT 0.00392 // 1 / 255.0
+#define ANT_WANDERING 0.00784 // 2 / 255.0
+#define ANT_DIGGING 0.01176 // 3 / 255.0
+#define ANT_FALLING 0.01569 // 4 / 255.0
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    float4 currentCell = _SimTexture[id.xy];
+    float currentState = currentCell.r;
+
+    // --- LOGIC LOOP ---
+    // The FSM definition is translated into these rules per pixel
+
+    // If it's a wandering ant
+    if (abs(currentState - ANT_WANDERING) < 0.001)
+    {
+        // 1. GRAVITY: If air is directly below, transition to falling and move down
+        float4 cellBelow = _SimTexture[id.xy + int2(0, -1)];
+        if (abs(cellBelow.r - EMPTY_AIR) < 0.001)
+        {
+            // Transition to falling (4/255.0) and move
+            currentCell.r = ANT_FALLING;
+            _SimTexture[id.xy] = _SimTexture[id.xy + int2(0, -1)]; // Empty current position
+            _SimTexture[id.xy + int2(0, -1)] = currentCell; // Move downwards
+            return;
+        }
+
+        // 2. WANDERING: Randomly try to move left, right, or diagonal-up
+        // (Simplified for performance, use a real pseudo-random generator here for better results)
+        float randValue = frac(sin(dot(id.xy, float2(12.9898, 78.233))) * 43758.5453);
+        int dx = (randValue < 0.33) ? -1 : (randValue < 0.66) ? 0 : 1;
+        int dy = (randValue < 0.5) ? 0 : 1; // Preference to move horizontally or up
+
+        int2 targetPos = id.xy + int2(dx, dy);
+        float4 targetCell = _SimTexture[targetPos];
+
+        // If target is empty air, move there
+        if (abs(targetCell.r - EMPTY_AIR) < 0.001)
+        {
+            _SimTexture[targetPos] = currentCell;
+            _SimTexture[id.xy] = targetCell; // Empty old spot
+            return;
+        }
+
+        // 3. DIGGING: If target is sand, chance to dig
+        if (abs(targetCell.r - SAND_DIRT) < 0.001 && randValue > 0.8) // 20% chance to dig sand
+        {
+            targetCell.r = ANT_DIGGING; // Visually show digging
+            _SimTexture[targetPos] = targetCell;
+             // Ant stays in place but "digs" neighboring cell
+            return;
+        }
+    }
+
+    // If it's a digging ant
+    if (abs(currentState - ANT_DIGGING) < 0.001)
+    {
+        float randValue = frac(sin(dot(id.xy, float2(12.9898, 78.233))) * 43758.5453);
+
+        // Turn the sand into air
+        currentCell.r = EMPTY_AIR;
+        _SimTexture[id.xy] = currentCell;
+
+        // Optionally, transition back to wandering (this cell becomes air, ant needs to move elsewhere)
+        return;
+    }
+}

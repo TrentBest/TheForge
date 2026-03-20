@@ -1,10 +1,10 @@
-﻿using Assets.Scripts.Builders.GuiBuilders;
+﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
     public class AtomBuilder
     {
@@ -20,6 +20,12 @@ namespace Assets.Scripts
         private string stateAtSTP = "Solid";
         private string category = "Alkaline Earth Metal";
 
+        public AtomBuilder()
+        {
+            name = "Hydrogen";
+            atomicNumber = 1;
+            symbol = "H";
+        }
 
         public AtomBuilder(string name, int atomicNumber, string symbol)
         {

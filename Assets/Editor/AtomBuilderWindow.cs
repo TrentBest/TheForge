@@ -5,11 +5,11 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
     public class AtomBuilderWindow : EditorWindow
     {
-        [MenuItem("Tools/Builders/Atom Builder")]
+        [MenuItem("TheSingularityWorkshop/NonSupported/Tools/Builders/Atom Builder")]
         public static void ShowWindow()
         {
             var wnd = GetWindow<AtomBuilderWindow>();

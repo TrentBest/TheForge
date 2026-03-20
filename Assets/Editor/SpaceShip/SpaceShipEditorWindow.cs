@@ -1,7 +1,9 @@
 ﻿#if UNITY_EDITOR
-using Assets.Scripts;
-using Assets.Scripts.Builders.GuiBuilders;
-using Assets.Scripts.Builders.GuiBuilders.PanelBuilders;
+using TheSingularityWorkshop;
+using TheSingularityWorkshop.Builders.GuiBuilders;
+
+
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,7 @@ using UnityEngine.UIElements;
 
 public class SpaceShipEditorWindow : EditorWindow
 {
-    [MenuItem("SS/Space Ship Editor Window", false, 0)]
+    [MenuItem("TheSingularityWorkshop/NonSupported/Space Ship Editor Window", false, 0)]
     public static void ShowWindow() => GetWindow<SpaceShipEditorWindow>("SS Terminal");
 
     private readonly List<IShipTabBuilder> _tabs = new List<IShipTabBuilder>

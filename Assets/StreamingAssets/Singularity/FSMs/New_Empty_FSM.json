@@ -1,0 +1,9 @@
+{
+    "Name": "New_Empty_FSM",
+    "Group": "Update",
+    "Rate": 1,
+    "InitialState": "",
+    "LibraryPath": "",
+    "StateNames": [],
+    "Transitions": []
+}

@@ -1,0 +1,1 @@
+﻿public enum FactionAllegiance { Blue, Green, Red }

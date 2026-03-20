@@ -1,5 +1,5 @@
-﻿using Assets.Scripts;
-using Assets.Scripts.Builders.GuiBuilders;
+﻿using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,6 +10,8 @@ public class SecurityLockBuilder : IGuiProvider
     private string _inputBuffer = "";
     private string _correctCode = "1234"; // Default code
     public Action OnUnlocked;
+
+    public string Title => "Lock Creator";
 
     public SecurityLockBuilder(string name, string code = "1234")
     {
@@ -86,5 +88,20 @@ public class SecurityLockBuilder : IGuiProvider
             _inputBuffer += input;
         }
         // In a real editor window, you'd trigger a Refresh() here.
+    }
+
+    public Action<VisualElement> GetGuiBuilder()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ToUIDocument(string assetPath)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void FromUIDocument(string assetPath)
+    {
+        throw new NotImplementedException();
     }
 }

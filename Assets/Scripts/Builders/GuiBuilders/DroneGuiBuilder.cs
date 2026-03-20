@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
-using Assets.Scripts; // For IGuiProvider, GuiContext
-using Assets.Scripts.Builders; // For DroneBuilder
+using TheSingularityWorkshop.Builders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using System;
 
-namespace Assets.Scripts.Builders.GuiBuilders
+namespace TheSingularityWorkshop.Builders.GuiBuilders
 {
     public class DroneGuiBuilder : IGuiProvider
     {
@@ -13,6 +14,8 @@ namespace Assets.Scripts.Builders.GuiBuilders
         {
             this.builder = builder;
         }
+
+        public string Title => "Drone Swarm";
 
         public VisualElement CreateGui(GuiContext ctx)
         {
@@ -52,6 +55,21 @@ namespace Assets.Scripts.Builders.GuiBuilders
             root.Add(buildBtn);
 
             return root;
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Action<VisualElement> GetGuiBuilder()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ToUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
         }
 
         private VisualElement RenderMotor(MotorBuilder motorBuilder, GuiContext ctx)

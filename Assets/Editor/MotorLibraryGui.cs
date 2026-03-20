@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Assets.Scripts.Libraries;
-using Assets.Scripts.Builders; // For MotorBuilder
-using Assets.Scripts.Builders.GuiBuilders; // For MotorGuiBuilder
+using TheSingularityWorkshop.Libraries;
+using TheSingularityWorkshop.Builders; // For MotorBuilder
+using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 
-namespace Assets.Scripts.Editors
+namespace TheSingularityWorkshop.Editors
 {
     public class MotorLibraryGui : IGuiProvider
     {
@@ -13,6 +14,8 @@ namespace Assets.Scripts.Editors
         private string selectedKey; // Tracks the dictionary key (to handle renaming)
         private VisualElement rightPane;
         private VisualElement listContainer;
+
+        public string Title => "Motor Library";
 
         public VisualElement CreateGui(GuiContext ctx)
         {
@@ -137,6 +140,21 @@ namespace Assets.Scripts.Editors
 
                 listContainer.Add(btn);
             }
+        }
+
+        public System.Action<VisualElement> GetGuiBuilder()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void ToUIDocument(string assetPath)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

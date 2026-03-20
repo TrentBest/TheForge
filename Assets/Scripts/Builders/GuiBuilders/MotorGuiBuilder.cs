@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
-using Assets.Scripts; // For IGuiProvider, GuiContext
-using Assets.Scripts.Builders; // For MotorBuilder
+using TheSingularityWorkshop.Builders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using System;
 
-namespace Assets.Scripts.Builders.GuiBuilders
+namespace TheSingularityWorkshop.Builders.GuiBuilders
 {
     public class MotorGuiBuilder : IGuiProvider
     {
@@ -13,6 +14,8 @@ namespace Assets.Scripts.Builders.GuiBuilders
         {
             this.builder = builder;
         }
+
+        public string Title { get; set; } = "Motor Properties";
 
         public VisualElement CreateGui(GuiContext ctx)
         {
@@ -33,6 +36,21 @@ namespace Assets.Scripts.Builders.GuiBuilders
             root.Add(thrustField);
 
             return root;
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Action<VisualElement> GetGuiBuilder()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ToUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
         }
     }
 }

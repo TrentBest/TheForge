@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Assets.Scripts.Builders;
+using TheSingularityWorkshop.Builders;
 
-namespace Assets.Scripts.Libraries
+namespace TheSingularityWorkshop.Libraries
 {
     public static class BlueprintLibrary
     {

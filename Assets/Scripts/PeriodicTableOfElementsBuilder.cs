@@ -1,11 +1,11 @@
-﻿using Assets.Scripts.Builders.GuiBuilders;
+﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
     public class PeriodicTableOfElementsBuilder
     {

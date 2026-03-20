@@ -7,12 +7,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Assets.Scripts;
-using Assets.Scripts.Builders.GuiBuilders; // Accessing GraphicalUserInterfaceBuilder
+using TheSingularityWorkshop;
+using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders; // Accessing GraphicalUserInterfaceBuilder
 
 public class StateBuilderEditorWindow : EditorWindow
 {
-    [MenuItem("Tools/The Singularity Workshop/State Builder")]
+    [MenuItem("TheSingularityWorkshop/FSMs/State Builder")]
     public static void ShowWindow()
     {
         var wnd = GetWindow<StateBuilderEditorWindow>();
@@ -101,7 +102,7 @@ public class StateBuilderEditorWindow : EditorWindow
 
     private  void SyncWithFleet()
     {
-        Debug.Log("Pulling latest registries from Fleet...");
+        Debug.Log("Pulling latest registries from Fleet..");
         // This is where your REST abstraction consumes existing content
         // await FetchRegistryFromServer("api/registry/enter", "EnterRegistry.txt");
         // await FetchRegistryFromServer("api/registry/update", "UpdateRegistry.txt");
@@ -114,7 +115,7 @@ public class StateBuilderEditorWindow : EditorWindow
     private void PushStateDefinition()
     {
         // This acts as the Gatekeeper, pushing new content to your server
-        Debug.Log($"Pushing State '{_stateNameField.value}' to Fleet Registry...");
+        Debug.Log($"Pushing State '{_stateNameField.value}' to Fleet Registry..");
     }
 
     private void OpenCacheFolder() => EditorUtility.RevealInFinder(_cachePath);

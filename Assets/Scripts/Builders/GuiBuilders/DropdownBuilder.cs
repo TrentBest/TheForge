@@ -1,10 +1,11 @@
-﻿using System;
+﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts.Builders.GuiBuilders
+namespace TheSingularityWorkshop.Builders.GuiBuilders
 {
     public class DropDownBuilder : IGuiProvider
     {
@@ -14,6 +15,7 @@ namespace Assets.Scripts.Builders.GuiBuilders
         private System.Action<string> _onChanged;
         private string _shortcutTabTarget;
 
+        public string Title  { get; }
         public DropDownBuilder(string label, List<string> options)
         {
             _label = label;
@@ -42,12 +44,27 @@ namespace Assets.Scripts.Builders.GuiBuilders
             {
                 container.Add(new Button(() => { /* Hub Tab Switch Logic */ })
                 {
-                    text = $"Go to {_shortcutTabTarget}...",
+                    text = $"Go to {_shortcutTabTarget}..",
                     style = { fontSize = 9, color = Color.cyan, backgroundColor = Color.clear }
                 });
             }
 
             return container;
+        }
+
+        public Action<VisualElement> GetGuiBuilder()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ToUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
         }
     }
 }

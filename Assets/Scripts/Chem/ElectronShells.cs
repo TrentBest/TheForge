@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Assets.Scripts.Chem
+namespace TheSingularityWorkshop.Chem
 {
     public static class ElectronShells
     {

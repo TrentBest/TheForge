@@ -1,0 +1,65 @@
+﻿#pragma kernel CSMain
+
+// The texture we are writing to
+RWTexture2D<float4> Result;
+
+// Uniforms driven by your FSM
+float2 _PanOffset;
+float _Zoom;
+uint _MaxIterations;
+uint _ResolutionX;
+uint _ResolutionY;
+float4 _ColorA;
+float4 _ColorB;
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _ResolutionX || id.y >= _ResolutionY)
+        return;
+
+    // Map pixel coordinates to the complex plane (-2.0 to 2.0 roughly)
+    // Adjusting for aspect ratio, zoom, and panning
+    float aspect = (float) _ResolutionX / (float) _ResolutionY;
+    float2 uv = float2(id.x / (float) _ResolutionX, id.y / (float) _ResolutionY);
+    
+    // Convert to Math space
+    float2 c = (uv - 0.5) * 4.0;
+    c.x *= aspect;
+    c /= _Zoom;
+    c += _PanOffset;
+
+    // Z = Z^2 + C
+    float2 z = float2(0, 0);
+    uint iter = 0;
+    
+    for (iter = 0; iter < _MaxIterations; iter++)
+    {
+        // z^2 = (x + yi)^2 = x^2 - y^2 + 2xyi
+        float x = (z.x * z.x - z.y * z.y) + c.x;
+        float y = (2.0 * z.x * z.y) + c.y;
+        
+        if ((x * x + y * y) > 4.0)
+            break; // Escaped
+        
+        z.x = x;
+        z.y = y;
+    }
+
+    // Coloring
+    if (iter == _MaxIterations)
+    {
+        Result[id.xy] = float4(0, 0, 0, 1); // Black for inside the set
+    }
+    else
+    {
+       // 1. Non-Linear stretching
+        float t = (float) iter / (float) _MaxIterations;
+        t = pow(t, 0.45); // Pulls low values up the curve!
+        
+        // OR 2. Color Banding (Uncomment below to try a trippy repeating pattern instead)
+        // float t = (float)(iter % 20) / 20.0; 
+        
+        Result[id.xy] = lerp(_ColorA, _ColorB, t);
+    }
+}

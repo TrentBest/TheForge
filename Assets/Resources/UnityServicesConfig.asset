@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bce97cd01461e64ea10c50d21d9eaaf, type: 3}
+  m_Name: UnityServicesConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Unity.UnityServicesConfig
+  AutoInitializeOnAwake: 1
+  MaxInitRetries: 3
+  RetryBackoffSeconds: 2
+  RequireAuthentication: 1
+  EnableRemoteConfig: 1
+  EnableCloudSave: 1
+  EnableLobbyServices: 1
+  EditorDevProfile: Forge_Editor_Dev
+  AutoRefreshRemoteConfig: 1
+  RemoteConfigRefreshIntervalSeconds: 60
+  UseLocalDaemonProxy: 0
+  LocalDaemonUrl: http://localhost:5000/api/

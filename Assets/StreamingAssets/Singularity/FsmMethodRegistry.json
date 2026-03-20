@@ -23,7 +23,9 @@
     "RegisteredStateNames": [
         "New State"
     ],
-    "RegisteredFsmNames": [],
+    "RegisteredFsmNames": [
+        "New_Empty_FSM"
+    ],
     "MethodNames": [],
     "DllPaths": []
 }

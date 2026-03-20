@@ -12,7 +12,7 @@ namespace TheSingularityWorkshop.FSM_API.Editor
     /// </summary>
     public class FSM_UnityIntegrationAdvancedEditorWindow : EditorWindow
     {
-        [MenuItem("Tools/The Singularity Workshop/FSM Editor Engine")]
+        [MenuItem("TheSingularityWorkshop/FSM Editor Engine")]
         public static void ShowWindow() => GetWindow<FSM_UnityIntegrationAdvancedEditorWindow>("FSM Engine");
 
         // The list of strings to iterate over for Editor-specific updates

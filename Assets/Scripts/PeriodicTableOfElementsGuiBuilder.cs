@@ -1,4 +1,4 @@
-﻿namespace Assets.Scripts
+﻿namespace TheSingularityWorkshop
 {
     public class PeriodicTableOfElementsGuiBuilder
     {

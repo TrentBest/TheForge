@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
     /// <summary>
     /// 2D atomic model viewer using UI Toolkit VisualElements (rings & dots).

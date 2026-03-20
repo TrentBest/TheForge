@@ -1,6 +1,7 @@
-﻿using Assets.Scripts;
-using Assets.Scripts.Builders.GuiBuilders;
-using Assets.Scripts.Builders.GuiBuilders.PanelBuilders;
+﻿using TheSingularityWorkshop.Builders.GuiBuilders;
+
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -8,6 +9,8 @@ public class FlightControlsTab : IShipTabBuilder
 {
     public string TabName => "Flight Controls";
     public string TabIcon => "🚀";
+
+    public string Title => TabName;
 
     public VisualElement CreateGui(GuiContext ctx)
     {
@@ -57,5 +60,20 @@ public class FlightControlsTab : IShipTabBuilder
                    .AddChild(radarViewport)
                    .AddChild(perspectivePanel)
                    .Build();
+    }
+
+    public void FromUIDocument(string assetPath)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Action<VisualElement> GetGuiBuilder()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ToUIDocument(string assetPath)
+    {
+        throw new NotImplementedException();
     }
 }

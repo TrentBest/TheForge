@@ -1,7 +1,8 @@
 ﻿#if UNITY_EDITOR
-using Assets.Scripts;
-using Assets.Scripts.Builders.GuiBuilders;
-using Assets.Scripts.Builders.GuiBuilders.PanelBuilders;
+using TheSingularityWorkshop;
+using TheSingularityWorkshop.Builders.GuiBuilders;
+
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +14,7 @@ using UnityEngine.UIElements;
 
 public class GurpsCharacterSheetEditorWindow : EditorWindow
 {
-    [MenuItem("Singularity/GURPS Character Forge")]
+    [MenuItem("TheSingularityWorkshop/NonSupported/GURPS Character Forge")]
     public static void ShowWindow()
     {
         var window = GetWindow<GurpsCharacterSheetEditorWindow>("Character Forge");
@@ -96,7 +97,7 @@ public class GurpsCharacterSheetEditorWindow : EditorWindow
     private IGuiProvider CreateMainCharacterSheet()
     {
         if (_selectedCharacter == null)
-            return new GraphicalUserInterfaceBuilder("Empty").AddChild(new Button(OnClickNewCharacter) { text = "Select a character..." });
+            return new GraphicalUserInterfaceBuilder("Empty").AddChild(new Button(OnClickNewCharacter) { text = "Select a character.." });
 
         var sheet = new GraphicalUserInterfaceBuilder("CharacterSheet")
             .WithPadding(20)

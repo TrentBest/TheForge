@@ -2,13 +2,13 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Assets.Scripts.Builders;
+using TheSingularityWorkshop.Builders;
 
-namespace Assets.Scripts.Editors
+namespace TheSingularityWorkshop.Editors
 {
     public class DroneEditorWindow : EditorWindow
     {
-        [MenuItem("Drones/Drone Editor Window")]
+        [MenuItem("TheSingularityWorkshop/Drones/Drone Editor Window")]
         public static void ShowWindow()
         {
             var wnd = GetWindow<DroneEditorWindow>();

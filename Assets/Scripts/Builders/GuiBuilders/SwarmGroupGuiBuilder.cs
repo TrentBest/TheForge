@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using System;
+using System.Collections.Generic;
 using System.Linq; // For dictionary keys to list
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts.Builders.GuiBuilders
+namespace TheSingularityWorkshop.Builders.GuiBuilders
 {
     public class SwarmGroupGuiBuilder : IGuiProvider
     {
@@ -23,6 +25,8 @@ namespace Assets.Scripts.Builders.GuiBuilders
                 new DroneBuilder().WithName("Interceptor").WithBehavior("Aggressive")
             };
         }
+
+        public string Title { get; set; } = "Swarm Group Configuration";
 
         public VisualElement CreateGui(GuiContext ctx)
         {
@@ -72,13 +76,28 @@ namespace Assets.Scripts.Builders.GuiBuilders
             // 4. Build Button
             var buildBtn = new Button(() => {
                 builder.Build(Vector3.zero); // Or a specific spawn point
-                Debug.Log($"[SwarmBuilder] Spawning {builder.GroupName}...");
+                Debug.Log($"[SwarmBuilder] Spawning {builder.GroupName}..");
             })
             { text = "Spawn Swarm", style = { height = 30, marginTop = 20, backgroundColor = new Color(0.2f, 0.4f, 0.2f) } };
 
             root.Add(buildBtn);
 
             return root;
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Action<VisualElement> GetGuiBuilder()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ToUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
         }
 
         private void RefreshCompositionList(VisualElement container, GuiContext ctx)

@@ -1,4 +1,5 @@
-using Assets.Scripts.Builders.GuiBuilders;
+using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using UnityEngine;
 // The Configuration Builder
 public class MotorBuilder

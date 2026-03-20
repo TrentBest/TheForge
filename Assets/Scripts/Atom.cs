@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
 
     public sealed class Atom

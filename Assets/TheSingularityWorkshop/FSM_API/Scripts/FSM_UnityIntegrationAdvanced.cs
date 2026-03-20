@@ -65,6 +65,7 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
 
         public void AddProcessingGroup(string unityMessage = "Update", string processingGroup = "Update")
         {
+            FSM_API.Create.CreateProcessingGroup(processingGroup);
             switch (unityMessage)
             {
                 case "Update":
@@ -186,8 +187,8 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
             // Set the GameObject name for clarity and test assertions.
             gameObject.name = "FSM_UnityIntegrationAdvanced";
 
-            // Create processing groups in FSM_API. These happen ONCE when the singleton is initialized.
-            //Assuming FSM_API.Create.CreateProcessingGroup handles existing groups gracefully.
+            // Create processing groups in FSM_API.FSM_API. These happen ONCE when the singleton is initialized.
+            
             foreach (var group in _updateProcessingGroup)
             {
                 FSM_API.Create.CreateProcessingGroup(group);
@@ -218,10 +219,7 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
             }
 
             // Trigger the Awake processing group exactly once as part of the Awake lifecycle.
-            foreach (var group in _awakeProcessingGroup)
-            {
-                FSM_API.Interaction.Update(group);
-            }
+            StepAwake();
             if (root != null)
             {
                 root.SetActive(true);
@@ -231,36 +229,23 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
         // Start is called once before the first execution of Update.
         void Start()
         {
-            foreach (var group in _startProcessingGroup)
-            {
-                FSM_API.Interaction.Update(group);
-            }
+           StepStart();
         }
 
         // Update is called once per frame.
         void Update()
         {
-            foreach (var group in _updateProcessingGroup)
-            {
-                FSM_API.Interaction.Update(group);
-            }
-            FSM_API.Interaction.Update(_unityHandles);
+           StepUpdate();
         }
 
         private void FixedUpdate()
         {
-            foreach (var group in _fixedUpdateProcessingGroup)
-            {
-                FSM_API.Interaction.Update(group);
-            }
+            StepFixedUpdate();
         }
 
         private void LateUpdate()
         {
-            foreach (var group in _lateUpdateProcessingGroup)
-            {
-                FSM_API.Interaction.Update(group);
-            }
+            StepLateUpdate();
         }
 
         // This method is crucial for testing to ensure a clean state between tests.
@@ -304,19 +289,54 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
 
         private void OnGUI()
         {
+            StepOnGui();
+        }
+
+        private void StepOnGui()
+        {
             foreach (var group in _onGUI_ProcessingGroup)
             {
                 FSM_API.Interaction.Update(group);
             }
         }
 
-
         private void OnDrawGizmos()
+        {
+            StepOnGizmos();
+        }
+
+        private void StepOnGizmos()
         {
             foreach (var group in _onDrawGizmosProcessingGroup)
             {
                 FSM_API.Interaction.Update(group);
             }
+        }
+
+        public void StepAwake()
+        {
+            foreach (var group in _awakeProcessingGroup) FSM_API.Interaction.Update(group);
+        }
+
+        public void StepStart()
+        {
+            foreach (var group in _startProcessingGroup) FSM_API.Interaction.Update(group);
+        }
+
+        public void StepUpdate()
+        {
+            foreach (var group in _updateProcessingGroup) FSM_API.Interaction.Update(group);
+            FSM_API.Interaction.Update(_unityHandles);
+        }
+
+        public void StepFixedUpdate()
+        {
+            foreach (var group in _fixedUpdateProcessingGroup) FSM_API.Interaction.Update(group);
+        }
+
+        public void StepLateUpdate()
+        {
+            foreach (var group in _lateUpdateProcessingGroup) FSM_API.Interaction.Update(group);
         }
     }
 }

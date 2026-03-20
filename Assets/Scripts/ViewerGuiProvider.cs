@@ -1,11 +1,12 @@
-﻿using Assets.Scripts.Builders.GuiBuilders;
+﻿using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
    
 
@@ -19,6 +20,8 @@ namespace Assets.Scripts
             this.viewedObject = viewedObject;
             this.dimensionality = Math.Max(1, dimensionality);
         }
+
+        public string Title { get; set; } = "Viewer";
 
         public VisualElement CreateGui(GuiContext ctx)
         {
@@ -44,6 +47,21 @@ namespace Assets.Scripts
             }
 
             return root.CreateGui(ctx);
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Action<VisualElement> GetGuiBuilder()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ToUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
         }
     }
 

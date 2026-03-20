@@ -4,7 +4,7 @@ using System.Linq;
 
 public class HelmetInverterEditorWindow : EditorWindow
 {
-    [MenuItem("raWWar/Tools/Create Internal Helmet Mesh")]
+    [MenuItem("TheSingularityWorkshop/NonSupported/Create Internal Helmet Mesh")]
     public static void InvertHelmetMesh()
     {
         GameObject selected = Selection.activeGameObject;

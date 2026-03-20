@@ -1,4 +1,4 @@
-﻿using Assets.Scripts;
+﻿using TheSingularityWorkshop;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +9,7 @@ namespace Assets.Editor
 {
     class PeriodicTableOfElementsEditorWindow : EditorWindow
     {
-        [MenuItem("Tools/Builders/Periodic Table of Elements Editor")]
+        [MenuItem("TheSingularityWorkshop/Builders/Periodic Table of Elements Editor")]
         public static void ShowWindow()
         {
             var wnd = GetWindow<PeriodicTableOfElementsEditorWindow>();

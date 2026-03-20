@@ -1,5 +1,6 @@
-﻿using Assets.Scripts;
-using Assets.Scripts.Builders.GuiBuilders;
+﻿using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -7,6 +8,8 @@ public class DockingManeuversTab : IShipTabBuilder
 {
     public string TabName => "Docking";
     public string TabIcon => "⚓";
+
+    public string Title => TabName;
 
     public VisualElement CreateGui(GuiContext ctx)
     {
@@ -34,5 +37,20 @@ public class DockingManeuversTab : IShipTabBuilder
         cameraRow.WithPanel("CamRight").WithSize(300, 200).WithBackgroundColor(Color.black).WithTitle("45° STBD").EndPanel();
 
         return builder.AddChild(cameraRow).Build();
+    }
+
+    public void FromUIDocument(string assetPath)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Action<VisualElement> GetGuiBuilder()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ToUIDocument(string assetPath)
+    {
+        throw new NotImplementedException();
     }
 }

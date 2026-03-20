@@ -28,13 +28,13 @@ public class DroneController : MonoBehaviour, IStateContext
         if (motors == null || motors.FWD_RT == null) AutoDiscoverMotors();
 
         // 1. Define the specific "Class" of behavior if it doesn't exist yet
-        if (!FSM_API.Interaction.Exists(behaviorID, "DroneLogic"))
+        if ( !FSM_API.Interaction.Exists(behaviorID, "DroneLogic"))
         {
             DefineDroneBehavior(behaviorID);
         }
 
         // 2. Instantiate the FSM for THIS drone
-        Status = FSM_API.Create.CreateInstance(behaviorID, this, "DroneLogic");
+            Status = FSM_API.Create.CreateInstance(behaviorID, this, "DroneLogic");
 
         // 3. Activate
         IsValid = true;
@@ -119,7 +119,7 @@ public class DroneController : MonoBehaviour, IStateContext
         FSM_API.Create.CreateFiniteStateMachine(fsmName, 0, "DroneLogic")
             .State("Idle", (ctx) => SetAllMotors(ctx, ThrustLevel.Off), null, null)
             .State("AttackRun", (ctx) => SetAllMotors(ctx, ThrustLevel.Thrust100), null, null)
-            // ... distinct logic ...
+            // .. distinct logic ..
             .BuildDefinition();
     }
 

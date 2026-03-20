@@ -28,7 +28,7 @@ public class MotorThrust : MonoBehaviour, IStateContext
     // FixedUpdate reads this every physics tick.
     [SerializeField] private float currentThrottle = 0f;
 
-    // API Handle - This gives us "Status.TransitionTo(...)"
+    // API Handle - This gives us "Status.TransitionTo(..)"
     public FSMHandle Status;
 
     // Cache the Rigidbody for performance
@@ -51,7 +51,7 @@ public class MotorThrust : MonoBehaviour, IStateContext
         droneRigidbody = GetComponentInParent<Rigidbody>();
 
         // 2. Define Shared FSM (First One Wins)
-        if (!FSM_API.Interaction.Exists("MotorThrust", "Thrusters"))
+        if ( !FSM_API.Interaction.Exists("MotorThrust", "Thrusters"))
         {
             // Only grab the integration the one time we fail to find the FSM
             var unityIntegration = FindFirstObjectByType<FSM_UnityIntegrationAdvanced>();

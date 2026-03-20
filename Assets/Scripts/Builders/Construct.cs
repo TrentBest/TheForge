@@ -1,10 +1,12 @@
-﻿using Assets.Scripts.Builders.GuiBuilders;
+﻿using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts.Builders
+namespace TheSingularityWorkshop.Builders
 {
     public class Construct
     {
@@ -32,16 +34,24 @@ namespace Assets.Scripts.Builders
         {
         }
 
-        public string Name => throw new NotImplementedException();
+        public string Name { get; }
+
+        public string ToolName { get; }
 
         public object Build()
         {
             throw new NotImplementedException();
         }
 
-        public IGuiBuilder GetGuiBuilder()
+       
+
+        public IGuiProvider GetGuiProvider()
         {
-            //This is the $$$$$
+            throw new NotImplementedException();
+        }
+
+        public Type GetProductType()
+        {
             throw new NotImplementedException();
         }
     }
@@ -60,33 +70,42 @@ namespace Assets.Scripts.Builders
 
     public class ConstructClassificationBuilder : IForgeBuilder
     {
-        public string Name => throw new NotImplementedException();
+        public string Name  { get; }
+
+        public string ToolName { get; }
 
         public object Build()
         {
             throw new NotImplementedException();
         }
 
-        public IGuiBuilder GetGuiBuilder()
+        
+
+        public IGuiProvider GetGuiProvider()
         {
-            return new ConstructClassificationGuiBuilder();
+            throw new NotImplementedException();
+        }
+
+        public Type GetProductType()
+        {
+            throw new NotImplementedException();
         }
     }
 
-    public class ConstructClassificationGuiBuilder : IGuiBuilder
-    {
-        public VisualElement Build()
-        {
-            return new GraphicalUserInterfaceBuilder("ConstructBuilder").WithPanel("Properties", true)
-                .WithPanel("PropertiesList").WithScrollable(true, ScrollViewMode.VerticalAndHorizontal)
+    //public class ConstructClassificationGuiBuilder : IGuiBuilder
+    //{
+    //    public VisualElement Build()
+    //    {
+    //        return new GraphicalUserInterfaceBuilder("ConstructBuilder").WithPanel("Properties", true)
+    //            .WithPanel("PropertiesList").WithScrollable(true, ScrollViewMode.VerticalAndHorizontal)
                 
-                .ContinueWithParentPanel().WithPanel("Fields", true).WithScrollable(true, ScrollViewMode.VerticalAndHorizontal)
-                .ContinueWithParentPanel().WithPanel("Behaviors", true).AddChild(new FsmBuilderGui()).Build();
-        }
+    //            .ContinueWithParentPanel().WithPanel("Fields", true).WithScrollable(true, ScrollViewMode.VerticalAndHorizontal)
+    //            .ContinueWithParentPanel().WithPanel("Behaviors", true).AddChild(new Workshop_Gui_FsmBuilderGui()).Build();
+    //    }
 
-        object IBuilder.Build()
-        {
-            return Build();
-        }
-    }
+    //    object IBuilder.Build()
+    //    {
+    //        return Build();
+    //    }
+    //}
 }

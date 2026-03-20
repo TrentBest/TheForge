@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
     public static class SingularityRegistry<T> where T : class, ISingularityDefinition, new()
     {

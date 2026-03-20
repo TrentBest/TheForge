@@ -1,5 +1,6 @@
-﻿using Assets.Scripts;
-using Assets.Scripts.Builders.GuiBuilders;
+﻿using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -7,6 +8,9 @@ public class WeaponsControlTab : IShipTabBuilder
 {
     public string TabName => "Weapons";
     public string TabIcon => "⚔️";
+
+    public string Title => TabName;
+
     private bool _isLocked = true;
 
     public VisualElement CreateGui(GuiContext ctx)
@@ -37,5 +41,20 @@ public class WeaponsControlTab : IShipTabBuilder
         }
 
         return root.Build();
+    }
+
+    public Action<VisualElement> GetGuiBuilder()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ToUIDocument(string assetPath)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void FromUIDocument(string assetPath)
+    {
+        throw new NotImplementedException();
     }
 }

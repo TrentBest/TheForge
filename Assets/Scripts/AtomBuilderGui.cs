@@ -1,10 +1,10 @@
-﻿
+﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
     /// <summary>
     /// Provides a UI Toolkit panel for editing an AtomBuilder.
@@ -23,6 +23,11 @@ namespace Assets.Scripts
         public int TitleFontSize { get; private set; } = 13;
         public int MarginBottom { get; private set; } = 6;
 
+        public string Title { get; set; } = "Atom Properties";
+
+        public AtomBuilderGui() : this(new AtomBuilder())
+        {
+        }
         public AtomBuilderGui(AtomBuilder builder)
         {
             this.builder = builder ?? throw new ArgumentNullException(nameof(builder));
@@ -34,7 +39,7 @@ namespace Assets.Scripts
             if (ctx?.StyleSheet != null) root.styleSheets.Add(ctx.StyleSheet);
 
             // --- Title (optional) ---
-            var title = new Label("Atom Properties")
+            var title = new Label(Title)
             {
                 style =
                 {
@@ -200,6 +205,21 @@ namespace Assets.Scripts
             var parts = raw.Split(new[] { ' ', '\t', '\r', '\n', ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var p in parts) tokens.Add(p.Trim());
             return tokens;
+        }
+
+        public Action<VisualElement> GetGuiBuilder()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ToUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            throw new NotImplementedException();
         }
     }
 }

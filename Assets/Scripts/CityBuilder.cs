@@ -1,9 +1,9 @@
-﻿using Assets.Scripts.Builders.GuiBuilders;
+﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace TheSingularityWorkshop
 {
     public class CityBuilder
     {

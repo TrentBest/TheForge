@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements; // <--- Added this to fix 'ScrollViewMode' error
-using Assets.Scripts.Swarmy;
-using Assets.Scripts.Builders.GuiBuilders;
+using TheSingularityWorkshop.Swarmy;
+using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 
-namespace Assets.Scripts.Builders
+namespace TheSingularityWorkshop.Builders
 {
     public class DroneBuilder
     {
