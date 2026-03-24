@@ -1,4 +1,6 @@
-﻿namespace TheSingularityWorkshop.Forge.AI
+﻿using TheSingularityWorkshop.Forge.AI;
+
+namespace Assets.Scripts.Workshop.Forge.Hermit.Core
 {
     public class Agent
     {

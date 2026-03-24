@@ -1,73 +1,134 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using TheSingularityWorkshop.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.Runtime;
 using TheSingularityWorkshop.FSM_API;
+using TheSingularityWorkshop.Memory; // Required for ForgeDiegeticTerminal
 
 namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
 {
-    public class LiveModelPreviewBuilder : IGuiProvider
+    public class LiveModelPreviewBuilder : IGuiProvider, IDisposable
     {
-        public string Title => "Live Preview";
+        public string Title => "Live Model Preview";
+
         private GameObject _targetObject;
-        private LiveModelPreviewContext _context;
+        private GameObject _previewModel;
+        private Camera _previewCamera;
+        private RenderTexture _renderTexture;
+        private RuntimeViewGizmo _viewGizmo;
 
-        // Config Defaults
-        private float _zoom = 1.5f;
-        private float _pitch = 25f;
+        private float _zoom = 5f;
+        private float _pitch = 30f;
         private float _yaw = 45f;
-        private bool _autoRotate = true;
-        private float _rotationSpeed = 15f;
-        private Color _backgroundColor = new Color(0.05f, 0.05f, 0.05f);
-        private float _lightIntensity = 1.2f;
+        private bool _autoRotate = false;
+        private float _rotationSpeed = 10f;
+        private Color _backgroundColor = new Color(0.1f, 0.1f, 0.1f);
+        private float _lightIntensity = 1.0f;
         private bool _mouseControl = true;
-        private bool _multiAxis = false;
-        private bool _showGizmos = false;
+        private bool _multiAxis = true;
+        private bool _showGizmos = true;
 
+        private LiveModelPreviewContext _context;
         private string _processGroup;
         private FSMHandle _fsmHandle;
 
-        public LiveModelPreviewBuilder() { }
-        public LiveModelPreviewBuilder(GameObject targetObject) { _targetObject = targetObject; }
+        // Model boundaries
+        private Vector3 _modelCenter;
+        private float _modelSize = 1f;
 
-        public LiveModelPreviewBuilder WithZoom(float zoom) { _zoom = zoom; return this; }
-        public LiveModelPreviewBuilder WithPitch(float pitch) { _pitch = pitch; return this; }
-        public LiveModelPreviewBuilder WithYaw(float yaw) { _yaw = yaw; return this; }
-        public LiveModelPreviewBuilder WithAutoOrbit(Vector3 axis, float speed) { _autoRotate = true; _rotationSpeed = speed; return this; }
+        public LiveModelPreviewBuilder(GameObject targetModel)
+        {
+            _targetObject = targetModel;
+        }
+
         public LiveModelPreviewBuilder WithBackgroundColor(Color color) { _backgroundColor = color; return this; }
-        public LiveModelPreviewBuilder WithLightIntensity(float intensity) { _lightIntensity = intensity; return this; }
-        public LiveModelPreviewBuilder WithMouseControl(bool enabled) { _mouseControl = enabled; return this; }
-        public LiveModelPreviewBuilder WithMultiAxisRotation(bool enabled) { _multiAxis = enabled; return this; }
-        public LiveModelPreviewBuilder WithGizmos(bool enabled) { _showGizmos = enabled; return this; }
+        public LiveModelPreviewBuilder WithAutoRotate(bool autoRotate, float speed = 10f) { _autoRotate = autoRotate; _rotationSpeed = speed; return this; }
+        //public LiveModelPreviewBuilder WithMouseControl(bool enabled) { _mouseControl = enabled; return this; }
+        public LiveModelPreviewBuilder WithGizmos(bool show) { _showGizmos = show; return this; }
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            Debug.Log("[LiveModelPreviewBuilder] === START CreateGui ===");
-
             if (_targetObject == null)
             {
-                Debug.LogWarning("[LiveModelPreviewBuilder] ABORT: Target Object is NULL. Returning EmptyPreview.");
                 return new GraphicalUserInterfaceBuilder("EmptyPreview")
                     .WithBackgroundColor(_backgroundColor)
                     .AddChild(new Label("NO TARGET OBJECT") { style = { color = Color.red } })
                     .Build();
             }
 
-            Debug.Log($"[LiveModelPreviewBuilder] 1. Isolating Object '{_targetObject.name}' to Y:-10000");
-            // 1. ISOLATE THE OBJECT (Your Epiphany!)
-            // Move it far below the world map to prevent lighting/clipping bleed from the main scene
-            _targetObject.transform.position = new Vector3(0, -10000, 0);
+            // --- State Restoration Pass ---
+            string cacheKey = $"LMP_STATE_{_targetObject.name}";
+            if (ctx.Services.TryGetValue(typeof(DataWarehouse), out var dwObj))
+            {
+                var dw = dwObj as DataWarehouse;
+                if (dw != null && dw.TryRetrieveTemporary(cacheKey, out string json))
+                {
+                    var cached = JsonUtility.FromJson<LiveModelPreviewContext>(json);
+                    _zoom = cached.Zoom;
+                    _pitch = cached.Pitch;
+                    _yaw = cached.Yaw;
+                }
+            }
 
-            Debug.Log("[LiveModelPreviewBuilder] 2. Pre-allocating RenderTexture.");
-            // 2. PRE-ALLOCATE TEXTURE
             var rt = new RenderTexture(1024, 1024, 24, RenderTextureFormat.ARGB32);
             rt.Create();
 
-            Debug.Log("[LiveModelPreviewBuilder] 3. Setting up FSM Context.");
-            // 3. SETUP FSM CONTEXT
             _processGroup = "LivePreview_" + Guid.NewGuid().ToString().Substring(0, 6);
+
+            // 1. Clean up potential old ghosts before starting
+            DestroyGhostObjects();
+
+            // 2. Set up the Scene Components
+            SetupPreviewScene(_targetObject, rt);
+
+            // --- DIEGETIC STAGING LOGIC ---
+            // Determine if we are in Deep Space or physically in-world on a Forge
+            if (ctx.TryGetService<ForgeDiegeticTerminal>(out var terminal) && terminal.FabricationPad != null)
+            {
+                // WE ARE DIEGETIC: Stage physically on the terminal table
+                Vector3 padPos = terminal.FabricationPad.position;
+                if (_previewModel != null)
+                {
+                    _previewModel.transform.position = padPos;
+                    // Auto-scale large models down to fit on the fabrication pad
+                    float maxPadSize = 2f; // e.g., 2 meter hologram limit
+                    if (_modelSize > maxPadSize)
+                    {
+                        float scaleFactor = maxPadSize / _modelSize;
+                        _previewModel.transform.localScale = Vector3.one * scaleFactor;
+                    }
+                }
+                if (_previewCamera != null)
+                {
+                    // Camera offsets based on the pad, not deep space
+                    _previewCamera.transform.position = padPos + (Vector3.back * _zoom);
+                }
+
+                // Optional: Swap background to clear if projecting a hologram
+                _backgroundColor = Color.clear;
+            }
+            else if (ctx.TryGetService<Cast.Actor>(out var player))
+            {
+                // WE ARE SCREEN-SPACE: Relational Deep Space Staging
+                Vector3 guiBase = player.transform.position - (player.transform.forward * 500f);
+                float sideOffset = (_processGroup.GetHashCode() % 2 == 0) ? 500f : -500f;
+                Vector3 stagingPos = guiBase + (player.transform.right * sideOffset);
+
+                if (_previewModel != null) _previewModel.transform.position = stagingPos;
+                if (_previewCamera != null) _previewCamera.transform.position = stagingPos + (Vector3.back * _zoom);
+            }
+
+            // 3. Initialize the Gizmo Overlay (if requested)
+            if (_showGizmos)
+            {
+                _viewGizmo = new RuntimeViewGizmo(ViewGizmoStyle.AutodeskCube);
+            }
+
             _context = new LiveModelPreviewContext
             {
-                TargetModel = _targetObject,
+                TargetModel = _previewModel,
                 RenderTexture = rt,
                 Zoom = _zoom,
                 Pitch = _pitch,
@@ -82,20 +143,27 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
                 Name = _processGroup
             };
 
-            Debug.Log("[LiveModelPreviewBuilder] 4. Building UI via GraphicalUserInterfaceBuilder.");
-            // 4. BUILD UI STRICTLY WITH BUILDERS
             var rootBuilder = new GraphicalUserInterfaceBuilder("PreviewRoot")
                 .WithBackgroundColor(_backgroundColor)
                 .OnBuild(ve =>
                 {
-                    Debug.Log($"[LiveModelPreviewBuilder] UI OnBuild triggered for {_processGroup}. Applying flexGrow = 1.");
                     ve.style.flexGrow = 1;
-                    ve.schedule.Execute(() => ve.MarkDirtyRepaint()).Every(16);
+
+                    // Main Tick Loop - Guarantee Render
+                    ve.schedule.Execute(() => {
+                        ve.MarkDirtyRepaint();
+                        UpdateCameraPosition();
+
+                        if (_previewCamera != null && _viewGizmo != null)
+                        {
+                            _viewGizmo.SyncRotation(_previewCamera.transform.rotation);
+                        }
+                    }).Every(16);
+
                     if (_mouseControl)
                     {
                         ve.RegisterCallback<MouseDownEvent>(evt => {
                             _context.IsDragging = true; _context.LastMousePosition = evt.localMousePosition; ve.CaptureMouse();
-                            Debug.Log($"[LiveModelPreviewBuilder] MouseDown captured on {_processGroup}");
                         });
                         ve.RegisterCallback<MouseUpEvent>(evt => {
                             _context.IsDragging = false; ve.ReleaseMouse();
@@ -107,83 +175,179 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
                             _context.Pitch = Mathf.Clamp(_context.Pitch - delta.y * 0.5f, -89f, 89f);
                             _context.LastMousePosition = evt.localMousePosition;
                         });
-                        ve.RegisterCallback<WheelEvent>(evt => { _context.Zoom = Mathf.Clamp(_context.Zoom + (evt.delta.y * 0.1f), 0.5f, 10f); });
+                        ve.RegisterCallback<WheelEvent>(evt => {
+                            _context.Zoom = Mathf.Clamp(_context.Zoom + (evt.delta.y * 0.05f), 0.1f, 10f);
+                        });
                     }
 
-                    ve.RegisterCallback<DetachFromPanelEvent>(evt => Cleanup());
-                })
-                .AddChild(guiCtx => new ImageGuiBuilder(rt)
-                    .WithScaleMode(ScaleMode.ScaleToFit)
-                    .CreateGui(guiCtx)
-                );
+                    // --- Automatic Serialization on Detach ---
+                    ve.RegisterCallback<DetachFromPanelEvent>(evt => {
+                        if (ctx.TryGetService<DataWarehouse>(out var warehouse))
+                        {
+                            warehouse.StoreTemporary(cacheKey, JsonUtility.ToJson(_context));
+                        }
+                        Dispose();
+                    });
+                });
 
-            Debug.Log("[LiveModelPreviewBuilder] 5. Validating FSM Definition.");
-            // 5. FSM REGISTRATION
+            var previewImage = new Image { image = rt, scaleMode = ScaleMode.ScaleToFit, style = { flexGrow = 1 } };
+            if (_viewGizmo != null) previewImage.Add(_viewGizmo.GizmoUIElement);
+            rootBuilder.AddChild(previewImage);
+
             if (!FSM_API.FSM_API.Interaction.Exists("LiveModelPreviewFSM"))
             {
-                Debug.Log("[LiveModelPreviewBuilder] Definition 'LiveModelPreviewFSM' missing. Creating now.");
-                FSM_API.FSM_API.Create.CreateFiniteStateMachine("LiveModelPreviewFSM", -1, _processGroup) // Use dynamic group
+                FSM_API.FSM_API.Create.CreateFiniteStateMachine("LiveModelPreviewFSM", -1, _processGroup)
                     .State("Rendering", null, LiveModelPreviewFSM.OnRenderTick, null)
                     .WithInitialState("Rendering")
                     .BuildDefinition();
             }
 
-            Debug.Log($"[LiveModelPreviewBuilder] Creating FSM Instance in group: {_processGroup}");
-            // Create the instance in its unique processing group
             _fsmHandle = FSM_API.FSM_API.Create.CreateInstance("LiveModelPreviewFSM", _context, _processGroup);
 
-            Debug.Log("[LiveModelPreviewBuilder] 6. Hooking into Pacemaker.");
-            // 6. PACEMAKER HOOK
-            // Tell the Runtime Integration to step this FSM on the Update loop
             if (TheSingularityWorkshop.FSM_API.Scripts.FSM_UnityIntegrationAdvanced.Instance != null)
             {
                 TheSingularityWorkshop.FSM_API.Scripts.FSM_UnityIntegrationAdvanced.Instance.AddProcessingGroup("Update", _processGroup);
-                Debug.Log($"[LiveModelPreviewBuilder] SUCCESS: Added '{_processGroup}' to Pacemaker Update loop.");
             }
-            else
-            {
-                Debug.LogError("[LiveModelPreviewBuilder] PACEMAKER FAILURE: FSM_UnityIntegrationAdvanced.Instance is NULL! The render loop will not tick.");
-            }
-            
-            Debug.Log("[LiveModelPreviewBuilder] === END CreateGui ===");
+
             return rootBuilder.Build();
         }
+        public float ZoomFactor { get; private set; } = 1f;
+        public bool AutoOrbitEnabled { get; private set; } = false;
+        public Vector3 OrbitAxis { get; private set; } = Vector3.up;
+        public float OrbitSpeed { get; private set; } = 10f;
+        public bool MouseControlEnabled { get; private set; } = false;
 
-        private void Cleanup()
+        // --- FLUENT BUILDER METHODS ---
+
+        /// <summary>
+        /// Adjusts the starting distance or FOV of the preview camera.
+        /// </summary>
+        public LiveModelPreviewBuilder WithZoom(float zoom)
         {
-            Debug.Log($"[LiveModelPreviewBuilder] Cleanup triggered for group: {_processGroup}");
+            ZoomFactor = zoom;
+            // TODO: Apply this to your generated preview camera's fieldOfView, 
+            // or use it as a multiplier for the camera's negative Z offset.
+            return this;
+        }
 
-            if (_context != null)
+        /// <summary>
+        /// Triggers an automatic rotation around the target model.
+        /// </summary>
+        public LiveModelPreviewBuilder WithAutoOrbit(Vector3 axis, float speed)
+        {
+            AutoOrbitEnabled = true;
+            OrbitAxis = axis;
+            OrbitSpeed = speed;
+            // TODO: Your LiveModelPreviewFSM or UI Toolkit scheduler will need to read these 
+            // properties to rotate the camera/model per tick.
+            return this;
+        }
+
+        /// <summary>
+        /// Enables mouse drag rotation and scroll wheel zooming.
+        /// </summary>
+        public LiveModelPreviewBuilder WithMouseControl(bool enabled)
+        {
+            MouseControlEnabled = enabled;
+            // TODO: Pass this flag into your LiveModelPreviewContext so the FSM 
+            // knows whether to consume and process MouseMove/PointerDown events.
+            return this;
+        }
+        private void SetupPreviewScene(GameObject original, RenderTexture rt)
+        {
+            // Duplicate model for isolated rendering
+            _previewModel = GameObject.Instantiate(original);
+            _previewModel.name = original.name + "_Ghost";
+
+            // Strip harmful scripts from ghost
+            foreach (var comp in _previewModel.GetComponentsInChildren<MonoBehaviour>())
             {
-                _context.IsValid = false;
-                if (_context.PreviewCamera != null)
-                {
-                    Debug.Log("[LiveModelPreviewBuilder] Destroying Preview Camera.");
-                    UnityEngine.Object.DestroyImmediate(_context.PreviewCamera.gameObject);
-                }
-                if (_context.RenderTexture != null)
-                {
-                    Debug.Log("[LiveModelPreviewBuilder] Releasing RenderTexture.");
-                    _context.RenderTexture.Release();
-                }
+                UnityEngine.Object.DestroyImmediate(comp);
             }
 
-            // Unhook from the Pacemaker
-            if (TheSingularityWorkshop.FSM_API.Scripts.FSM_UnityIntegrationAdvanced.Instance != null)
-            {
-                Debug.Log($"[LiveModelPreviewBuilder] Removing '{_processGroup}' from Pacemaker.");
-                TheSingularityWorkshop.FSM_API.Scripts.FSM_UnityIntegrationAdvanced.Instance.RemoveProcessingGroup("Update", _processGroup);
-            }
+            CalculateModelBounds();
 
-            if (_fsmHandle != null)
-            {
-                Debug.Log("[LiveModelPreviewBuilder] Destroying FSM Instance.");
-                FSM_API.FSM_API.Interaction.DestroyInstance(_fsmHandle);
-            }
+            // Setup dedicated camera
+            var camObj = new GameObject("LMP_Camera_" + _processGroup);
+            _previewCamera = camObj.AddComponent<Camera>();
+            _previewCamera.targetTexture = rt;
+            _previewCamera.clearFlags = CameraClearFlags.SolidColor;
+            _previewCamera.backgroundColor = _backgroundColor;
+            _previewCamera.cullingMask = 1 << 31; // Render only the Preview Layer
+
+            // Assign ghost to preview layer
+            SetLayerRecursive(_previewModel, 31);
+
+            // Add lighting
+            var lightObj = new GameObject("LMP_Light");
+            var light = lightObj.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = _lightIntensity;
+            lightObj.transform.SetParent(camObj.transform);
+
+            EditorStagingManager.RegisterGhost(_previewModel);
+            EditorStagingManager.RegisterGhost(camObj);
+        }
+
+        private void CalculateModelBounds()
+        {
+            if (_previewModel == null) return;
+            var renderers = _previewModel.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return;
+
+            Bounds b = renderers[0].bounds;
+            foreach (var r in renderers) b.Encapsulate(r.bounds);
+
+            _modelCenter = b.center;
+            _modelSize = b.size.magnitude;
+            _zoom = _modelSize * 1.5f;
+        }
+
+        private void UpdateCameraPosition()
+        {
+            if (_previewCamera == null || _previewModel == null) return;
+
+            if (_autoRotate) _yaw += _rotationSpeed * Time.deltaTime;
+
+            Quaternion rotation = Quaternion.Euler(_pitch, _yaw, 0);
+            Vector3 position = rotation * new Vector3(0, 0, -_zoom) + _previewModel.transform.position;
+
+            _previewCamera.transform.position = position;
+            _previewCamera.transform.LookAt(_previewModel.transform.position);
+        }
+
+        private void SetLayerRecursive(GameObject obj, int layer)
+        {
+            obj.layer = layer;
+            foreach (Transform child in obj.transform) SetLayerRecursive(child.gameObject, layer);
+        }
+
+        private void DestroyGhostObjects()
+        {
+            if (_previewModel != null) UnityEngine.Object.DestroyImmediate(_previewModel);
+            if (_previewCamera != null) UnityEngine.Object.DestroyImmediate(_previewCamera.gameObject);
+        }
+
+        public void Dispose()
+        {
+            DestroyGhostObjects();
+            if (_renderTexture != null) _renderTexture.Release();
         }
 
         public Action<VisualElement> GetGuiBuilder() => (root) => root.Add(CreateGui(new GuiContext()));
-        public void ToUIDocument(string assetPath) { }
-        public void FromUIDocument(string assetPath) { }
+        public void ToUIDocument(string id) { }
+        public void FromUIDocument(string doc) { }
+
+        public LiveModelPreviewBuilder WithPitch(float v)
+        {
+
+            return this;
+        }
+
+        public LiveModelPreviewBuilder WithYaw(float v)
+        {
+
+            return this;
+        }
     }
 }

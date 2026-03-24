@@ -1,13 +1,15 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.FSM_API;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using TheSingularityWorkshop.Forge.IO; // Added for DataWarehouse Extensions
+using TheSingularityWorkshop.FSM_API;
+using TheSingularityWorkshop.Memory;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
 {
-    public class GameMastersCompanion_Gui_StarSystemForge : IGuiProvider
+    public class GameMastersCompanion_Gui_StarSystemForge : IGuiProvider, IDisposable
     {
         public string Title => "GM COMPANION: ORBITAL DIORAMA FORGE";
         private GuiContext _lastCtx;
@@ -17,29 +19,34 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
         private VisualElement _previewContainer;
         private VisualElement _crudArea;
 
+        // Relational Staging Provider
+        private LiveModelPreviewBuilder _lmpBuilder;
+
         private string _activeSubTool = "Planetary Roster";
         private readonly List<string> _subTools = new List<string> { "Stellar Core", "Planetary Roster", "Active Planet: Tectonics", "Active Planet: Moons" };
 
         public VisualElement CreateGui(GuiContext ctx)
         {
             _lastCtx = ctx;
+            string cacheKey = "STAR_SYSTEM_FORGE_STATE";
 
-            // ORPHAN SWEEPER: Finds and eradicates any memory-leaked ghost plates/planets from previous bugs!
-            var orphans = Resources.FindObjectsOfTypeAll<GameObject>();
-            foreach (var o in orphans)
+            // --- REHYDRATION STATE ---
+            if (ctx.TryGetService<DataWarehouse>(out var dw))
             {
-                if (o.hideFlags == HideFlags.HideAndDontSave && o.transform.parent == null)
+                if (dw.TryRetrieveTemporary(cacheKey, out string json))
                 {
-                    if (o.name.StartsWith("Temp_System_") || o.name.StartsWith("Temp_World_") || o.name.StartsWith("Temp_Icosphere_"))
-                    {
-                        UnityEngine.Object.DestroyImmediate(o);
-                    }
+                    _simContext = JsonUtility.FromJson<StarSystemForgeContext>(json);
                 }
             }
 
             if (_simContext == null)
             {
                 _simContext = new StarSystemForgeContext();
+                InitializeFSM();
+            }
+            else if (!FSM_API.FSM_API.Interaction.Exists("SystemForgeFSM"))
+            {
+                // Ensure FSM is rebuilt if we rehydrated from a fresh boot
                 InitializeFSM();
             }
 
@@ -78,13 +85,11 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
                     .WithPadding(15).WithBackgroundColor(new Color(0.1f, 0.1f, 0.12f))
                     .WithBorderBottomWidth(1).WithBorderBottomColor(Color.gray)
                     .AddChild(new Label("2. SYSTEM INSPECTOR") { style = { color = Color.yellow, unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 10 } })
-                    .OnBuild(ve => {
-                        var dropdown = new DropdownField("Inspect:", _subTools, _subTools.IndexOf(_activeSubTool)) { style = { flexGrow = 1 } };
-                        dropdown.RegisterValueChangedCallback(evt => {
-                            _activeSubTool = evt.newValue;
-                            RefreshToolArea();
-                        });
-                        ve.Add(dropdown);
+
+                    // REFACTOR: Replaced manual visual element with pure GUI builder method
+                    .AddDropdownData("Inspect:", _subTools, _subTools.IndexOf(_activeSubTool), evtValue => {
+                        _activeSubTool = evtValue;
+                        RefreshToolArea();
                     })
                     .Build())
 
@@ -112,6 +117,16 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
             );
 
             var root = rootBuilder.Build();
+
+            // --- LIFECYCLE HANDSHAKE ---
+            root.RegisterCallback<DetachFromPanelEvent>(evt => {
+                if (ctx.TryGetService<DataWarehouse>(out var warehouse))
+                {
+                    warehouse.StoreTemporary(cacheKey, JsonUtility.ToJson(_simContext));
+                }
+                Dispose(); // Enforces the relational stage cleanup via LMP
+            });
+
             root.schedule.Execute(() => FSM_API.FSM_API.Interaction.Update("SystemForge")).Every(100);
             return root;
         }
@@ -129,7 +144,7 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
 
         private void InitializeFSM()
         {
-            if ( !FSM_API.FSM_API.Interaction.Exists("SystemForgeFSM"))
+            if (!FSM_API.FSM_API.Interaction.Exists("SystemForgeFSM"))
             {
                 FSM_API.FSM_API.Create.CreateFiniteStateMachine("SystemForgeFSM", -1, "SystemForge")
                     .State("Idle", null, null, null)
@@ -277,10 +292,20 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
         private void RefreshPreviewViewport()
         {
             if (_previewContainer == null || _simContext.GeneratedSystemPrefab == null) return;
+
+            // Explicitly dispose old LMP FSMs and Cameras before clearing visuals
+            _lmpBuilder?.Dispose();
             _previewContainer.Clear();
-            var previewBuilder = new LiveModelPreviewBuilder(_simContext.GeneratedSystemPrefab);
+
+            // Relational Staging Pipeline Integration
+            _lmpBuilder = new LiveModelPreviewBuilder(_simContext.GeneratedSystemPrefab)
+                .WithBackgroundColor(Color.black)
+                .WithMouseControl(true);
+
             _previewContainer.Add(new GraphicalUserInterfaceBuilder("PreviewWrapper")
-                .WithFlexGrow(1).WithFlexShrink(1).AddChild(previewBuilder).Build());
+                .WithFlexGrow(1).WithFlexShrink(1)
+                .AddChild(_lmpBuilder)
+                .Build());
         }
 
         // --- SUB-EDITORS ---
@@ -358,6 +383,12 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
             crud.Style.ListWidth = 140f;
             crud.Style.AccentColor = Color.white;
             return crud.CreateGui(_lastCtx);
+        }
+
+        public void Dispose()
+        {
+            // Triggers the cascading cleanup of FSMs, Cameras, and the actual +/- 500m Models
+            _lmpBuilder?.Dispose();
         }
 
         public Action<VisualElement> GetGuiBuilder() => (root) => root.Add(CreateGui(new GuiContext()));

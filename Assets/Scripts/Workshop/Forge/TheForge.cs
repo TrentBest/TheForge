@@ -1,11 +1,7 @@
 ﻿// File: Assets/Scripts/Workshop/Forge/TheForge.cs
-using TheSingularityWorkshop.Forge.Builders;
-using TheSingularityWorkshop.Forge.Builders.Casting;
-using TheSingularityWorkshop.Forge.Builders.CauseEffect;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.Staging;
-using TheSingularityWorkshop.Forge.Builders.Timing;
 using System.Collections.Generic;
+using TheSingularityWorkshop.Forge.Builders;
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using TheSingularityWorkshop.FSM_API;
 using UnityEngine;
 
@@ -17,41 +13,37 @@ namespace TheSingularityWorkshop.Forge
         public GameObject DisplayPrefab;
         public float SpawnDistance = 1.5f;
 
-        [Header("Tools")]
-        public CastBuilder CastTool;
-        public StageBuilder StageTool;
-        public TimeBuilder TimeTool;
-        public CauseEffectBuilder LogicTool;
-        public CauseEffectBuilder SystemTool;
+        // Dynamic registry for all available tooling
+        public Dictionary<string, IForgeBuilder> tooling = new Dictionary<string, IForgeBuilder>();
 
         [SerializeField] private bool _isEstablished = false;
-        
+
         public bool IsValid { get; set; } = false;
         public string Name { get; set; } = "TheForge";
         public FSMHandle Status { get; private set; }
 
         private List<ForgeDisplay> _activeDisplays = new List<ForgeDisplay>();
         private ExperienceContext _context;
-        private List<ForgeDisplay> _allDisplays = new List<ForgeDisplay>();
 
         void Awake()
         {
-            // Auto-Discovery
-            if (!CastTool) CastTool = GetIntrinsicTool<CastBuilder>();
-            if (!StageTool) StageTool = GetIntrinsicTool<StageBuilder>();
-            if (!TimeTool) TimeTool = GetIntrinsicTool<TimeBuilder>();
-            if (!LogicTool) LogicTool = GetIntrinsicTool<CauseEffectBuilder>();
-            if (!SystemTool) SystemTool = GetIntrinsicTool<CauseEffectBuilder>();
+            // Auto-Discovery: Find all IForgeBuilders attached to this or its children
+            var intrinsicTools = GetComponentsInChildren<IForgeBuilder>(true);
+            foreach (var tool in intrinsicTools)
+            {
+                if (tool != null && !string.IsNullOrEmpty(tool.ToolName) && !tooling.ContainsKey(tool.ToolName))
+                {
+                    tooling.Add(tool.ToolName, tool);
+                }
+            }
 
             _context = FindAnyObjectByType<ExperienceContext>();
             InitializeFsm();
         }
 
-        private T GetIntrinsicTool<T>() where T : Component => GetComponentInChildren<T>(true);
-
         private void InitializeFsm()
         {
-            if ( !FSM_API.FSM_API.Interaction.Exists("TheForge_OS"))
+            if (!FSM_API.FSM_API.Interaction.Exists("TheForge_OS"))
             {
                 FSM_API.FSM_API.Create.CreateFiniteStateMachine("TheForge_OS", -1, "Workshop")
                     .State("Boot", OnBoot, null, null)
@@ -80,17 +72,17 @@ namespace TheSingularityWorkshop.Forge
         private void OnRunningEnter(IStateContext ctx)
         {
             Debug.Log("[TheForge] Entering Running Mode. Spawning Workspace..");
-           
-            foreach(var d in _activeDisplays) if(d) Destroy(d.gameObject);
+
+            foreach (var d in _activeDisplays) if (d) Destroy(d.gameObject);
             _activeDisplays.Clear();
-            
+
             SpawnDefaultWorkshopLayout();
         }
 
         private void SpawnInitialQuestionnaire()
         {
             var provider = new QuestionnaireProvider(() => SetEstablished(true));
-            
+
             // 1. Calculate Spawn Position (Directly in front of Forge/User)
             Vector3 spawnPos = transform.position + (transform.forward * SpawnDistance);
             spawnPos.y += 0.2f; // Slight eye-level adjustment
@@ -107,15 +99,28 @@ namespace TheSingularityWorkshop.Forge
 
         private void SpawnDefaultWorkshopLayout()
         {
-            // Simple layout logic: Spacing out 3 panels
-            // We no longer track 'angles', just relative positions
-            Vector3 center = transform.position + (transform.forward * SpawnDistance);
-            Vector3 left = center - (transform.right * 1.0f);
-            Vector3 right = center + (transform.right * 1.0f);
+            int toolCount = tooling.Count;
+            if (toolCount == 0) return;
 
-            SpawnTool(CastTool, left, "Display_Cast");
-            SpawnTool(StageTool, center, "Display_Stage");
-            SpawnTool(TimeTool, right, "Display_Time");
+            Vector3 center = transform.position + (transform.forward * SpawnDistance);
+
+            // Dynamically calculate spacing to center the group of tools
+            float spacing = 1.0f;
+            float startOffset = -((toolCount - 1) * spacing) / 2f;
+
+            int index = 0;
+            foreach (var kvp in tooling)
+            {
+                string toolName = kvp.Key;
+                IForgeBuilder tool = kvp.Value;
+
+                // Position them in a linear array. 
+                // Next step for the OS: Curve this into a cylindrical projection around the user.
+                Vector3 pos = center + (transform.right * (startOffset + (index * spacing)));
+
+                SpawnTool(tool, pos, $"Display_{toolName}");
+                index++;
+            }
         }
 
         private void SpawnTool(IForgeBuilder tool, Vector3 position, string name)
@@ -124,7 +129,7 @@ namespace TheSingularityWorkshop.Forge
             if (display)
             {
                 // Standard Tool Size
-                display.Resize(0.8f, 0.6f); 
+                display.Resize(0.8f, 0.6f);
                 display.Initialize(tool);
             }
         }
@@ -142,7 +147,7 @@ namespace TheSingularityWorkshop.Forge
 
             var display = go.GetComponent<ForgeDisplay>();
             if (display) _activeDisplays.Add(display);
-            
+
             return display;
         }
 

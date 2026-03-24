@@ -60,133 +60,187 @@ namespace Assets.Scripts.Workshop.Forge.Builders.GuiBuilders.GuiTesting
 
         public Workshop_Gui_Test_GraphicalUserInterfaceBuilder()
         {
+            Debug.Log("[LayoutArchitect] Constructor invoked. Initializing...");
             LoadAvailableGuiProviders();
         }
 
         private void LoadAvailableGuiProviders()
         {
+            Debug.Log("[LayoutArchitect] Starting Assembly Scan for IGuiProviders...");
             _guiProviderNames.Add("[ None - Colored Box ]");
 
-            // Find all classes that implement IGuiProvider and have an empty constructor
-            var type = typeof(IGuiProvider);
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
-
-            foreach (var t in types)
+            try
             {
-                if (t.GetConstructor(Type.EmptyTypes) != null) // Ensure we can instantiate it
-                {
-                    _guiProviderTypes[t.Name] = t;
-                }
-            }
+                var type = typeof(IGuiProvider);
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            // Sort alphabetically for the dropdown
-            var sortedNames = _guiProviderTypes.Keys.ToList();
-            sortedNames.Sort();
-            _guiProviderNames.AddRange(sortedNames);
+                foreach (var assembly in assemblies)
+                {
+                    try
+                    {
+                        var types = assembly.GetTypes()
+                            .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
+
+                        foreach (var t in types)
+                        {
+                            if (t.GetConstructor(Type.EmptyTypes) != null)
+                            {
+                                _guiProviderTypes[t.Name] = t;
+                            }
+                        }
+                    }
+                    catch (ReflectionTypeLoadException)
+                    {
+                        // Highly common in Unity, safely ignore unreadable DLLs
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogWarning($"[LayoutArchitect] Minor error scanning assembly {assembly.FullName}: {ex.Message}");
+                    }
+                }
+
+                var sortedNames = _guiProviderTypes.Keys.ToList();
+                sortedNames.Sort();
+                _guiProviderNames.AddRange(sortedNames);
+
+                Debug.Log($"[LayoutArchitect] Scan Complete. Found {_guiProviderNames.Count - 1} valid IGuiProviders.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[LayoutArchitect] FATAL in LoadAvailableGuiProviders: {ex.Message}\n{ex.StackTrace}");
+            }
         }
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            if (_childrenItems.Count == 0)
+            Debug.Log("[LayoutArchitect] CreateGui() started.");
+
+            try
             {
-                AddNewChild("Sidebar", 200f, 0f, 0f, 1f);
-                AddNewChild("Main Content", 0f, 0f, 1f, 1f);
-            }
-
-            var root = new VisualElement { style = { flexDirection = FlexDirection.Row, flexGrow = 1 } };
-
-            // 1. THE CONTROL PANEL
-            var controls = new GraphicalUserInterfaceBuilder("Controls")
-                .WithWidth(380)
-                .WithPadding(10)
-                .WithBackgroundColor(new Color(0.10f, 0.10f, 0.12f))
-                .WithBorderRightWidth(1)
-                .WithBorderRightColor(new Color(0.3f, 0.3f, 0.3f))
-                .WithScrollable(true)
-                .WithTitle("Architect Controls");
-
-            // --- SIZING SECTION ---
-            controls.AddChild(new Label("Parent Container Sizing:") { style = { unityFontStyleAndWeight = FontStyle.Bold, marginTop = 10 } });
-            controls.AddToggleData("Use Percentage Units", _usePercentage, (val) => { _usePercentage = val; RefreshPreview(); });
-
-            if (!_usePercentage)
-            {
-                controls.AddIntSliderData("Width (px)", 50, 1920, _widthPx, (v) => { _widthPx = v; RefreshPreview(); });
-                controls.AddIntSliderData("Height (px)", 50, 1080, _heightPx, (v) => { _heightPx = v; RefreshPreview(); });
-            }
-            else
-            {
-                controls.AddSliderData("Width (%)", 0, 100, _widthPct, (v) => { _widthPct = v; RefreshPreview(); });
-                controls.AddSliderData("Height (%)", 0, 100, _heightPct, (v) => { _heightPct = v; RefreshPreview(); });
-            }
-
-            // --- FLEXBOX SECTION ---
-            controls.AddSeparator(Color.gray);
-            controls.AddChild(new Label("Parent Flexbox Layout:") { style = { unityFontStyleAndWeight = FontStyle.Bold } });
-            controls.AddEnumData("Direction", _direction, (v) => { _direction = v; RefreshPreview(); });
-            controls.AddEnumData("Justify", _justify, (v) => { _justify = v; RefreshPreview(); });
-            controls.AddEnumData("Align", _align, (v) => { _align = v; RefreshPreview(); });
-            controls.AddEnumData("Wrap", _wrap, (v) => { _wrap = v; RefreshPreview(); });
-
-            // --- DYNAMIC CONTENT CRUD SECTION ---
-            controls.AddSeparator(Color.gray);
-            controls.AddChild(new Label("Child Elements (Live GUIs):") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = Color.cyan } });
-            controls.AddButton("+ Add New Child Area", () =>
-            {
-                AddNewChild($"Panel {_childrenItems.Count + 1}", 150f, 150f, 0f, 1f);
-                RefreshChildrenList();
-                RefreshPreview();
-            });
-
-            // Make the children list itself a fixed-height scrollview so it doesn't break the sidebar
-            _childrenListContainer = new ScrollView
-            {
-                style = {
-                    marginTop = 10, marginBottom = 10,
-                    maxHeight = 350, // Prevents pushing the Color Forge off-screen
-                    borderTopWidth = 1, borderBottomWidth = 1, borderTopColor = new Color(0.3f, 0.3f, 0.3f),borderBottomColor = new Color(0.3f, 0.3f, 0.3f),
-                    borderLeftColor = new Color(0.3f, 0.3f, 0.3f),borderRightColor = new Color(0.3f, 0.3f, 0.3f),
+                if (_childrenItems.Count == 0)
+                {
+                    AddNewChild("Sidebar", 200f, 0f, 0f, 1f);
+                    AddNewChild("Main Content", 0f, 0f, 1f, 1f);
                 }
-            };
-            controls.AddChild(_childrenListContainer);
-            RefreshChildrenList();
 
-            // --- EMBEDDED COLOR FORGE ---
-            controls.AddSeparator(Color.gray);
-            controls.AddChild(new Label("Bulk Color Applicator:") { style = { unityFontStyleAndWeight = FontStyle.Bold } });
-            controls.AddSliderData("Corner Radius", 0, 50, _borderRadius, (v) => { _borderRadius = v; RefreshPreview(); });
-            controls.AddIntSliderData("Border Width", 0, 10, _borderWidth, (v) => { _borderWidth = v; RefreshPreview(); });
+                var root = new VisualElement { style = { flexDirection = FlexDirection.Row, flexGrow = 1 } };
 
-            controls.AddEnumData("Target Property", _activeColorTarget, (v) => _activeColorTarget = v);
+                Debug.Log("[LayoutArchitect] Building Architect Controls...");
 
-            var colorForge = new ColorForgePicker(Color.cyan, (pickedColor) =>
-            {
-                if (_activeColorTarget == ColorTarget.BackgroundColor || _activeColorTarget == ColorTarget.Both) _backgroundColor = pickedColor;
-                if (_activeColorTarget == ColorTarget.BorderColor || _activeColorTarget == ColorTarget.Both) _borderColor = pickedColor;
+                // 1. THE CONTROL PANEL
+                var controls = new GraphicalUserInterfaceBuilder("Controls")
+                    .WithWidth(380)
+                    .WithPadding(10)
+                    .WithBackgroundColor(new Color(0.10f, 0.10f, 0.12f))
+                    .WithBorderRightWidth(1)
+                    .WithBorderRightColor(new Color(0.3f, 0.3f, 0.3f))
+                    .WithScrollable(true)
+                    .WithTitle("Architect Controls");
+
+                // --- SIZING SECTION ---
+                controls.AddChild(new Label("Parent Container Sizing:") { style = { unityFontStyleAndWeight = FontStyle.Bold, marginTop = 10 } });
+                controls.AddToggleData("Use Percentage Units", _usePercentage, (val) => { _usePercentage = val; RefreshPreview(); });
+
+                if (!_usePercentage)
+                {
+                    controls.AddIntSliderData("Width (px)", 50, 1920, _widthPx, (v) => { _widthPx = v; RefreshPreview(); });
+                    controls.AddIntSliderData("Height (px)", 50, 1080, _heightPx, (v) => { _heightPx = v; RefreshPreview(); });
+                }
+                else
+                {
+                    controls.AddSliderData("Width (%)", 0, 100, _widthPct, (v) => { _widthPct = v; RefreshPreview(); });
+                    controls.AddSliderData("Height (%)", 0, 100, _heightPct, (v) => { _heightPct = v; RefreshPreview(); });
+                }
+
+                // --- FLEXBOX SECTION ---
+                controls.AddSeparator(Color.gray);
+                controls.AddChild(new Label("Parent Flexbox Layout:") { style = { unityFontStyleAndWeight = FontStyle.Bold } });
+                controls.AddEnumData("Direction", _direction, (v) => { _direction = v; RefreshPreview(); });
+                controls.AddEnumData("Justify", _justify, (v) => { _justify = v; RefreshPreview(); });
+                controls.AddEnumData("Align", _align, (v) => { _align = v; RefreshPreview(); });
+                controls.AddEnumData("Wrap", _wrap, (v) => { _wrap = v; RefreshPreview(); });
+
+                // --- DYNAMIC CONTENT CRUD SECTION ---
+                controls.AddSeparator(Color.gray);
+                controls.AddChild(new Label("Child Elements (Live GUIs):") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = Color.cyan } });
+                controls.AddButton("+ Add New Child Area", () =>
+                {
+                    AddNewChild($"Panel {_childrenItems.Count + 1}", 150f, 150f, 0f, 1f);
+                    RefreshChildrenList();
+                    RefreshPreview();
+                });
+
+                _childrenListContainer = new ScrollView
+                {
+                    style = {
+                        marginTop = 10, marginBottom = 10,
+                        maxHeight = 350,
+                        borderTopWidth = 1, borderBottomWidth = 1, borderTopColor = new Color(0.3f, 0.3f, 0.3f),borderBottomColor = new Color(0.3f, 0.3f, 0.3f),
+                        borderLeftColor = new Color(0.3f, 0.3f, 0.3f),borderRightColor = new Color(0.3f, 0.3f, 0.3f),
+                    }
+                };
+                controls.AddChild(_childrenListContainer);
+                RefreshChildrenList();
+
+                // --- EMBEDDED COLOR FORGE ---
+                Debug.Log("[LayoutArchitect] Injecting ColorForgePicker...");
+                controls.AddSeparator(Color.gray);
+                controls.AddChild(new Label("Bulk Color Applicator:") { style = { unityFontStyleAndWeight = FontStyle.Bold } });
+                controls.AddSliderData("Corner Radius", 0, 50, _borderRadius, (v) => { _borderRadius = v; RefreshPreview(); });
+                controls.AddIntSliderData("Border Width", 0, 10, _borderWidth, (v) => { _borderWidth = v; RefreshPreview(); });
+                controls.AddEnumData("Target Property", _activeColorTarget, (v) => _activeColorTarget = v);
+
+                try
+                {
+                    var colorForge = new ColorForgePicker(Color.cyan, (pickedColor) =>
+                    {
+                        if (_activeColorTarget == ColorTarget.BackgroundColor || _activeColorTarget == ColorTarget.Both) _backgroundColor = pickedColor;
+                        if (_activeColorTarget == ColorTarget.BorderColor || _activeColorTarget == ColorTarget.Both) _borderColor = pickedColor;
+                        RefreshPreview();
+                    });
+
+                    controls.AddChild(builderCtx => {
+                        var colorContainer = new VisualElement { style = { height = 250, marginTop = 10, borderTopWidth = 1, borderBottomWidth = 1, borderLeftWidth = 1, borderRightWidth = 1, borderTopColor = Color.gray, borderBottomColor = Color.gray, borderLeftColor = Color.gray, borderRightColor = Color.gray, } };
+                        colorContainer.Add(colorForge.CreateGui(builderCtx));
+                        return colorContainer;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[LayoutArchitect] ColorForgePicker failed to load: {ex.Message}");
+                    controls.AddChild(new Label("ColorForgePicker Unavailable") { style = { color = Color.red } });
+                }
+
+                Debug.Log("[LayoutArchitect] Compiling Controls Panel to VisualElement...");
+                root.Add(controls.Build());
+
+                // 2. THE PREVIEW AREA
+                Debug.Log("[LayoutArchitect] Building Preview Container...");
+                _previewContainer = new VisualElement();
+                _previewContainer.style.flexGrow = 1;
+                _previewContainer.style.backgroundColor = new Color(0.05f, 0.05f, 0.05f);
+                _previewContainer.style.justifyContent = Justify.Center;
+                _previewContainer.style.alignItems = Align.Center;
+
+                root.Add(_previewContainer);
+
+                Debug.Log("[LayoutArchitect] Triggering First RefreshPreview()...");
                 RefreshPreview();
-            });
 
-            controls.AddChild(builderCtx => {
-                var colorContainer = new VisualElement { style = { height = 250, marginTop = 10, borderTopWidth = 1, borderBottomWidth = 1, borderLeftWidth = 1, borderRightWidth = 1, borderTopColor = Color.gray, borderBottomColor = Color.gray, borderLeftColor = Color.gray, borderRightColor = Color.gray, } };
-                colorContainer.Add(colorForge.CreateGui(builderCtx));
-                return colorContainer;
-            });
+                Debug.Log("[LayoutArchitect] CreateGui() completed successfully.");
+                return root;
+            }
+            catch (Exception ex)
+            {
+                // CRITICAL FAIL-SAFE: Render the error to the GUI instead of failing silently.
+                Debug.LogError($"[LayoutArchitect] CRITICAL FAILURE IN CreateGui: {ex.Message}\n{ex.StackTrace}");
 
-            root.Add(controls.Build());
+                var errorRoot = new VisualElement { style = { flexGrow = 1, backgroundColor = new Color(0.2f, 0, 0), paddingTop = 20, paddingRight = 20, paddingLeft = 20, paddingBottom = 20 } };
+                errorRoot.Add(new Label("Layout Architect Encountered a Fatal Error") { style = { color = Color.white, fontSize = 20, unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 10 } });
+                errorRoot.Add(new TextField { value = $"{ex.Message}\n\n{ex.StackTrace}", multiline = true, isReadOnly = true, style = { flexGrow = 1 } });
 
-            // 2. THE PREVIEW AREA
-            _previewContainer = new VisualElement();
-            _previewContainer.style.flexGrow = 1;
-            _previewContainer.style.backgroundColor = new Color(0.05f, 0.05f, 0.05f);
-            _previewContainer.style.justifyContent = Justify.Center;
-            _previewContainer.style.alignItems = Align.Center;
-
-            root.Add(_previewContainer);
-
-            RefreshPreview();
-            return root;
+                return errorRoot;
+            }
         }
 
         private void AddNewChild(string name, float w, float h, float fGrow, float fShrink)
@@ -242,8 +296,15 @@ namespace Assets.Scripts.Workshop.Forge.Builders.GuiBuilders.GuiTesting
                     child.SelectedProviderName = e.newValue;
                     if (_guiProviderTypes.TryGetValue(e.newValue, out Type t))
                     {
-                        // Instantiate the selected provider dynamically!
-                        child.LiveGuiInstance = (IGuiProvider)Activator.CreateInstance(t);
+                        try
+                        {
+                            child.LiveGuiInstance = (IGuiProvider)Activator.CreateInstance(t);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogError($"[LayoutArchitect] Failed to instantiate {e.newValue}: {ex.Message}");
+                            child.LiveGuiInstance = null;
+                        }
                     }
                     else
                     {
@@ -278,72 +339,81 @@ namespace Assets.Scripts.Workshop.Forge.Builders.GuiBuilders.GuiTesting
         private void RefreshPreview()
         {
             if (_previewContainer == null) return;
-            _previewContainer.Clear();
 
-            var previewTitle = new Label("LIVE GUI PREVIEW") { style = { position = Position.Absolute, top = 10, left = 10, color = Color.gray, unityFontStyleAndWeight = FontStyle.Bold } };
-            _previewContainer.Add(previewTitle);
-
-            // Build the Parent Layout Container
-            var previewBuilder = new GraphicalUserInterfaceBuilder("LivePreview")
-                .WithBackgroundColor(_backgroundColor)
-                // Fallbacks assuming you don't have WithBorderColor(Color) yet
-                .WithBorderTopColor(_borderColor).WithBorderBottomColor(_borderColor).WithBorderLeftColor(_borderColor).WithBorderRightColor(_borderColor)
-                .WithBorderWidth(_borderWidth)
-                .WithBorderRadius(_borderRadius)
-                .WithFlexLayout(_direction, _justify, _align)
-                .WithFlexWrap(_wrap)
-                .WithFlexGrow(_flexGrow)
-                .WithFlexShrink(_flexShrink)
-                .WithPadding(15);
-
-            if (_usePercentage) previewBuilder.WithPercentSize(_widthPct, _heightPct);
-            else previewBuilder.WithSize(_widthPx, _heightPx);
-
-            // Build the Children
-            foreach (var child in _childrenItems)
+            try
             {
-                var childWrapper = new VisualElement
-                {
-                    style = {
-                        width = child.Width > 0 ? child.Width : new StyleLength(StyleKeyword.Auto),
-                        height = child.Height > 0 ? child.Height : new StyleLength(StyleKeyword.Auto),
-                        flexGrow = child.FlexGrow,
-                        flexShrink = child.FlexShrink,
-                        marginBottom = 5, marginRight = 5,
-                        overflow = Overflow.Hidden,
-                        borderTopLeftRadius = 4, borderTopRightRadius = 4, borderBottomLeftRadius = 4, borderBottomRightRadius = 4
-                    }
-                };
+                _previewContainer.Clear();
 
-                // Inject the actual GUI Provider OR fallback to the colored label
-                if (child.LiveGuiInstance != null)
-                {
-                    childWrapper.style.backgroundColor = new Color(0.12f, 0.12f, 0.12f); // Dark background for nested GUIs
-                    childWrapper.style.borderTopWidth = 2; // Keep the colored border so you can identify it!
-                    childWrapper.style.borderTopColor = child.Color;
+                var previewTitle = new Label("LIVE GUI PREVIEW") { style = { position = Position.Absolute, top = 10, left = 10, color = Color.gray, unityFontStyleAndWeight = FontStyle.Bold } };
+                _previewContainer.Add(previewTitle);
 
-                    try
+                // Build the Parent Layout Container
+                var previewBuilder = new GraphicalUserInterfaceBuilder("LivePreview")
+                    .WithBackgroundColor(_backgroundColor)
+                    .WithBorderTopColor(_borderColor).WithBorderBottomColor(_borderColor).WithBorderLeftColor(_borderColor).WithBorderRightColor(_borderColor)
+                    .WithBorderWidth(_borderWidth)
+                    .WithBorderRadius(_borderRadius)
+                    .WithFlexLayout(_direction, _justify, _align)
+                    .WithFlexWrap(_wrap)
+                    .WithFlexGrow(_flexGrow)
+                    .WithFlexShrink(_flexShrink)
+                    .WithPadding(15);
+
+                if (_usePercentage) previewBuilder.WithPercentSize(_widthPct, _heightPct);
+                else previewBuilder.WithSize(_widthPx, _heightPx);
+
+                // Build the Children
+                foreach (var child in _childrenItems)
+                {
+                    var childWrapper = new VisualElement
                     {
-                        var liveGui = child.LiveGuiInstance.CreateGui(new GuiContext());
-                        liveGui.style.flexGrow = 1; // Force the nested GUI to fill the Flex wrapper we created
-                        childWrapper.Add(liveGui);
-                    }
-                    catch (Exception ex)
+                        style = {
+                            width = child.Width > 0 ? child.Width : new StyleLength(StyleKeyword.Auto),
+                            height = child.Height > 0 ? child.Height : new StyleLength(StyleKeyword.Auto),
+                            flexGrow = child.FlexGrow,
+                            flexShrink = child.FlexShrink,
+                            marginBottom = 5, marginRight = 5,
+                            overflow = Overflow.Hidden,
+                            borderTopLeftRadius = 4, borderTopRightRadius = 4, borderBottomLeftRadius = 4, borderBottomRightRadius = 4
+                        }
+                    };
+
+                    // Inject the actual GUI Provider OR fallback to the colored label
+                    if (child.LiveGuiInstance != null)
                     {
-                        childWrapper.Add(new Label($"Error loading {child.SelectedProviderName}:\n{ex.Message}") { style = { color = Color.red, whiteSpace = WhiteSpace.Normal } });
+                        childWrapper.style.backgroundColor = new Color(0.12f, 0.12f, 0.12f);
+                        childWrapper.style.borderTopWidth = 2;
+                        childWrapper.style.borderTopColor = child.Color;
+
+                        try
+                        {
+                            var liveGui = child.LiveGuiInstance.CreateGui(new GuiContext());
+                            liveGui.style.flexGrow = 1;
+                            childWrapper.Add(liveGui);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogError($"[LayoutArchitect] Nested GUI {child.SelectedProviderName} failed to render: {ex.Message}");
+                            childWrapper.Add(new Label($"Error loading {child.SelectedProviderName}:\n{ex.Message}") { style = { color = Color.red, whiteSpace = WhiteSpace.Normal } });
+                        }
                     }
-                }
-                else
-                {
-                    // Fallback to Colored Box
-                    childWrapper.style.backgroundColor = child.Color;
-                    childWrapper.Add(new Label(child.Name) { style = { color = Color.black, unityTextAlign = TextAnchor.MiddleCenter, unityFontStyleAndWeight = FontStyle.Bold, flexGrow = 1 } });
+                    else
+                    {
+                        // Fallback to Colored Box
+                        childWrapper.style.backgroundColor = child.Color;
+                        childWrapper.Add(new Label(child.Name) { style = { color = Color.black, unityTextAlign = TextAnchor.MiddleCenter, unityFontStyleAndWeight = FontStyle.Bold, flexGrow = 1 } });
+                    }
+
+                    previewBuilder.AddChild(childWrapper);
                 }
 
-                previewBuilder.AddChild(childWrapper);
+                _previewContainer.Add(previewBuilder.Build());
             }
-
-            _previewContainer.Add(previewBuilder.Build());
+            catch (Exception ex)
+            {
+                Debug.LogError($"[LayoutArchitect] RefreshPreview() Failed: {ex.Message}\n{ex.StackTrace}");
+                _previewContainer.Add(new Label($"Preview Render Error:\n{ex.Message}") { style = { color = Color.red, backgroundColor = Color.black, paddingTop = 10, paddingBottom = 10, paddingLeft = 10, paddingRight = 10 } });
+            }
         }
 
         public void FromUIDocument(string assetPath) { }

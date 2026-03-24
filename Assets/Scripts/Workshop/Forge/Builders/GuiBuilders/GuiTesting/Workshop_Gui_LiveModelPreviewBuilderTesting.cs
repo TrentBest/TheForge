@@ -5,6 +5,7 @@ using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 
 namespace Assets.Scripts.Workshop.Forge.Builders.GuiBuilders.GuiTesting
 {
+    //This is redundant trying to figure out how to get Hermit to show
     class Workshop_Gui_LiveModelPreviewBuilderTesting : IGuiProvider
     {
         public string Title => "I'm Alive!";

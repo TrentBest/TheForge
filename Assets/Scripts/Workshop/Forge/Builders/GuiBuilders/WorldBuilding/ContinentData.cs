@@ -22,6 +22,8 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
 
         public float VelocityX { get; set; } = 0f;
         public float VelocityY { get; set; } = 0f;
+        public object ContinentName { get; internal set; }
+        public Vector2 CenterPoint { get; internal set; }
 
         // Resolves the exact 3D world position dynamically from the mesh geometry
         public Vector3 GetWorldPosition(Vector3[] vertices, int[] triangles)

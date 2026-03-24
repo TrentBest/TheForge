@@ -5,6 +5,7 @@ using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 
 namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
 {
+    //This is redundant, either make more substantial or change to a new gui.
     public class Workshop_Gui_LiveModelPreviewTest : IGuiProvider
     {
         private GameObject targetObject;

@@ -55,5 +55,10 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
             instance = null;
             return false;
         }
+
+        public void Clear()
+        {
+
+        }
     }
 }

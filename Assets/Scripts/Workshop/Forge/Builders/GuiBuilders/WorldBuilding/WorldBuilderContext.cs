@@ -18,6 +18,7 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding
 
         // Cache the spheres so we can scale them in real-time without rebuilding the planet
         public Dictionary<string, Transform> CentroidMarkers { get; set; } = new Dictionary<string, Transform>();
+        public WorldSimulationData SimulationData { get; internal set; }
 
         // --- THE LINKED SLIDER ALGORITHM ---
         public void BalanceMasses(ContinentData activePlate, float targetMass)

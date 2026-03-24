@@ -1,6 +1,7 @@
 ﻿using UnityEngine.UIElements;
 //using TheSingularityWorkshop.LLM;
 using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Assets.Scripts.Workshop.Forge.Hermit.Core;
 
 namespace TheSingularityWorkshop.Forge.AI
 {

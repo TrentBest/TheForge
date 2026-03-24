@@ -17,6 +17,8 @@ namespace TheSingularityWorkshop.Cast
         public float Armor = 100f;
         public float EngagementRange = 10f;
 
+        public byte RoleId { get; internal set; }
+
         // FSM Links will go here later
     }
 }
