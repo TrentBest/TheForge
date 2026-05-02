@@ -1,16 +1,18 @@
 ﻿using UnityEngine;
 
-namespace TheSingularityWorkshop.Sandbox.Ants
+namespace Assets.Scripts.Ants
 {
     // These define the raw byte values used in the GPU texture
     public static class AntStates
     {
         public const byte EmptyAir = 0;
         public const byte SandDirt = 1;
-        public const byte AntWandering = 2; // Looking for sand or food
+        public const byte Stone = 2;         // Added for the Generator (Immovable terrain)
         public const byte AntDigging = 3;    // Actively turning sand to air
-        public const byte AntFalling = 4;    // Subject to gravity
-        public const byte AntPheromone = 5;  // Optional: communication trail
+        public const byte AntWandering = 4;  // Looking for sand or food
+        public const byte AntFalling = 5;    // Subject to gravity
+        public const byte AntCarrying = 6;   // Added for the Generator (Hauler ants)
+        public const byte AntPheromone = 7;  // Communication trail
     }
 
     // A helper struct to convert a single packed uint into 4 separate byte states

@@ -33,9 +33,9 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
                     // If still no instance (e.g., first access), create a new GameObject and add the component.
                     if (_instance == null)
                     {
-                        GameObject go = new GameObject("FSM_UnityIntegrationAdvanced"); // Name must match what tests expect
+                        GameObject go = GameObject.Find("Root") ?? new GameObject("Root");
                         _instance = go.AddComponent<FSM_UnityIntegrationAdvanced>();
-                        Debug.Log("FSM_UnityIntegrationAdvanced: New instance created via Instance getter.");
+                        Debug.Log("FSM_UnityIntegrationAdvanced: New instance created via Instance getter on Root.");
                     }
                 }
                 return _instance;
@@ -251,27 +251,36 @@ namespace TheSingularityWorkshop.FSM_API.Scripts
         // This method is crucial for testing to ensure a clean state between tests.
         public static void ResetInstance()
         {
-            // First, destroy the GameObject associated with the instance if it exists.
+            FSM_API.Internal.ResetAPI(true);
+
             if (_instance != null)
             {
-                // Use DestroyImmediate in editor (for tests), Destroy in play mode.
-                // This physically removes the GameObject from the scene.
-                if (Application.isEditor && !Application.isPlaying)
-                {
-                    //Debug.Log($"ResetInstance: Destroying GameObject '{_instance.gameObject.name}' immediately.");
-                    Object.DestroyImmediate(_instance.gameObject);
-                }
-                else if (Application.isPlaying)
-                {
-                    //Debug.Log($"ResetInstance: Destroying GameObject '{_instance.gameObject.name}'.");
-                    Object.Destroy(_instance.gameObject);
-                }
-            }
+                // 2. Purge all dynamic processing groups, preserving the Sovereign Brain stem
+                _instance._updateProcessingGroup.Clear();
+                _instance._awakeProcessingGroup.Clear();
+                _instance._startProcessingGroup.Clear();
+                _instance._fixedUpdateProcessingGroup.Clear();
+                _instance._lateUpdateProcessingGroup.Clear();
+                _instance._onGUI_ProcessingGroup.Clear();
+                _instance._onDrawGizmosProcessingGroup.Clear();
 
-            // Then, clear the static reference to allow a new instance to be created.
-            _instance = null;
-            TheSingularityWorkshop.FSM_API.FSM_API.Internal.ResetAPI(true);
-            _instance = new GameObject("FSM_UnityIntegrationAdvanced").AddComponent<FSM_UnityIntegrationAdvanced>();
+                // 3. Restore the default Unity message groups
+                _instance._updateProcessingGroup.Add("Update");
+                _instance._awakeProcessingGroup.Add("Awake");
+                _instance._startProcessingGroup.Add("Start");
+                _instance._fixedUpdateProcessingGroup.Add("FixedUpdate");
+                _instance._lateUpdateProcessingGroup.Add("LateUpdate");
+                _instance._onGUI_ProcessingGroup.Add("OnGUI");
+                _instance._onDrawGizmosProcessingGroup.Add("OnDrawGizmos");
+
+                // Debug.Log("ResetInstance: Integration state purged and reset. Root intact.");
+            }
+            else
+            {
+                // Absolute fallback: If the instance is null, force it back onto Root.
+                GameObject go = GameObject.Find("Root") ?? new GameObject("Root");
+                _instance = go.AddComponent<FSM_UnityIntegrationAdvanced>();
+            }
         }
 
         // OnDestroy is called when the MonoBehaviour will be destroyed.

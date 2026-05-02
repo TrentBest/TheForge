@@ -1,9 +1,7 @@
-﻿using TheSingularityWorkshop.Builders.GuiBuilders;
-
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 public class FlightControlsTab : IShipTabBuilder
 {
@@ -64,16 +62,16 @@ public class FlightControlsTab : IShipTabBuilder
 
     public void FromUIDocument(string assetPath)
     {
-        throw new NotImplementedException();
+        
     }
 
     public Action<VisualElement> GetGuiBuilder()
     {
-        throw new NotImplementedException();
+        return null;
     }
 
     public void ToUIDocument(string assetPath)
     {
-        throw new NotImplementedException();
+        
     }
 }

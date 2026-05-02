@@ -1,124 +1,163 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.SC2.Data;
-using System.Linq;
+﻿using Assets.Scripts.Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.Themes;
 
-namespace TheSingularityWorkshop.Forge.SC2.UI
+namespace Assets.Scripts.SC2.UI
 {
+    /// <summary>
+    /// The SC2 Bot Assembly Forge.
+    /// Orchestrates recursive behavior modules and space-aware configuration panels.
+    /// </summary>
     public class Workshop_Gui_SC2_BotBuilder : IGuiProvider
     {
+        public string Title => "SC2 Autonomous Entity Forge";
+
         private SC2BotBlueprint _activeBlueprint;
         private VisualElement _behaviorContainer;
+        private GuiContext _lastCtx;
 
         public Workshop_Gui_SC2_BotBuilder()
         {
-            _activeBlueprint = new SC2BotBlueprint();
+            _activeBlueprint = new SC2BotBlueprint { BotName = "New_Combatant" };
         }
-
-        public string Title => throw new NotImplementedException();
 
         public VisualElement CreateGui(GuiContext context)
         {
-            var root = new VisualElement { style = { flexGrow = 1, flexDirection = FlexDirection.Row, backgroundColor = new Color(0.15f, 0.15f, 0.15f) } };
+            _lastCtx = context;
+
+            // ROOT: Forge Container using a Row layout for side-by-side orchestration
+            var root = new ForgeContainerBuilder("SC2BotForge_Root")
+                .WithFlexLayout(FlexDirection.Row, Justify.FlexStart, Align.Stretch)
+                .WithFlexGrow(1)
+                .WithBackgroundColor(new Color(0.12f, 0.12f, 0.12f, 1.0f));
 
             // --- LEFT PANEL: Base Configuration ---
-            var configPanel = new VisualElement { style = { width = 250, paddingTop = 10,paddingBottom = 10, paddingLeft = 10, paddingRight = 10, borderRightWidth = 1, borderRightColor = Color.gray } };
+            var configPanel = new ForgeContainerBuilder("BaseConfig")
+                .WithWidth(280)
+                .WithPadding(15)
+                .WithBorderWidth(1)
+                .WithBorderColor(Color.gray)
+                .AddChild(new ForgeLabelBuilder("ENTITY IDENTITY")
+                    .WithBold().WithColor(GuiSkin.Active.PrimaryAccent).WithMarginBottom(15));
 
-            var nameField = new TextField("Bot Name") { value = _activeBlueprint.BotName };
-            nameField.RegisterValueChangedCallback(evt => _activeBlueprint.BotName = evt.newValue);
-            configPanel.Add(nameField);
+            configPanel.AddChild(new ForgeTextFieldBuilder("Bot Name", _activeBlueprint.BotName)
+                .OnChanged(val => _activeBlueprint.BotName = val));
 
-            var raceDropdown = new DropdownField("Race", System.Enum.GetNames(typeof(SC2Race)).ToList(), _activeBlueprint.PlayableRace.ToString());
-            raceDropdown.RegisterValueChangedCallback(evt => _activeBlueprint.PlayableRace = (SC2Race)System.Enum.Parse(typeof(SC2Race), evt.newValue));
-            configPanel.Add(raceDropdown);
+            configPanel.AddChild(new ForgeDropdownBuilder("Strategic Race",
+                Enum.GetNames(typeof(SC2Race)).ToList(),
+                _activeBlueprint.PlayableRace.ToString())
+                .OnChanged(val => { if (Enum.TryParse(val, out SC2Race res)) _activeBlueprint.PlayableRace = res; }));
 
-            var addBehaviorBtn = new Button(() => AddBehaviorProvider(context, new CartographyBehaviorData())) { text = "Add Cartography Behavior" };
-            addBehaviorBtn.style.marginTop = 20;
-            configPanel.Add(addBehaviorBtn);
+            configPanel.AddSeparator(Color.gray, 1);
 
-            // --- RIGHT PANEL: Recursive Behavior Container ---
-            var stagingPanel = new VisualElement { style = { flexGrow = 1, paddingTop = 10, paddingRight = 10, paddingLeft = 10, paddingBottom = 10 } };
-            stagingPanel.Add(new Label("Behavior Modules") { style = { fontSize = 18, color = Color.white, unityFontStyleAndWeight = FontStyle.Bold } });
+            configPanel.AddChild(new ForgeLabelBuilder("MODULE INJECTION").WithBold().WithMarginBottom(8));
 
-            _behaviorContainer = new ScrollView(ScrollViewMode.Vertical);
-            stagingPanel.Add(_behaviorContainer);
+            configPanel.AddChild(new ForgeButtonBuilder("Add Cartography Module", () => AddBehaviorProvider(context, new CartographyBehaviorData()))
+                .WithHeight(30).WithBackgroundColor(new Color(0.2f, 0.3f, 0.4f)));
 
-            root.Add(configPanel);
-            root.Add(stagingPanel);
+            root.AddChild(configPanel);
 
-            return root;
-        }
+            // --- RIGHT PANEL: Recursive Behavior Staging ---
+            var stagingPanel = new ForgeContainerBuilder("BehaviorStaging")
+                .WithFlexGrow(1)
+                .WithPadding(15)
+                .AddChild(new ForgeLabelBuilder("ACTIVE BEHAVIOR WEAVE")
+                    .WithFontSize(18).WithBold().WithColor(Color.white).WithMarginBottom(10));
 
-        public void FromUIDocument(string assetPath)
-        {
-            throw new NotImplementedException();
-        }
+            // Behavior Scroll Area
+            stagingPanel.OnBuild(ve => {
+                _behaviorContainer = new ScrollView(ScrollViewMode.Vertical) { name = "ModuleList" };
+                _behaviorContainer.style.flexGrow = 1;
+                ve.Add(_behaviorContainer);
+            });
 
-        public Action<VisualElement> GetGuiBuilder()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ToUIDocument(string assetPath)
-        {
-            throw new NotImplementedException();
+            return root.CreateGui(context);
         }
 
         private void AddBehaviorProvider(GuiContext context, IBotBehaviorData behaviorData)
         {
             _activeBlueprint.Behaviors.Add(behaviorData);
 
-            // Here we leverage the recursive nature: we spin up a new specific IGuiProvider 
-            // to edit this specific piece of data, and inject its VisualElement into our container.
-
-            IGuiProvider specificBuilder = null;
-            if (behaviorData is CartographyBehaviorData cartoData)
+            // RECURSIVE RESOLUTION:
+            // We resolve the specific builder for the data type.
+            IGuiProvider specificBuilder = behaviorData switch
             {
-                specificBuilder = new Workshop_Gui_CartographyBehaviorBuilder(cartoData);
-            }
+                CartographyBehaviorData carto => new Workshop_Gui_CartographyBehaviorBuilder(carto),
+                _ => null
+            };
 
             if (specificBuilder != null)
             {
-                // Wrap the resulting GUI in our Space-Aware container
-                var wrappedElement = CreateSpaceAwareWrapper(specificBuilder.CreateGui(context), behaviorData.ModuleName);
-                _behaviorContainer.Add(wrappedElement);
+                // Inject the behavior into the UI wrapped in our Space-Aware Forge Container
+                var wrappedElement = CreateSpaceAwareWrapper(specificBuilder, behaviorData.ModuleName);
+                _behaviorContainer.Add(wrappedElement.CreateGui(context));
             }
         }
 
-        // --- The Space-Awareness / Expandable Wrapper ---
-        private VisualElement CreateSpaceAwareWrapper(VisualElement content, string title)
+        /// <summary>
+        /// A Space-Aware wrapper that collapses complex logic when the container is restricted.
+        /// Integrated into the Forge Builder pipeline via OnBuild hooks.
+        /// </summary>
+        private IGuiProvider CreateSpaceAwareWrapper(IGuiProvider contentBuilder, string title)
         {
-            var wrapper = new VisualElement { style = {  marginTop = 10, paddingTop = 5, paddingBottom = 5, paddingLeft = 5, paddingRight = 5, backgroundColor = new Color(0.2f, 0.2f, 0.2f) } };
+            var wrapper = new ForgeContainerBuilder($"Wrapper_{title}")
+                .WithMarginTop(10)
+                .WithPadding(8)
+                .WithBackgroundColor(new Color(0.18f, 0.18f, 0.2f, 1.0f))
+                .WithBorderRadius(4)
+                .WithBorderWidth(1)
+                .WithBorderColor(new Color(0.3f, 0.3f, 0.3f));
 
-            var header = new VisualElement { style = { flexDirection = FlexDirection.Row, justifyContent = Justify.SpaceBetween } };
-            header.Add(new Label(title) { style = { color = Color.cyan, unityFontStyleAndWeight = FontStyle.Bold } });
+            // Header Row
+            var header = new ForgeContainerBuilder("ModuleHeader")
+                .WithDirection(FlexDirection.Row)
+                .WithJustifyContent(Justify.SpaceBetween)
+                .WithAlignItems(Align.Center)
+                .WithMarginBottom(5)
+                .AddChild(new ForgeLabelBuilder(title).WithBold().WithColor(Color.cyan))
+                .AddChild(new ForgeButtonBuilder("▣ Pop-out", () => Debug.Log($"[SYSTEM] Detaching {title} to Floating View..."))
+                    .WithHeight(20).WithFontSize(9).WithPadding(2, 5, 2, 5));
 
-            var expandBtn = new Button { text = "Expand/Pop-out" };
-            // In a real implementation, this button would trigger a ModalOverlayBuilder or DialogBuilder
-            // passing the 'content' VisualElement into a larger overlay, and leaving a graphic placeholder here.
+            wrapper.AddChild(header);
 
-            header.Add(expandBtn);
+            // Responsive Content Logic
+            wrapper.OnBuild(ve => {
+                // Build the inner content
+                var innerContent = contentBuilder.CreateGui(_lastCtx ?? new GuiContext());
+                ve.Add(innerContent);
 
-            wrapper.Add(header);
-            wrapper.Add(content); // Add the recursive builder's UI inside the wrapper
+                // GEOMETRY TRACKER: The "Delayed Vision" implementation
+                ve.RegisterCallback<GeometryChangedEvent>(evt => {
+                    bool isTooSmall = evt.newRect.width < 200 || evt.newRect.height < 60;
+                    innerContent.style.display = isTooSmall ? DisplayStyle.None : DisplayStyle.Flex;
 
-            // Geometry event to check space (The "If space isn't big enough" logic)
-            wrapper.RegisterCallback<GeometryChangedEvent>(evt =>
-            {
-                if (evt.newRect.width < 150 || evt.newRect.height < 50)
-                {
-                    content.style.display = DisplayStyle.None; // Hide complex UI
-                    // Show compact graphic/icon here
-                }
-                else
-                {
-                    content.style.display = DisplayStyle.Flex; // Show full recursive UI
-                }
+                    // If too small, we could swap for a mini-icon or Sparkline here
+                    if (isTooSmall)
+                    {
+                        ve.tooltip = $"{title} (Collapsed - Insufficient Space)";
+                    }
+                });
             });
 
             return wrapper;
         }
+
+        // --- IGuiProvider Lifecycle ---
+
+        public Action<VisualElement> GetGuiBuilder() => container => container.Add(CreateGui(new GuiContext()));
+
+        public void ToUIDocument(string assetPath)
+        {
+            var root = CreateGui(_lastCtx ?? new GuiContext());
+            string fileName = string.IsNullOrEmpty(assetPath) ? "SC2_BotForge_Bake" : System.IO.Path.GetFileNameWithoutExtension(assetPath);
+            WorkshopUxmlBaker.Bake(root, fileName);
+        }
+
+        public void FromUIDocument(string assetPath) => Debug.Log($"[SC2_Forge] Hydrating entity blueprint from {assetPath}");
     }
 }

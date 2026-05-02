@@ -24,3 +24,9 @@ MonoBehaviour:
   RemoteConfigRefreshIntervalSeconds: 60
   UseLocalDaemonProxy: 0
   LocalDaemonUrl: http://localhost:5000/api/
+  ActiveLobbyType: 1
+  MaxPlayers: 4
+  AllowJoinInProgress: 1
+  MatchmakingRegion: us-east
+  UseSkillBasedSorting: 0
+  SkillDataShelfKey: PlayerCombatRating

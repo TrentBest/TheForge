@@ -1,7 +1,6 @@
-﻿using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+﻿using TAssets.Scripts.Builders.GuiBuilders;
 using UnityEditor;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 
 

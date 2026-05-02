@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using TheSingularityWorkshop.FSM_API;
 
-namespace TheSingularityWorkshop.Swarmy
+namespace Assets.Scripts.Swarmy
 {
     public class Friendly : IStateContext
     {

@@ -1,3 +1,6 @@
-﻿public class FloorBuilder
+﻿namespace Assets.Scripts.Construction
 {
+    public class FloorBuilder
+    {
+    }
 }

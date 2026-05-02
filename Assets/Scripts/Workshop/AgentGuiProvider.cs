@@ -1,9 +1,9 @@
 ﻿using UnityEngine.UIElements;
 //using TheSingularityWorkshop.LLM;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using Assets.Scripts.Workshop.Forge.Hermit.Core;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Core;
 
-namespace TheSingularityWorkshop.Forge.AI
+namespace Workshop
 {
     public class AgentGuiProvider : IGuiProvider
     {
@@ -16,6 +16,10 @@ namespace TheSingularityWorkshop.Forge.AI
         public AgentGuiProvider(Agent agent)
         {
             _agent = agent;
+        }
+
+        public AgentGuiProvider()
+        {
         }
 
         public System.Action<VisualElement> GetGuiBuilder() => null;

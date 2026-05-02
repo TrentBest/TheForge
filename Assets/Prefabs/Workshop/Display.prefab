@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 540886457599378913}
   - component: {fileID: 7817503920032886485}
   - component: {fileID: 8982612110268648614}
-  - component: {fileID: 6163064785560352935}
-  - component: {fileID: 6821513109447462664}
-  - component: {fileID: 2229768485280511974}
+  - component: {fileID: 5606553485449506958}
+  - component: {fileID: 5829023756612890968}
+  - component: {fileID: 3712319094562499270}
   m_Layer: 6
   m_Name: Display
   m_TagString: Untagged
@@ -31,9 +31,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6355952545678518982}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 3}
-  m_LocalScale: {x: 3, y: 3, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -138,7 +138,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 6.1232336e-17}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6163064785560352935
+--- !u!114 &5606553485449506958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6355952545678518982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e18c448ecf3cf7e4ca1998a5b7a5d088, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Workshop.UI_And_Tools.Showcase.TheSingularity_Showcase
+  _uiDocument: {fileID: 5829023756612890968}
+--- !u!114 &5829023756612890968
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -152,7 +165,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
   m_PanelSettings: {fileID: 0}
   m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: fae305b42a7bb3645b2de91af5ffa7a8, type: 3}
   m_SortingOrder: 0
   m_Position: 0
   m_WorldSpaceSizeMode: 1
@@ -161,7 +174,7 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &6821513109447462664
+--- !u!114 &3712319094562499270
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -170,33 +183,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 6355952545678518982}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e811823beff1ba4a814726b8a222626, type: 3}
+  m_Script: {fileID: 11500000, guid: 24d1aaeacfb6219439ab20132622a38f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Workshop.Forge.Builders.GuiBuilders.InWorldGuiBuilder
+  m_EditorClassIdentifier: Assembly-CSharp::Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.InWorldGuiBuilder
+  CustomSettingsTemplate: {fileID: 0}
   _settings:
-    designLayoutSize: {x: 4000, y: 4000}
-    physicalSize: {x: 2, y: 2}
+    uiScale: 2
+    designLayoutSize: {x: 1024, y: 768}
+    physicalSize: {x: 1024, y: 768}
     targetTextureWidth: 2048
-    mode: 3
+    mode: 2
     curvature: 0
     interactionLayer:
       serializedVersion: 2
-      m_Bits: 0
-  selectedProviderTypeName: QuestionnaireProvider
---- !u!114 &2229768485280511974
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6355952545678518982}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e70b19bcdc5d1dd49af9d672e5662c18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Workshop.Forge.ForgeDisplay
-  PhysicalSize: {x: 2, y: 2}
-  DPI: 400
-  SlateRoot: {fileID: 0}
-  BezelRoot: {fileID: 0}
-  HandleRoot: {fileID: 0}
+      m_Bits: 1
+  selectedProviderTypeName: LiveModelPreviewBuilder

@@ -1,3 +1,6 @@
-﻿public class RoofBuilder
+﻿namespace Assets.Scripts.Construction
 {
+    public class RoofBuilder
+    {
+    }
 }

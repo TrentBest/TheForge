@@ -1,9 +1,9 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Warlords
+namespace Assets.Scripts.Warlords
 {
     public class Warlords_Gui_WeaponBuilder : IGuiProvider
     {

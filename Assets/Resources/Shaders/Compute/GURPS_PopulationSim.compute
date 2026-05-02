@@ -1,0 +1,50 @@
+﻿#pragma kernel CS_GeneratePopulation
+
+// GURPS Attribute Struct - Must match C# exactly
+struct GURPS_ActorGPUData
+{
+    int ST;
+    int DX;
+    int IQ;
+    int HT;
+    int PointTotal;
+};
+
+RWStructuredBuffer<GURPS_ActorGPUData> _PopulationBuffer;
+uint _Seed;
+
+// Squirrel3 Pseudo-Random Hash for 3d6 simulation
+uint GetHash(uint n, uint seed)
+{
+    n *= 0xB5297A4D;
+    n += seed;
+    n ^= (n >> 8);
+    n += 0x68E31DA4;
+    n ^= (n << 8);
+    n *= 0x1B56C4E9;
+    n ^= (n >> 8);
+    return n;
+}
+
+int Roll3d6(uint id, uint offset)
+{
+    uint h = GetHash(id, _Seed + offset);
+    return (h % 6 + 1) + ((h >> 8) % 6 + 1) + ((h >> 16) % 6 + 1);
+}
+
+[numthreads(64, 1, 1)]
+void CS_GeneratePopulation(uint3 id : SV_DispatchThreadID)
+{
+    GURPS_ActorGPUData actor;
+    
+    // Generate the "Big Four" Attributes
+    actor.ST = Roll3d6(id.x, 100);
+    actor.DX = Roll3d6(id.x, 200);
+    actor.IQ = Roll3d6(id.x, 300);
+    actor.HT = Roll3d6(id.x, 400);
+
+    // Basic Point Calculation (Attributes 10+ cost 10pts per level in 3e/4e)
+    actor.PointTotal = ((actor.ST - 10) + (actor.DX - 10) + (actor.IQ - 10) + (actor.HT - 10)) * 10;
+
+    _PopulationBuffer[id.x] = actor;
+}

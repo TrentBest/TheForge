@@ -1,55 +1,55 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UIElements;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Assets.Scripts.raWWar.Drill;
+using Assets.Scripts.Workshop.Gameplay.Grid;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-using System.Runtime.InteropServices;
-
-namespace Assets.Scripts.raWWar.Editors
+namespace Assets.Scripts.raWWar.Gui
 {
     public class LiveFormationPreviewBuilder : IGuiProvider
     {
-        public string Title => "Formation Preview";
+        public string Title => "Live Formation Preview";
 
+        private DrillGroundsContext _ctx;
+        private InstancedGridPresenter _gridPresenter; // The generic map renderer
+
+        // Rendering Assets
         private Mesh _unitMesh;
-        private Material _unitMaterial; // MUST have an instancing shader!
-        private int _unitCount;
-
-        private ComputeBuffer _soldierBuffer;
-        private ComputeBuffer _argsBuffer; // For DrawMeshInstancedIndirect
+        private Material _unitMaterial;
+        private Material _ghostMaterial;
 
         private RenderTexture _rt;
         private Camera _previewCamera;
-        private GameObject _cameraObj;
+        private GameObject _cameraObj; // Pure transform container, no MonoBehaviours!
 
-        public LiveFormationPreviewBuilder(Mesh mesh, Material material, int count)
+        // Constructor injects the Context, Map Presenter, and Soldier Assets
+        public LiveFormationPreviewBuilder(DrillGroundsContext ctx, InstancedGridPresenter gridPresenter, Mesh unitMesh, Material unitMaterial, Material ghostMaterial)
         {
-            _unitMesh = mesh;
-            _unitMaterial = material;
-            _unitCount = count;
+            _ctx = ctx;
+            _gridPresenter = gridPresenter;
+            _unitMesh = unitMesh;
+            _unitMaterial = unitMaterial;
+            _ghostMaterial = ghostMaterial;
         }
 
-        public VisualElement CreateGui(GuiContext ctx)
+        public VisualElement CreateGui(GuiContext guiCtx)
         {
-            // 1. Setup Camera & RenderTexture 
             _rt = new RenderTexture(1024, 1024, 24, RenderTextureFormat.ARGB32);
             _rt.Create();
 
             _cameraObj = new GameObject("FormationPreviewCamera");
-            // Start the camera a bit closer and angled down
-            _cameraObj.transform.position = new Vector3(0, 20, -40);
+
+            // Start right down in the dirt with the troops
+            _cameraObj.transform.position = new Vector3(0, 8, -15);
             _cameraObj.transform.LookAt(Vector3.zero);
 
             _previewCamera = _cameraObj.AddComponent<Camera>();
             _previewCamera.targetTexture = _rt;
             _previewCamera.clearFlags = CameraClearFlags.SolidColor;
-            _previewCamera.backgroundColor = new Color(0.1f, 0.1f, 0.12f);
+            _previewCamera.backgroundColor = new Color(0.08f, 0.08f, 0.1f);
 
-            // 2. Initialize GPU Buffers
-            InitializeGPUFormation();
-
-            // 3. Setup UI & Interaction
-            var imgElement = new ImageGuiBuilder(_rt).WithScaleMode(ScaleMode.ScaleToFit).CreateGui(ctx);
+            var imgElement = new ImageGuiBuilder(_rt).WithScaleMode(ScaleMode.ScaleToFit).CreateGui(guiCtx);
 
             // --- CAMERA INTERACTION LOGIC ---
             Vector2 lastMousePos = Vector2.zero;
@@ -57,7 +57,7 @@ namespace Assets.Scripts.raWWar.Editors
             int dragButton = -1;
 
             imgElement.RegisterCallback<PointerDownEvent>(evt => {
-                if (evt.button == 0 || evt.button == 1) // 0 = Left (Orbit), 1 = Right (Pan)
+                if (evt.button == 0 || evt.button == 1)
                 {
                     isDragging = true;
                     dragButton = evt.button;
@@ -90,12 +90,10 @@ namespace Assets.Scripts.raWWar.Editors
                 imgElement.ReleasePointer(evt.pointerId);
             });
 
-            // ZOOM
             imgElement.RegisterCallback<WheelEvent>(evt => {
                 if (_cameraObj != null)
                     _cameraObj.transform.Translate(0, 0, -evt.delta.y * 1.5f, Space.Self);
             });
-            // --------------------------------
 
             var rootBuilder = new GraphicalUserInterfaceBuilder("FormationRoot")
                 .WithBackgroundColor(Color.black)
@@ -104,83 +102,80 @@ namespace Assets.Scripts.raWWar.Editors
                     ve.style.flexGrow = 1;
                     ve.schedule.Execute(() =>
                     {
-                        RenderFormation();
+                        UpdateCameraScaling();
+                        RenderScene();
                         ve.MarkDirtyRepaint();
                     }).Every(16);
                     ve.RegisterCallback<DetachFromPanelEvent>(evt => Cleanup());
                 })
-                .AddChild(imgElement); // Add our newly interactive image
+                .AddChild(imgElement);
 
             return rootBuilder.Build();
         }
 
-        private void InitializeGPUFormation()
+        private void UpdateCameraScaling()
         {
-            // Allocate memory on the GPU (Count * Size of Struct)
-            int stride = Marshal.SizeOf(typeof(SoldierGPUData));
-            _soldierBuffer = new ComputeBuffer(_unitCount, stride);
+            if (_ctx == null || _cameraObj == null) return;
 
-            // Generate formation positions (e.g., a massive grid)
-            SoldierGPUData[] armyData = new SoldierGPUData[_unitCount];
-            int columns = Mathf.CeilToInt(Mathf.Sqrt(_unitCount));
-            float spacing = 2.5f;
+            float baseHeight = 15f;
+            float zoomOutThreshold = 50f;
+            float growthFactor = Mathf.Max(0, _ctx.CurrentArmySize - zoomOutThreshold) * 0.4f;
 
-            for (int i = 0; i < _unitCount; i++)
-            {
-                int row = i / columns;
-                int col = i % columns;
+            float desiredHeight = Mathf.Clamp(baseHeight + growthFactor, baseHeight, _ctx.MapWidth * 1.5f);
+            float desiredZ = -desiredHeight * 0.8f;
 
-                armyData[i] = new SoldierGPUData
-                {
-                    Position = new Vector3(col * spacing - (columns * spacing / 2), 0, row * spacing),
-                    Facing = 0f,
-                    StateId = 0,
-                    Health = 100f
-                };
-            }
+            Vector3 targetPos = new Vector3(_cameraObj.transform.position.x, desiredHeight, desiredZ);
 
-            // Push data to GPU
-            _soldierBuffer.SetData(armyData);
-
-            // Bind the buffer to the Material so the Shader can read the positions!
-            _unitMaterial.SetBuffer("_SoldierBuffer", _soldierBuffer);
+            _cameraObj.transform.position = Vector3.Lerp(_cameraObj.transform.position, targetPos, Time.deltaTime * 1.5f);
+            _cameraObj.transform.LookAt(Vector3.zero);
         }
 
-        private void RenderFormation()
+        private void RenderScene()
         {
-            if (_unitMesh == null || _unitMaterial == null || _soldierBuffer == null) return;
+            if (_ctx == null) return;
+            Bounds bounds = new Bounds(Vector3.zero, new Vector3(10000, 10000, 10000));
 
-            Bounds bounds = new Bounds(Vector3.zero, new Vector3(1000, 1000, 1000));
-
-            // 1. Setup the modern RenderParams
-            RenderParams rparams = new RenderParams(_unitMaterial);
-            rparams.worldBounds = bounds;
-
-            // CRITICAL: Bind it exclusively to our UI preview camera!
-            rparams.camera = _previewCamera;
-
-            // Optional: Turn on shadows for the UI preview
-            rparams.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-            rparams.receiveShadows = true;
-
-            // 2. The Submesh Loop
-            // This safely handles models with 1 material OR 10 materials.
-            for (int submeshIndex = 0; submeshIndex < _unitMesh.subMeshCount; submeshIndex++)
+            // --- 1. RENDER TERRAIN (Via Generic GPU Presenter) ---
+            if (_gridPresenter != null)
             {
-                // NOTE ON MULTIPLE MATERIALS: 
-                // If your Soldier requires different materials for different submeshes, 
-                // you would pass a Material[] to this Builder instead of a single Material.
-                // Then, you would update the material right here before drawing:
-                // rparams.material = _unitMaterials[submeshIndex];
+                _gridPresenter.RenderMap(_previewCamera);
+            }
 
-                Graphics.RenderMeshPrimitives(rparams, _unitMesh, submeshIndex, _unitCount);
+            // --- 2. RENDER ARMY (Via Compute Buffer) ---
+            if (_unitMesh != null && _unitMaterial != null && _ctx.CurrentArmySize > 0)
+            {
+                ComputeBuffer readBuffer = _ctx.GetReadBuffer();
+                if (readBuffer != null)
+                {
+                    _unitMaterial.SetBuffer("_SoldierBuffer", readBuffer);
+
+                    RenderParams rparams = new RenderParams(_unitMaterial);
+                    rparams.worldBounds = bounds;
+                    rparams.camera = _previewCamera;
+                    rparams.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                    rparams.receiveShadows = true;
+
+                    for (int submeshIndex = 0; submeshIndex < _unitMesh.subMeshCount; submeshIndex++)
+                    {
+                        Graphics.RenderMeshPrimitives(rparams, _unitMesh, submeshIndex, _ctx.CurrentArmySize);
+                    }
+                }
+            }
+
+            // --- 3. RENDER GHOST RECRUIT ---
+            if (_ghostMaterial != null && _unitMesh != null)
+            {
+                Matrix4x4 ghostMatrix = Matrix4x4.TRS(_ctx.RecruitPosition, Quaternion.identity, Vector3.one);
+                RenderParams ghostParams = new RenderParams(_ghostMaterial);
+                ghostParams.worldBounds = bounds;
+                ghostParams.camera = _previewCamera;
+
+                Graphics.RenderMesh(ghostParams, _unitMesh, 0, ghostMatrix);
             }
         }
 
         private void Cleanup()
         {
-            if (_soldierBuffer != null) _soldierBuffer.Release();
-            if (_argsBuffer != null) _argsBuffer.Release();
             if (_rt != null) _rt.Release();
             if (_cameraObj != null) UnityEngine.Object.DestroyImmediate(_cameraObj);
         }

@@ -2,17 +2,18 @@
 using System;
 using System.Collections.Generic;
 using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders.Themes;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.Core.Diagnostics;
+using Workshop.Core.Extensions;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.Themes;
 
 namespace Assets.Editor.Singularity
 {
     public class SingularityWorkshopHub : IGuiProvider
     {
-        public string Title => "EXPERIENCE FORGE";
+        public string Title => "Editor Gui";
 
         private string _activeTab = "FSMs";
         private VisualElement _rightWorkspace;
@@ -20,14 +21,54 @@ namespace Assets.Editor.Singularity
         // MISSION: Implement CreateGui to satisfy IGuiProvider
         public VisualElement CreateGui(GuiContext ctx)
         {
+            // Create an absolute root to hold the Toolbar AND the Split Panel
+            var masterRoot = new VisualElement { style = { flexGrow = 1 } };
+
+            // --- GLOBAL TOOLBAR ---
+            var toolbar = new VisualElement
+            {
+                style = {
+                    height = 40, backgroundColor = new Color(0.12f, 0.12f, 0.14f),
+                    flexDirection = FlexDirection.Row, justifyContent = Justify.FlexEnd,
+                    alignItems = Align.Center, paddingRight = 15,
+                    borderBottomWidth = 2, borderBottomColor = GuiSkin.Active?.PrimaryAccent ?? Color.cyan
+                }
+            };
+
+#if UNITY_EDITOR
+            var bakeBtn = new Button(() => {
+                string path = UnityEditor.EditorUtility.SaveFilePanel("Save Hub to UXML", "Assets", "WorkshopHub_Baked", "uxml");
+                if (!string.IsNullOrEmpty(path))
+                {
+                    // We pass 'masterRoot' here to ensure the entire window is exported!
+                    GraphicalUserInterfaceBuilder.ConvertToUIDocument(masterRoot, path);
+                    ForgeLogger.Log($"[Singularity] Successfully baked Hub layout to: {path}");
+                }
+            })
+            { text = "💾 BAKE HUB TO UXML" };
+
+            bakeBtn.style.backgroundColor = new Color(0.8f, 0.1f, 0.8f);
+            bakeBtn.style.color = Color.white;
+            bakeBtn.style.unityFontStyleAndWeight = FontStyle.Bold;
+            bakeBtn.style.paddingLeft = 15; bakeBtn.style.paddingRight = 15;
+
+            toolbar.Add(bakeBtn);
+#endif
+
+            masterRoot.Add(toolbar);
+
             // MISSION: Split Panel Architecture (2 Columns, 1 Row)
-            var layout = new SplitPanelBuilder(sidebarWidth: 300, side: Side.Left)
+            var layout = new ForgeSplitPanelBuilder(sidebarWidth: 300, side: Side.Left)
                 // LEFT: Telemetry Dashboard
                 .WithSidebar(new Workshop_Gui_FsmEngineDashboard())
                 // RIGHT: The Tabbed Workspace
                 .WithMain(new ActionGuiProvider(BuildTabbedWorkspace));
 
-            return layout.CreateGui(ctx);
+            var splitContent = layout.CreateGui(ctx);
+            splitContent.style.flexGrow = 1;
+            masterRoot.Add(splitContent);
+
+            return masterRoot;
         }
 
         private VisualElement BuildTabbedWorkspace(GuiContext ctx)

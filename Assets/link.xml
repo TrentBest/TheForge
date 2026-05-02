@@ -1,0 +1,9 @@
+﻿<linker>
+	<assembly fullname="TheSingularityWorkshop.FSM_API" preserve="all"/>
+
+	<assembly fullname="Assembly-CSharp">
+		<namespace fullname="Workshop.Core" preserve="all"/>
+		<namespace fullname="Workshop.Core.Rendering" preserve="all"/>
+		<namespace fullname="Workshop.UI_And_Tools.Forge" preserve="all"/>
+	</assembly>
+</linker>

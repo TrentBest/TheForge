@@ -9,7 +9,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using TheSingularityWorkshop;
 using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders; // Accessing GraphicalUserInterfaceBuilder
+using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.Core.Diagnostics; // Accessing GraphicalUserInterfaceBuilder
 
 public class StateBuilderEditorWindow : EditorWindow
 {
@@ -102,7 +104,7 @@ public class StateBuilderEditorWindow : EditorWindow
 
     private  void SyncWithFleet()
     {
-        Debug.Log("Pulling latest registries from Fleet..");
+        ForgeLogger.Log("Pulling latest registries from Fleet..");
         // This is where your REST abstraction consumes existing content
         // await FetchRegistryFromServer("api/registry/enter", "EnterRegistry.txt");
         // await FetchRegistryFromServer("api/registry/update", "UpdateRegistry.txt");
@@ -115,7 +117,7 @@ public class StateBuilderEditorWindow : EditorWindow
     private void PushStateDefinition()
     {
         // This acts as the Gatekeeper, pushing new content to your server
-        Debug.Log($"Pushing State '{_stateNameField.value}' to Fleet Registry..");
+        ForgeLogger.Log($"Pushing State '{_stateNameField.value}' to Fleet Registry..");
     }
 
     private void OpenCacheFolder() => EditorUtility.RevealInFinder(_cachePath);

@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 
-namespace TheSingularityWorkshop.UnityServices
+namespace Assets.Scripts.Unity
 {
+
+    public enum LobbyType { PrivateInvitation, PublicMatchmaking }
+
     /// <summary>
     /// The persistent data asset built by the Forge and consumed by the Runtime.
     /// </summary>
@@ -30,5 +33,17 @@ namespace TheSingularityWorkshop.UnityServices
         [Header("Proxy & Liaison")]
         public bool UseLocalDaemonProxy = false;
         public string LocalDaemonUrl = "http://localhost:5000/api/";
+
+        [Header("Lobby & Relay Handshake")]
+        public LobbyType ActiveLobbyType = LobbyType.PrivateInvitation;
+        public int MaxPlayers = 4;
+        public bool AllowJoinInProgress = true;
+
+        [Tooltip("The regional bucket for matchmaking (e.g., 'us-east', 'eu-west').")]
+        public string MatchmakingRegion = "us-east";
+
+        [Header("Matchmaking Logic")]
+        public bool UseSkillBasedSorting = false;
+        public string SkillDataShelfKey = "PlayerCombatRating";
     }
 }

@@ -1,0 +1,14 @@
+#pragma kernel CSMain
+struct SwarmDrone {
+    float3 Position;
+    float3 Velocity;
+    int StateId;
+    float Battery;
+};
+RWStructuredBuffer<SwarmDrone> _AgentBuffer;
+StructuredBuffer<float4> _AttractorBuffer; uint _AttractorCount; float _DeltaTime;
+[numthreads(64, 1, 1)] void CSMain (uint3 id : SV_DispatchThreadID) {
+    SwarmDrone agent = _AgentBuffer[id.x];
+    // [FSM LOGIC INJECTED]
+    _AgentBuffer[id.x] = agent;
+}

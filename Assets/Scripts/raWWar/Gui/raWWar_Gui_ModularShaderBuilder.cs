@@ -1,13 +1,11 @@
-﻿using Assets.Scripts.Workshop.Forge.Builders.GuiBuilders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace Assets.Scripts.raWWar.Editors.ShaderForge
+namespace Assets.Scripts.raWWar.Gui
 {
     public class raWWar_Gui_ModularShaderBuilder : IGuiProvider
     {
@@ -18,7 +16,7 @@ namespace Assets.Scripts.raWWar.Editors.ShaderForge
         private ShaderForgeContext _currentContext = new ShaderForgeContext();
 
         // UI State
-        private SplitPanelBuilder _splitBuilder;
+        private ForgeSplitPanelBuilder _splitBuilder;
         private VisualElement _root;
         private string _selectedBehaviorToAdd = "Position Instancing";
 
@@ -32,7 +30,7 @@ namespace Assets.Scripts.raWWar.Editors.ShaderForge
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            _splitBuilder = new SplitPanelBuilder(sidebarWidth: 400, Side.Left)
+            _splitBuilder = new ForgeSplitPanelBuilder(sidebarWidth: 400, Side.Left)
                 .WithSidebar(new DynamicGuiProvider(c => BuildNodeStacker()))
                 .WithMain(new DynamicGuiProvider(c => BuildCompiledPreview()));
 

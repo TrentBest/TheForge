@@ -1,18 +1,16 @@
-﻿using Assets.Scripts.Workshop.Forge.Builders.GuiBuilders;
-using System;
-using System.Collections.Generic;
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.Core.Diagnostics;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace Assets.Scripts.raWWar.Editors
+namespace Assets.Scripts.raWWar.Gui
 {
     public class raWWar_Gui_ShaderForge : IGuiProvider
     {
         public string Title => "raWWar Shader Forge";
 
-        private SplitPanelBuilder _splitBuilder;
+        private ForgeSplitPanelBuilder _splitBuilder;
         private VisualElement _root;
 
         // --- raWWar Theme Palette ---
@@ -33,7 +31,7 @@ namespace Assets.Scripts.raWWar.Editors
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            _splitBuilder = new SplitPanelBuilder(sidebarWidth: 400, Side.Left);
+            _splitBuilder = new ForgeSplitPanelBuilder(sidebarWidth: 400, Side.Left);
 
             _splitBuilder.WithSidebar(new DynamicGuiProvider(c => BuildControlsContext()));
             _splitBuilder.WithMain(new DynamicGuiProvider(c => BuildCodePreviewContext()));
@@ -73,7 +71,7 @@ namespace Assets.Scripts.raWWar.Editors
             // --- COMPILATION ACTIONS ---
             builder.AddSeparator(_accentColor, 1);
 
-            var compileBtn = new Button(() => Debug.Log("HLSL Compiled and Saved to Assets!")) { text = "COMPILE & EXPORT .SHADER" };
+            var compileBtn = new Button(() => ForgeLogger.Log("HLSL Compiled and Saved to Assets!")) { text = "COMPILE & EXPORT .SHADER" };
             compileBtn.style.backgroundColor = _accentColor;
             compileBtn.style.color = Color.white;
             compileBtn.style.unityFontStyleAndWeight = FontStyle.Bold;

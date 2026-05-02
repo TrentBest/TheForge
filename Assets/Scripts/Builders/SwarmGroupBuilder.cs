@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using TheSingularityWorkshop.Builders;
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Assets.Scripts.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Builders
+namespace Assets.Scripts.Asteroids
 {
     public class SwarmGroupBuilder
     {

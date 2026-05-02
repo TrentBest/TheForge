@@ -2,8 +2,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 namespace Assets.Editor.raWWar
 {

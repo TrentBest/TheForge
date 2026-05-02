@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements; // <--- Added this to fix 'ScrollViewMode' error
-using TheSingularityWorkshop.Swarmy;
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Assets.Scripts.Builders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Assets.Scripts.Swarmy;
+using Assets.Scripts.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Builders
+namespace Assets.Scripts.Asteroids
 {
     public class DroneBuilder
     {
@@ -38,17 +39,17 @@ namespace TheSingularityWorkshop.Builders
             // controller.behaviorID = BehaviorID;
 
             // Build Motors
-            var fl = FrontLeft.Build(go.transform);
-            fl.transform.localPosition = new Vector3(-1, 0, 1);
+            var fl = FrontLeft.Build();
+            fl.LocalOffset = new Vector3(-1, 0, 1);
 
-            var fr = FrontRight.Build(go.transform);
-            fr.transform.localPosition = new Vector3(1, 0, 1);
+            var fr = FrontRight.Build();
+            fr.LocalOffset = new Vector3(1, 0, 1);
 
-            var rl = RearLeft.Build(go.transform);
-            rl.transform.localPosition = new Vector3(-1, 0, -1);
+            var rl = RearLeft.Build();
+            rl.LocalOffset = new Vector3(-1, 0, -1);
 
-            var rr = RearRight.Build(go.transform);
-            rr.transform.localPosition = new Vector3(1, 0, -1);
+            var rr = RearRight.Build();
+            rr.LocalOffset = new Vector3(1, 0, -1);
 
             return controller;
         }

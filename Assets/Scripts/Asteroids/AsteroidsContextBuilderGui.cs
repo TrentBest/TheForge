@@ -1,11 +1,12 @@
 ﻿#if UNITY_EDITOR
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using UnityEditor.UIElements; // For specific fields like FloatField, IntegerField
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.Core.Diagnostics;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.IO;
 
-namespace TheSingularityWorkshop.Asteroids.Editor
+namespace Workshop.Asteroids
 {
     public class AsteroidsContextBuilderGui : IGuiProvider
     {
@@ -16,87 +17,104 @@ namespace TheSingularityWorkshop.Asteroids.Editor
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            var builder = new GraphicalUserInterfaceBuilder("AsteroidsMasterSettings_Root")
-                .WithBackgroundColor(new Color(0.05f, 0.05f, 0.08f)) // Deep space blue/black
-                .WithFlexLayout(FlexDirection.Row, Justify.FlexStart, Align.Stretch)
-                .WithPercentSize(100, 100);
+            var builder = new ForgeContainerBuilder("AsteroidsMasterSettings_Root")
+                            .WithBackgroundColor(new Color(0.05f, 0.05f, 0.08f))
+                            .WithFlexLayout(FlexDirection.Row, Justify.FlexStart, Align.Stretch)
+                            .WithFlexGrow(1f);
 
             // --- LEFT SIDEBAR: SYSTEM SETTINGS (30%) ---
-            builder.AddChild(c => {
-                var sidebar = new VisualElement
-                {
-                    style = {
-                        width = Length.Percent(30),
-                        backgroundColor = new Color(0.1f, 0.1f, 0.15f),
-                        borderRightWidth = 2,
-                        borderRightColor = Color.cyan,
-                        paddingTop = 15, paddingBottom = 15, paddingLeft = 15, paddingRight = 15
-                    }
-                };
+            builder.AddChild(new ForgeContainerBuilder("SidebarPane")
+                .WithWidth(new StyleLength(Length.Percent(30f)))
+                .WithBackgroundColor(new Color(0.1f, 0.1f, 0.15f))
+                .WithBorderWidth(0, 2f, 0, 0)
+                .WithBorderColor(Color.cyan)
+                .WithPadding(15f)
 
-                sidebar.Add(new Label("CABINET CONFIGURATION") { style = { color = Color.cyan, fontSize = 18, unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 20 } });
+                .AddChild(new ForgeLabelBuilder("CABINET CONFIGURATION")
+                    .WithColor(Color.cyan)
+                    .WithFontSize(18)
+                    .WithBold()
+                    .WithMarginBottom(20f))
 
-                // Session Settings Box
-                var sessionBox = new VisualElement { style = { backgroundColor = Color.black, paddingLeft = 10, paddingRight = 10, paddingTop = 10, paddingBottom = 10, borderLeftWidth = 2, borderLeftColor = Color.yellow, marginBottom = 20 } };
-                sessionBox.Add(new Label("ARCADE SESSION RULES") { style = { color = Color.yellow, fontSize = 10, unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 5 } });
+                // Session Settings
+                .AddChild(new ForgeContainerBuilder("SessionBox")
+                    .WithBackgroundColor(Color.black)
+                    .WithPadding(10f)
+                    .WithBorderWidth(0, 0, 0, 2f)
+                    .WithBorderColor(Color.yellow)
+                    .WithMarginBottom(20f)
+                    .AddChild(new ForgeLabelBuilder("ARCADE SESSION RULES")
+                        .WithColor(Color.yellow)
+                        .WithFontSize(10)
+                        .WithBold()
+                        .WithMarginBottom(5f))
+                    .AddChild(new ForgeTextFieldBuilder("Starting Lives", _context.Score.Lives.ToString())
+                        .OnValueChanged(evt => { if (int.TryParse(evt.newValue, out int v)) _context.Score.Lives = v; }))
+                    .AddChild(new ForgeTextFieldBuilder("High Score Target", "10000").AsReadOnly(true))
+                )
 
-                var livesField = new IntegerField("Starting Lives") { value = _context.Score.Lives };
-                livesField.RegisterValueChangedCallback(evt => _context.Score.Lives = evt.newValue);
-                sessionBox.Add(livesField);
+                // Screen Boundaries
+                .AddChild(new ForgeContainerBuilder("BoundsBox")
+                    .WithBackgroundColor(Color.black)
+                    .WithPadding(10f)
+                    .WithBorderWidth(0, 0, 0, 2f)
+                    .WithBorderColor(Color.green)
+                    .WithMarginBottom(20f)
+                    .AddChild(new ForgeLabelBuilder("2D SCREEN WRAP BOUNDARIES")
+                        .WithColor(Color.green)
+                        .WithFontSize(10)
+                        .WithBold()
+                        .WithMarginBottom(5f))
+                    .AddChild(new ForgeTextFieldBuilder("Width Limit (X)", _context.ScreenBounds.x.ToString())
+                        .OnValueChanged(evt => { if (float.TryParse(evt.newValue, out float v)) _context.ScreenBounds = new Vector2(v, _context.ScreenBounds.y); }))
+                    .AddChild(new ForgeTextFieldBuilder("Height Limit (Y)", _context.ScreenBounds.y.ToString())
+                        .OnValueChanged(evt => { if (float.TryParse(evt.newValue, out float v)) _context.ScreenBounds = new Vector2(_context.ScreenBounds.x, v); }))
+                )
+            );
 
-                var scoreField = new IntegerField("High Score Target") { value = 10000 };
-                sessionBox.Add(scoreField);
+            // --- RIGHT AREA: REAL-TIME CABINET PREVIEW ---
+            builder.AddChild(new ForgeContainerBuilder("PreviewArea")
+                .WithFlexGrow(1f)
+                .WithFlexLayout(FlexDirection.Column, Justify.Center, Align.Center)
+                .WithBackgroundColor(new Color(0.02f, 0.02f, 0.02f))
+                .AddChild(new ForgeLabelBuilder("CABINET CRT PREVIEW")
+                    .WithColor(Color.gray)
+                    .WithFontSize(16)
+                    .WithBold()
+                    .WithMarginBottom(10f))
 
-                sidebar.Add(sessionBox);
-
-                // Screen Boundaries Box
-                var boundsBox = new VisualElement { style = { backgroundColor = Color.black, paddingLeft = 10, paddingRight = 10, paddingTop = 10, paddingBottom = 10, borderLeftWidth = 2, borderLeftColor = Color.green, marginBottom = 20 } };
-                boundsBox.Add(new Label("2D SCREEN WRAP BOUNDARIES") { style = { color = Color.green, fontSize = 10, unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 5 } });
-                boundsBox.Add(new Label("Defines the coordinate edges where entities warp to the opposite side.") { style = { color = Color.gray, fontSize = 9, whiteSpace = WhiteSpace.Normal, marginBottom = 10 } });
-
-                var boundsX = new FloatField("Width Limit (X)") { value = _context.ScreenBounds.x };
-                boundsX.RegisterValueChangedCallback(evt => _context.ScreenBounds = new Vector2(evt.newValue, _context.ScreenBounds.y));
-
-                var boundsY = new FloatField("Height Limit (Y)") { value = _context.ScreenBounds.y };
-                boundsY.RegisterValueChangedCallback(evt => _context.ScreenBounds = new Vector2(_context.ScreenBounds.x, evt.newValue));
-
-                boundsBox.Add(boundsX);
-                boundsBox.Add(boundsY);
-                sidebar.Add(boundsBox);
-
-                return sidebar;
-            });
-
-            // --- RIGHT AREA: REAL-TIME CABINET SCREEN PREVIEW (70%) ---
-            builder.AddChild(c => {
-                var rightCol = new VisualElement { style = { flexGrow = 1, flexDirection = FlexDirection.Column, alignItems = Align.Center, justifyContent = Justify.Center, backgroundColor = new Color(0.02f, 0.02f, 0.02f) } };
-
-                rightCol.Add(new Label("CABINET CRT PREVIEW") { style = { color = Color.gray, fontSize = 16, unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 10, letterSpacing = 2 } });
-
-                // Custom Visual Element Renderer
-                var screenPreview = new AsteroidsScreenPreviewRenderer(_context)
-                {
-                    style = {
-                        width = Length.Percent(90),
-                        height = Length.Percent(80),
-                        backgroundColor = Color.black,
-                        borderLeftWidth = 4, borderRightWidth = 4, borderTopWidth = 4, borderBottomWidth = 4,
-                        borderLeftColor = new Color(0.2f, 0.2f, 0.2f), borderRightColor = new Color(0.2f, 0.2f, 0.2f),
-                        borderTopColor = new Color(0.2f, 0.2f, 0.2f), borderBottomColor = new Color(0.2f, 0.2f, 0.2f)
-                    }
-                };
-
-                rightCol.Add(screenPreview);
-
-                return rightCol;
-            });
+                // FIXED: Wrapped the custom lambda in a DynamicGuiProvider
+                .AddChild(new DynamicGuiProvider(c => {
+                    return new AsteroidsScreenPreviewRenderer(_context)
+                    {
+                        style = {
+                            width = Length.Percent(90f),
+                            height = Length.Percent(80f),
+                            backgroundColor = Color.black,
+                            borderLeftWidth = 4f, borderRightWidth = 4f, borderTopWidth = 4f, borderBottomWidth = 4f,
+                            borderLeftColor = new Color(0.2f, 0.2f, 0.2f), borderRightColor = new Color(0.2f, 0.2f, 0.2f),
+                            borderTopColor = new Color(0.2f, 0.2f, 0.2f), borderBottomColor = new Color(0.2f, 0.2f, 0.2f)
+                        }
+                    };
+                }))
+            );
 
             return builder.Build();
         }
 
-        public System.Action<VisualElement> GetGuiBuilder() => (root) => root.Add(CreateGui(new GuiContext()));
-        public void FromUIDocument(string assetPath) => throw new System.NotImplementedException();
-        public void ToUIDocument(string assetPath) => throw new System.NotImplementedException();
+        public Action<VisualElement> GetGuiBuilder() => (root) => root.Add(CreateGui(new GuiContext()));
+
+        public void ToUIDocument(string assetPath)
+        {
+            var snapshotRoot = CreateGui(new GuiContext());
+            string fileName = string.IsNullOrEmpty(assetPath) ? "AsteroidsMasterConfig_Snapshot" : System.IO.Path.GetFileNameWithoutExtension(assetPath);
+            WorkshopUxmlBaker.Bake(snapshotRoot, fileName);
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            ForgeLogger.LogWarning("[AsteroidsContextBuilderGui] FromUIDocument is not supported. This UI is dynamically generated via GuiBuilders.");
+        }
     }
 
     // --- CUSTOM MAP RENDERER COMPONENT ---
@@ -182,7 +200,7 @@ namespace TheSingularityWorkshop.Asteroids.Editor
             for (int i = 0; i <= points; i++)
             {
                 float angle = (i * 360f / points) * Mathf.Deg2Rad;
-                float rOffset = radius + Random.Range(-radius * 0.2f, radius * 0.2f); // Jaggedness
+                float rOffset = radius + UnityEngine.Random.Range(-radius * 0.2f, radius * 0.2f); // Jaggedness
                 Vector2 pt = position + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * rOffset;
 
                 if (i == 0) painter.MoveTo(pt);

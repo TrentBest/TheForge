@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using TheSingularityWorkshop.FSM_API;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 namespace TheSingularityWorkshop.Editor
 {
@@ -45,7 +45,7 @@ namespace TheSingularityWorkshop.Editor
         // Helper to wake up lazy UIs
         public static void ForceGuiRefresh()
         {
-            var builders = Object.FindObjectsByType<TheSingularityWorkshop.Forge.Builders.GuiBuilders.InWorldGuiBuilder>(FindObjectsSortMode.None);
+            var builders = Object.FindObjectsByType<InWorldGuiBuilder>(FindObjectsSortMode.None);
             foreach (var b in builders) b.MarkDirty();
         }
     }

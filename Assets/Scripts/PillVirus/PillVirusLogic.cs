@@ -2,198 +2,174 @@
 using TheSingularityWorkshop.FSM_API;
 using System.Collections.Generic;
 
-namespace TheSingularityWorkshop.Sandbox.PillVirus
+namespace Assets.Scripts.PillVirus
 {
     public static class PillVirusLogic
     {
         public static void InitializeFSM()
         {
-            global::TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateFiniteStateMachine("PillVirusEngine", 1, "PillVirusGroup")
-                .State("Spawning", OnSpawning, null, null)
-                .State("Falling", null, OnFallingUpdate, null)
-                .State("Evaluating", OnEvaluating, null, null)
-                .State("Cascading", null, OnCascadingUpdate, null)
-                .State("GameOver", null, null, null)
+            FSM_API.Create.CreateFiniteStateMachine("PillVirusEngine", 1, "PillVirusGroup")
+                 .State("Spawning", OnSpawning, null, null)
+                 .State("Falling", null, OnFallingUpdate, null)
+                 .State("Evaluating", OnEvaluating, null, null)
+                 .State("Cascading", null, OnCascadingUpdate, null)
+                 .State("GameOver", null, null, null)
+                 .State("Victory", null, null, null)
 
-                .Transition("Spawning", "Falling", ctx => !((PillVirusContext)ctx).IsGameOver)
-                .Transition("Spawning", "GameOver", ctx => ((PillVirusContext)ctx).IsGameOver)
-                .Transition("Falling", "Evaluating", ctx => ((PillVirusContext)ctx).NeedsEvaluation)
-                .Transition("Evaluating", "Cascading", ctx => ((PillVirusContext)ctx).NeedsCascade)
-                .Transition("Evaluating", "Spawning", ctx => !((PillVirusContext)ctx).NeedsCascade)
-                .Transition("Cascading", "Evaluating", ctx => ((PillVirusContext)ctx).NeedsEvaluation)
-                .BuildDefinition();
+                 .Transition("Spawning", "Falling", ctx => !((PillVirusContext)ctx).IsGameOver && !((PillVirusContext)ctx).NeedsEvaluation)
+                 .Transition("Spawning", "Cascading", ctx => !((PillVirusContext)ctx).IsGameOver && ((PillVirusContext)ctx).NeedsEvaluation)
+                 .Transition("Spawning", "GameOver", ctx => ((PillVirusContext)ctx).IsGameOver)
+                 .Transition("Falling", "Evaluating", ctx => ((PillVirusContext)ctx).NeedsEvaluation)
+                 .Transition("Evaluating", "Victory", ctx => ((PillVirusContext)ctx).IsVictory)
+                 .Transition("Evaluating", "Cascading", ctx => ((PillVirusContext)ctx).NeedsCascade && !((PillVirusContext)ctx).IsVictory)
+                 .Transition("Evaluating", "Spawning", ctx => !((PillVirusContext)ctx).NeedsCascade && !((PillVirusContext)ctx).IsVictory)
+                 .Transition("Cascading", "Evaluating", ctx => ((PillVirusContext)ctx).NeedsEvaluation)
+                 .BuildDefinition();
         }
 
-        // --- INPUT ROUTING ---
-        public static void HandleInput(PillVirusContext ctx, KeyCode key)
+        public static void HandleInput(PillVirusContext ctx, KeyCode key, bool isDown)
         {
-            if (ctx.NeedsEvaluation || ctx.NeedsCascade || ctx.IsGameOver) return;
+            if (isDown) ctx.HeldKeys.Add(key); else ctx.HeldKeys.Remove(key);
+            if (!isDown || ctx.NeedsEvaluation || ctx.NeedsCascade || ctx.IsGameOver || ctx.ActivePlayers.Count == 0) return;
 
-            // Player 1 (WASD)
-            if (key == KeyCode.A) MovePill(ctx, 0, -1, 0);
-            if (key == KeyCode.D) MovePill(ctx, 0, 1, 0);
-            if (key == KeyCode.S) MovePill(ctx, 0, 0, 1);
-            if (key == KeyCode.W) RotatePill(ctx, 0);
+            var p = ctx.ActivePlayers[0];
 
-            // Player 2 (Arrows)
-            if (key == KeyCode.LeftArrow) MovePill(ctx, 1, -1, 0);
-            if (key == KeyCode.RightArrow) MovePill(ctx, 1, 1, 0);
-            if (key == KeyCode.DownArrow) MovePill(ctx, 1, 0, 1);
-            if (key == KeyCode.UpArrow) RotatePill(ctx, 1);
+            // D-Pad: Left/Right
+            if (key == KeyCode.LeftArrow || key == KeyCode.A) TryMove(ctx, p, -1, 0);
+            if (key == KeyCode.RightArrow || key == KeyCode.D) TryMove(ctx, p, 1, 0);
+
+            // Buttons: A (CW) and B (CCW)
+            if (key == KeyCode.K || key == KeyCode.Z || key == KeyCode.W) TryRotate(ctx, p, true);
+            if (key == KeyCode.L || key == KeyCode.X || key == KeyCode.E) TryRotate(ctx, p, false);
         }
 
-        private static void MovePill(PillVirusContext ctx, int playerId, int dx, int dy)
+        private static void TryMove(PillVirusContext ctx, ActivePill p, int dx, int dy)
         {
-            var pill = ctx.ActivePlayers.Find(p => p.PlayerId == playerId);
-            if (pill == null) return;
-
-            int newX = pill.X + dx;
-            int newY = pill.Y + dy;
-
-            if (IsValidPosition(ctx, pill, newX, newY, pill.IsHorizontal))
+            if (IsValid(ctx, p.X + dx, p.Y + dy, p.IsHorizontal))
             {
-                pill.X = newX;
-                pill.Y = newY;
+                p.X += dx; p.Y += dy;
+                if (p.IsResting) p.LockTimer = 0f; // Reset slip-time on move
+                PillVirusAcousticEngine.Play(PillVirusAcousticEngine.Move);
             }
         }
 
-        private static void RotatePill(PillVirusContext ctx, int playerId)
+        private static void TryRotate(PillVirusContext ctx, ActivePill p, bool cw)
         {
-            var pill = ctx.ActivePlayers.Find(p => p.PlayerId == playerId);
-            if (pill == null) return;
-
-            bool newHorizontal = !pill.IsHorizontal;
-            if (IsValidPosition(ctx, pill, pill.X, pill.Y, newHorizontal))
-            {
-                pill.IsHorizontal = newHorizontal;
-                // Swap colors visually on rotate
-                (pill.Color1, pill.Color2) = (pill.Color2, pill.Color1);
-            }
+            bool nextH = !p.IsHorizontal;
+            if (IsValid(ctx, p.X, p.Y, nextH)) ApplyRot(p, nextH, cw);
+            else if (IsValid(ctx, p.X - 1, p.Y, nextH)) { p.X--; ApplyRot(p, nextH, cw); } // Kick Left
+            else if (IsValid(ctx, p.X + 1, p.Y, nextH)) { p.X++; ApplyRot(p, nextH, cw); } // Kick Right
         }
 
-        private static bool IsValidPosition(PillVirusContext ctx, ActivePill pill, int x, int y, bool isHorizontal)
+        private static void ApplyRot(ActivePill p, bool h, bool cw)
         {
-            if (x < 0 || x >= ctx.Width || y < 0 || y >= ctx.Height) return false;
+            p.IsHorizontal = h;
+            if (cw) (p.Color1, p.Color2) = (p.Color2, p.Color1);
+            p.LockTimer = 0f;
+            PillVirusAcousticEngine.Play(PillVirusAcousticEngine.Rotate);
+        }
+
+        private static bool IsValid(PillVirusContext ctx, int x, int y, bool h)
+        {
+            if (x < 0 || y < 0 || y >= ctx.Height || (h && x + 1 >= ctx.Width) || (!h && y + 1 >= ctx.Height)) return false;
             if (ctx.Board[x, y].Type != CellType.Empty) return false;
-
-            if (isHorizontal)
-            {
-                if (x + 1 >= ctx.Width || ctx.Board[x + 1, y].Type != CellType.Empty) return false;
-            }
-            else
-            {
-                if (y + 1 >= ctx.Height || ctx.Board[x, y + 1].Type != CellType.Empty) return false;
-            }
-            return true;
+            return h ? ctx.Board[x + 1, y].Type == CellType.Empty : ctx.Board[x, y + 1].Type == CellType.Empty;
         }
 
-        // --- FSM STATES ---
         private static void OnSpawning(IStateContext context)
         {
             var ctx = (PillVirusContext)context;
-            ctx.NeedsEvaluation = false;
+            ctx.ComboMultiplier = 1;
 
-            for (int i = 0; i < ctx.PlayerCount; i++)
+            if (ctx.PendingGarbage > 0)
             {
-                if (!ctx.ActivePlayers.Exists(p => p.PlayerId == i))
-                    ctx.SpawnPillForPlayer(i);
+                for (int i = 0; i < ctx.PendingGarbage; i++)
+                {
+                    int rx = Random.Range(0, ctx.Width);
+                    if (ctx.Board[rx, 0].Type == CellType.Empty)
+                        ctx.Board[rx, 0] = new GridCell { Type = CellType.Pill, ColorId = Random.Range(1, 4), LinkId = 0 };
+                }
+                ctx.PendingGarbage = 0; ctx.NeedsEvaluation = true; return;
+            }
+
+            if (ctx.Board[3, 0].Type != CellType.Empty) { ctx.IsGameOver = true; PillVirusAcousticEngine.Play(PillVirusAcousticEngine.Death); return; }
+            ctx.ActivePlayers.Add(new ActivePill { X = 3, Y = 0, Color1 = ctx.NextColor1, Color2 = ctx.NextColor2 });
+            ctx.NextColor1 = Random.Range(1, 4); ctx.NextColor2 = Random.Range(1, 4);
+            ctx.NeedsEvaluation = false;
+        }
+
+        public static void OnFallingUpdate(IStateContext context)
+        {
+            var ctx = (PillVirusContext)context;
+            if (ctx.ActivePlayers.Count == 0) return;
+
+            bool soft = ctx.HeldKeys.Contains(KeyCode.DownArrow) || ctx.HeldKeys.Contains(KeyCode.S);
+            float speed = soft ? 0.05f : ctx.FallSpeed;
+
+            ctx.FallTimer += Time.unscaledDeltaTime;
+            if (ctx.FallTimer >= speed)
+            {
+                ctx.FallTimer = 0;
+                var p = ctx.ActivePlayers[0]; // FIXED: Removed 'var' conflict from previous version
+                if (IsValid(ctx, p.X, p.Y + 1, p.IsHorizontal)) { p.Y++; p.IsResting = false; }
+                else
+                {
+                    p.IsResting = true; p.LockTimer += speed;
+                    if (p.LockTimer >= p.LockDelay || soft) { LockPill(ctx, p); ctx.NeedsEvaluation = true; PillVirusAcousticEngine.Play(PillVirusAcousticEngine.Land); }
+                }
             }
         }
 
-        private static void OnFallingUpdate(IStateContext context)
+        private static void LockPill(PillVirusContext ctx, ActivePill p)
         {
-            var ctx = (PillVirusContext)context;
-
-            ctx.FallTimer += Time.unscaledDeltaTime;
-            if (ctx.FallTimer >= ctx.FallSpeed)
-            {
-                ctx.FallTimer = 0f;
-                List<ActivePill> lockedPills = new List<ActivePill>();
-
-                foreach (var pill in ctx.ActivePlayers)
-                {
-                    if (!IsValidPosition(ctx, pill, pill.X, pill.Y + 1, pill.IsHorizontal))
-                    {
-                        // Lock into grid
-                        ctx.Board[pill.X, pill.Y] = new GridCell { Type = CellType.Pill, ColorId = pill.Color1, PlayerId = pill.PlayerId };
-
-                        if (pill.IsHorizontal)
-                            ctx.Board[pill.X + 1, pill.Y] = new GridCell { Type = CellType.Pill, ColorId = pill.Color2, PlayerId = pill.PlayerId };
-                        else
-                            ctx.Board[pill.X, pill.Y + 1] = new GridCell { Type = CellType.Pill, ColorId = pill.Color2, PlayerId = pill.PlayerId };
-
-                        lockedPills.Add(pill);
-                        ctx.NeedsEvaluation = true;
-                    }
-                    else
-                    {
-                        pill.Y++;
-                    }
-                }
-
-                foreach (var locked in lockedPills) ctx.ActivePlayers.Remove(locked);
-            }
+            int lid = Random.Range(100, 9999);
+            ctx.Board[p.X, p.Y] = new GridCell { Type = CellType.Pill, ColorId = p.Color1, LinkId = lid };
+            if (p.IsHorizontal) ctx.Board[p.X + 1, p.Y] = new GridCell { Type = CellType.Pill, ColorId = p.Color2, LinkId = lid };
+            else ctx.Board[p.X, p.Y + 1] = new GridCell { Type = CellType.Pill, ColorId = p.Color2, LinkId = lid };
+            ctx.ActivePlayers.Clear();
         }
 
         private static void OnEvaluating(IStateContext context)
         {
             var ctx = (PillVirusContext)context;
-            ctx.NeedsEvaluation = false;
-            ctx.NeedsCascade = false;
-
+            ctx.NeedsEvaluation = false; ctx.NeedsCascade = false;
             bool[,] toDestroy = new bool[ctx.Width, ctx.Height];
+            int matchCount = 0;
 
-            // Horizontal Scan
             for (int y = 0; y < ctx.Height; y++)
-            {
-                for (int x = 0; x <= ctx.Width - ctx.MatchRequirement; x++)
-                {
-                    int color = ctx.Board[x, y].ColorId;
-                    if (color == 0) continue;
-
-                    int matchCount = 1;
-                    while (x + matchCount < ctx.Width && ctx.Board[x + matchCount, y].ColorId == color)
-                        matchCount++;
-
-                    if (matchCount >= ctx.MatchRequirement)
-                    {
-                        for (int i = 0; i < matchCount; i++) toDestroy[x + i, y] = true;
-                        ctx.NeedsCascade = true;
-                    }
-                }
-            }
-
-            // Vertical Scan
-            for (int x = 0; x < ctx.Width; x++)
-            {
-                for (int y = 0; y <= ctx.Height - ctx.MatchRequirement; y++)
-                {
-                    int color = ctx.Board[x, y].ColorId;
-                    if (color == 0) continue;
-
-                    int matchCount = 1;
-                    while (y + matchCount < ctx.Height && ctx.Board[x, y + matchCount].ColorId == color)
-                        matchCount++;
-
-                    if (matchCount >= ctx.MatchRequirement)
-                    {
-                        for (int i = 0; i < matchCount; i++) toDestroy[x, y + i] = true;
-                        ctx.NeedsCascade = true;
-                    }
-                }
-            }
-
-            // Destroy Matched Cells
-            if (ctx.NeedsCascade)
-            {
                 for (int x = 0; x < ctx.Width; x++)
                 {
-                    for (int y = 0; y < ctx.Height; y++)
-                    {
-                        if (toDestroy[x, y])
-                            ctx.Board[x, y] = new GridCell { Type = CellType.Empty, ColorId = 0 };
-                    }
+                    int c = ctx.Board[x, y].ColorId; if (c == 0) continue;
+                    int h = 1; while (x + h < ctx.Width && ctx.Board[x + h, y].ColorId == c) h++;
+                    if (h >= 4) { matchCount++; for (int i = 0; i < h; i++) toDestroy[x + i, y] = true; }
+                    int v = 1; while (y + v < ctx.Height && ctx.Board[x, y + v].ColorId == c) v++;
+                    if (v >= 4) { matchCount++; for (int i = 0; i < v; i++) toDestroy[x, y + i] = true; }
                 }
+
+            if (matchCount > 0)
+            {
+                if (matchCount >= 2) ctx.PendingGarbage += (matchCount - 1);
+                int virusesCleared = 0;
+                for (int y = 0; y < ctx.Height; y++)
+                    for (int x = 0; x < ctx.Width; x++)
+                        if (toDestroy[x, y])
+                        {
+                            if (ctx.Board[x, y].Type == CellType.Virus) virusesCleared++;
+                            int lid = ctx.Board[x, y].LinkId;
+                            if (lid != 0)
+                            { // Sever Link of partner
+                                if (x > 0 && ctx.Board[x - 1, y].LinkId == lid) ctx.Board[x - 1, y].LinkId = 0;
+                                if (x < ctx.Width - 1 && ctx.Board[x + 1, y].LinkId == lid) ctx.Board[x + 1, y].LinkId = 0;
+                                if (y > 0 && ctx.Board[x, y - 1].LinkId == lid) ctx.Board[x, y - 1].LinkId = 0;
+                                if (y < ctx.Height - 1 && ctx.Board[x, y + 1].LinkId == lid) ctx.Board[x, y + 1].LinkId = 0;
+                            }
+                            ctx.Board[x, y] = new GridCell { Type = CellType.Empty };
+                        }
+                ctx.RemainingViruses -= virusesCleared;
+                ctx.CurrentScore += (virusesCleared * 100 * ctx.ComboMultiplier);
+                ctx.NeedsCascade = true; ctx.ComboMultiplier++;
+                PillVirusAcousticEngine.Play(PillVirusAcousticEngine.Clear);
+                if (ctx.RemainingViruses <= 0) { ctx.IsVictory = true; PillVirusAcousticEngine.Play(PillVirusAcousticEngine.Victory); }
             }
         }
 
@@ -201,25 +177,23 @@ namespace TheSingularityWorkshop.Sandbox.PillVirus
         {
             var ctx = (PillVirusContext)context;
             ctx.NeedsCascade = false;
-
-            // Simple Gravity: Bottom-up scan to pull floating pill pieces down
-            // (A true implementation severs links here, but this drops floaters!)
-            bool thingsMoved = false;
-            for (int x = 0; x < ctx.Width; x++)
-            {
-                for (int y = ctx.Height - 2; y >= 0; y--)
+            bool moved = false;
+            for (int y = ctx.Height - 2; y >= 0; y--)
+                for (int x = 0; x < ctx.Width; x++)
                 {
-                    if (ctx.Board[x, y].Type == CellType.Pill && ctx.Board[x, y + 1].Type == CellType.Empty)
+                    if (ctx.Board[x, y].Type != CellType.Empty && ctx.Board[x, y].Type != CellType.Virus && ctx.Board[x, y + 1].Type == CellType.Empty)
                     {
-                        ctx.Board[x, y + 1] = ctx.Board[x, y];
-                        ctx.Board[x, y] = new GridCell { Type = CellType.Empty, ColorId = 0 };
-                        thingsMoved = true;
+                        int lid = ctx.Board[x, y].LinkId;
+                        bool canFall = true;
+                        if (lid != 0)
+                        { // Horizontal Pair Logic
+                            if (x < ctx.Width - 1 && ctx.Board[x + 1, y].LinkId == lid) { if (ctx.Board[x + 1, y + 1].Type != CellType.Empty) canFall = false; }
+                            else if (x > 0 && ctx.Board[x - 1, y].LinkId == lid) { if (ctx.Board[x - 1, y + 1].Type != CellType.Empty) canFall = false; }
+                        }
+                        if (canFall) { ctx.Board[x, y + 1] = ctx.Board[x, y]; ctx.Board[x, y] = new GridCell { Type = CellType.Empty }; moved = true; }
                     }
                 }
-            }
-
-            if (thingsMoved) ctx.NeedsCascade = true; // Keep cascading until settled
-            else ctx.NeedsEvaluation = true; // Re-evaluate for combo chains!
+            if (moved) ctx.NeedsCascade = true; else ctx.NeedsEvaluation = true;
         }
     }
 }

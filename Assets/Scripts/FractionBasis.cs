@@ -1,4 +1,4 @@
-﻿namespace TheSingularityWorkshop
+﻿namespace Workshop
 {
     public enum FractionBasis
     {

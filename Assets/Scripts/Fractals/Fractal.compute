@@ -1,16 +1,34 @@
 ﻿#pragma kernel CSMain
 
-// The texture we are writing to
 RWTexture2D<float4> Result;
 
-// Uniforms driven by your FSM
+// Transform Uniforms
 float2 _PanOffset;
 float _Zoom;
 uint _MaxIterations;
 uint _ResolutionX;
 uint _ResolutionY;
+
+// Color Uniforms
 float4 _ColorA;
 float4 _ColorB;
+float _ColorStretch; // Controls the non-linear curve
+
+// Math Uniforms
+uint _FractalType; // 0=Mandelbrot, 1=Julia, 2=BurningShip, 3=Tricorn
+float _Power; // e.g., 2.0 for classic, 3.0 for Mandelbulb-style 2D slices
+float2 _JuliaConstant;
+
+// Complex Math Helper
+float2 ComplexPower(float2 z, float n)
+{
+    float r = length(z);
+    if (r == 0.0)
+        return float2(0, 0);
+    float theta = atan2(z.y, z.x);
+    float rn = pow(r, n);
+    return float2(rn * cos(n * theta), rn * sin(n * theta));
+}
 
 [numthreads(8, 8, 1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
@@ -18,48 +36,72 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     if (id.x >= _ResolutionX || id.y >= _ResolutionY)
         return;
 
-    // Map pixel coordinates to the complex plane (-2.0 to 2.0 roughly)
-    // Adjusting for aspect ratio, zoom, and panning
     float aspect = (float) _ResolutionX / (float) _ResolutionY;
     float2 uv = float2(id.x / (float) _ResolutionX, id.y / (float) _ResolutionY);
     
-    // Convert to Math space
+    // Map to Mathematical Space
     float2 c = (uv - 0.5) * 4.0;
     c.x *= aspect;
     c /= _Zoom;
     c += _PanOffset;
 
-    // Z = Z^2 + C
     float2 z = float2(0, 0);
-    uint iter = 0;
-    
-    for (iter = 0; iter < _MaxIterations; iter++)
+
+    // Initial State Routing
+    if (_FractalType == 1) // Julia
     {
-        // z^2 = (x + yi)^2 = x^2 - y^2 + 2xyi
-        float x = (z.x * z.x - z.y * z.y) + c.x;
-        float y = (2.0 * z.x * z.y) + c.y;
-        
-        if ((x * x + y * y) > 4.0)
-            break; // Escaped
-        
-        z.x = x;
-        z.y = y;
+        z = c;
+        c = _JuliaConstant;
     }
 
-    // Coloring
+    uint iter = 0;
+    for (iter = 0; iter < _MaxIterations; iter++)
+    {
+        // Core Formula Execution
+        if (_FractalType == 2) // Burning Ship: Z = (|Re(Z)| + i|Im(Z)|)^2 + C
+        {
+            z = float2(abs(z.x), abs(z.y));
+            float x = (z.x * z.x - z.y * z.y) + c.x;
+            float y = (2.0 * z.x * z.y) + c.y;
+            z = float2(x, y);
+        }
+        else if (_FractalType == 3) // Tricorn: Z = conj(Z)^2 + C
+        {
+            z.y = -z.y; // Conjugate
+            float x = (z.x * z.x - z.y * z.y) + c.x;
+            float y = (2.0 * z.x * z.y) + c.y;
+            z = float2(x, y);
+        }
+        else // Mandelbrot & Julia
+        {
+            if (_Power == 2.0) // Optimized fast-path for standard ^2
+            {
+                float x = (z.x * z.x - z.y * z.y) + c.x;
+                float y = (2.0 * z.x * z.y) + c.y;
+                z = float2(x, y);
+            }
+            else // Generalized complex power
+            {
+                z = ComplexPower(z, _Power) + c;
+            }
+        }
+
+        if (dot(z, z) > 4.0)
+            break; // Escaped
+    }
+
+    // Advanced Coloring
     if (iter == _MaxIterations)
     {
-        Result[id.xy] = float4(0, 0, 0, 1); // Black for inside the set
+        Result[id.xy] = float4(0, 0, 0, 1); // Event Horizon (Black)
     }
     else
     {
-       // 1. Non-Linear stretching
-        float t = (float) iter / (float) _MaxIterations;
-        t = pow(t, 0.45); // Pulls low values up the curve!
+        // Smooth coloring algorithm
+        float smoothedIter = (float) iter + 1.0 - log(log(length(z))) / log(_Power > 1.0 ? _Power : 2.0);
+        float t = smoothedIter / (float) _MaxIterations;
         
-        // OR 2. Color Banding (Uncomment below to try a trippy repeating pattern instead)
-        // float t = (float)(iter % 20) / 20.0; 
-        
+        t = pow(clamp(t, 0.0, 1.0), _ColorStretch);
         Result[id.xy] = lerp(_ColorA, _ColorB, t);
     }
 }

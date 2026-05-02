@@ -1,9 +1,7 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace TheSingularityWorkshop.Warlords
+namespace Assets.Scripts.Warlords
 {
     public class Warlords_UnitCard : VisualElement
     {

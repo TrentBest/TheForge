@@ -1,7 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 [CustomEditor(typeof(MonoBehaviour), true)]
 public class GuiProviderEditor : Editor

@@ -1,14 +1,11 @@
-﻿using TheSingularityWorkshop;
-using TheSingularityWorkshop.Builders; // Namespace for InWorldGuiDisplaySettings
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 [CustomEditor(typeof(InWorldGuiBuilder))]
 public class InWorldGuiEditor : Editor

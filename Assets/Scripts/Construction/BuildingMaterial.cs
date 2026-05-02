@@ -1,3 +1,6 @@
-﻿public class BuildingMaterial
+﻿namespace Assets.Scripts.Construction
 {
+    public class BuildingMaterial
+    {
+    }
 }

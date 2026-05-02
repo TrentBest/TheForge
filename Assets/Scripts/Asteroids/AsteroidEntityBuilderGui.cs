@@ -1,14 +1,14 @@
 ﻿#if UNITY_EDITOR
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.Asteroids;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Asteroids.Editor
+namespace Workshop.Asteroids
 {
-    internal class AsteroidEntityBuilderGui : IGuiProvider
+    public class AsteroidEntityBuilderGui : IGuiProvider
     {
         public string Title => "ASTEROID TEMPLATE EDITOR";
 
@@ -22,7 +22,10 @@ namespace TheSingularityWorkshop.Asteroids.Editor
             new AsteroidContext { Name = "Medium Fragment", SizeTier = 2, PointValue = 250, RotationSpeed = 90f },
             new AsteroidContext { Name = "Small Shard", SizeTier = 1, PointValue = 500, RotationSpeed = 180f }
         };
+        public AsteroidEntityBuilderGui()
+        {
 
+        }
         public VisualElement CreateGui(GuiContext ctx)
         {
             _lastCtx = ctx;
@@ -116,6 +119,8 @@ namespace TheSingularityWorkshop.Asteroids.Editor
         public void FromUIDocument(string assetPath) => _lastCtx?.OnBuilt?.Invoke(GraphicalUserInterfaceBuilder.ConvertFromUIDocument(assetPath));
         public void ToUIDocument(string assetPath) => GraphicalUserInterfaceBuilder.ConvertToUIDocument(CreateGui(new GuiContext()), assetPath);
     }
+
+
 
     // --- PROCEDURAL ASTEROID RENDERER ---
     public class AsteroidVectorPreview : VisualElement

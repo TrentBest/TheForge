@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d32c4ff638ef4c459f9f80db4dff62f, type: 3}
+  m_Name: Holographic
+  m_EditorClassIdentifier: Assembly-CSharp::Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.Themes.GuiTheme
+  PrimaryAccent: {r: 1, g: 0, b: 0.5, a: 1}
+  SecondaryAccent: {r: 0, g: 1, b: 1, a: 1}
+  AlertColor: {r: 1, g: 0.9, b: 0.1, a: 1}
+  GlobalDefault:
+    TargetType: 0
+    BackgroundColor: {r: 0.1, g: 0.1, b: 0.15, a: 0.9}
+    BorderColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderTopColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderTopLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BoderTopRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    TextColor: {r: 0.9, g: 0.9, b: 1, a: 1}
+    BorderTopWidth: 1
+    BorderRightWidth: 1
+    BorderBottomWidth: 1
+    BorderLeftWidth: 1
+    BorderWidth: 0
+    BorderTopLeftRadius: 0
+    BorderTopRightRadius: 5
+    BorderBottomRightRadius: 0
+    BorderBottomLeftRadius: 5
+    CornerRadius: 0
+    AttachedEffects: []
+  Profiles:
+  - TargetType: 2
+    BackgroundColor: {r: 0.1, g: 0.1, b: 0.15, a: 0.9}
+    BorderColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderTopColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderTopLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BoderTopRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    TextColor: {r: 0.9, g: 0.9, b: 1, a: 1}
+    BorderTopWidth: 1
+    BorderRightWidth: 1
+    BorderBottomWidth: 1
+    BorderLeftWidth: 1
+    BorderWidth: 0
+    BorderTopLeftRadius: 0
+    BorderTopRightRadius: 5
+    BorderBottomRightRadius: 0
+    BorderBottomLeftRadius: 5
+    CornerRadius: 0
+    AttachedEffects: []
+  - TargetType: 0
+    BackgroundColor: {r: 0.1, g: 0.1, b: 0.15, a: 0.9}
+    BorderColor: {r: 1, g: 0, b: 1, a: 1}
+    BorderTopColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderTopLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomLeftColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BoderTopRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    BorderBottomRightColor: {r: 1, g: 1, b: 1, a: 0.1}
+    TextColor: {r: 0.9, g: 0.9, b: 1, a: 1}
+    BorderTopWidth: 4
+    BorderRightWidth: 4
+    BorderBottomWidth: 1
+    BorderLeftWidth: 1
+    BorderWidth: 0
+    BorderTopLeftRadius: 0
+    BorderTopRightRadius: 5
+    BorderBottomRightRadius: 0
+    BorderBottomLeftRadius: 5
+    CornerRadius: 0
+    AttachedEffects: []

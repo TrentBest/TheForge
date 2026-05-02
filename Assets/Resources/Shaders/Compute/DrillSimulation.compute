@@ -1,0 +1,42 @@
+#pragma kernel CSDrillMove
+
+struct SoldierGPUData
+{
+    float3 Position;
+    float Facing;
+    int StateId;
+    float Health;
+};
+
+// Double buffering prevents a thread from overwriting data another thread is trying to read
+StructuredBuffer<SoldierGPUData> _SoldierBufferRead;
+RWStructuredBuffer<SoldierGPUData> _SoldierBufferWrite;
+
+float3 _HeadDirection;
+float _GridSpacing;
+int _SnakeLength;
+
+[numthreads(64, 1, 1)]
+void CSDrillMove(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint) _SnakeLength)
+        return;
+
+    if (id.x == 0)
+    {
+        // The Head: Moves in the commanded direction
+        SoldierGPUData head = _SoldierBufferRead[0];
+        head.Position += _HeadDirection * _GridSpacing;
+        
+        // Update rotation facing (atan2 gives us the Y rotation)
+        head.Facing = atan2(_HeadDirection.x, _HeadDirection.z) * 57.29578; // Rad to Deg
+        
+        _SoldierBufferWrite[0] = head;
+    }
+    else
+    {
+        // The Body: Every soldier simply takes the exact data of the soldier in front of them
+        // from the PREVIOUS frame's read buffer.
+        _SoldierBufferWrite[id.x] = _SoldierBufferRead[id.x - 1];
+    }
+}

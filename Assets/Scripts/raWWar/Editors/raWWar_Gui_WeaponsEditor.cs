@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Assets.Scripts.raWWar.Editors
 {
-    internal class raWWar_Gui_WeaponsEditor
+    public class raWWar_Gui_WeaponsEditor
     {
     }
 }

@@ -2,7 +2,7 @@
 using UnityEngine;
 
 
-namespace TheSingularityWorkshop.Warlords
+namespace Assets.Scripts.Warlords
 {
     public class MapPresenter3D_Prefabs : MonoBehaviour, IMapPresenter
     {

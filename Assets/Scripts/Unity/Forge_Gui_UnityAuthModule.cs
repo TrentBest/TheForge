@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using TheSingularityWorkshop.UnityServices;
 using System;
 using System.Threading.Tasks;
 using UnityEditor;
@@ -8,6 +7,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.Core.Diagnostics;
 
 #if UNITY_SERVICES_AVAILABLE
 using Unity.Services.Core;
@@ -15,7 +16,7 @@ using Unity.Services.Authentication;
 using Unity.Services.Core.Environments;
 #endif
 
-namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
+namespace Assets.Scripts.Unity
 {
     public class Forge_Gui_UnityAuthModule : IGuiProvider
     {
@@ -119,11 +120,11 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
             idBox.AddChild(new PropertyField(serializedObject.FindProperty("CloudProjectID")));
             idBox.AddChild(new Button(() => {
                 // FIX: Pulling the ID from the editor instead of pushing a read-only field
-                _authConfig.CloudProjectID = PlayerSettings.cloudProjectId;
+                _authConfig.CloudProjectID = CloudProjectSettings.projectId;
                 serializedObject.Update();
                 EditorUtility.SetDirty(_authConfig);
                 AssetDatabase.SaveAssets();
-                Debug.Log($"[Forge] Cloud Project ID synced from Unity Services into Forge Config.");
+                ForgeLogger.Log($"[Forge] Cloud Project ID synced from Unity Services into Forge Config.");
             })
             { text = "PULL PROJECT ID FROM EDITOR", style = { marginTop = 10, height = 30, backgroundColor = new Color(0.1f, 0.3f, 0.4f) } });
 
@@ -182,7 +183,7 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
 
         private void StartPackageInstallation()
         {
-            Debug.Log("[TheForge] Initializing deployment of Unity Authentication packages..");
+            ForgeLogger.Log("[TheForge] Initializing deployment of Unity Authentication packages..");
             _installRequest = Client.Add("com.unity.services.authentication");
             EditorApplication.update += ProgressPackageInstallation;
         }
@@ -192,9 +193,9 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
             if (_installRequest.IsCompleted)
             {
                 if (_installRequest.Status == StatusCode.Success)
-                    Debug.Log($"[TheForge] Package Breached: {_installRequest.Result.packageId}. Reloading kernel..");
+                    ForgeLogger.Log($"[TheForge] Package Breached: {_installRequest.Result.packageId}. Reloading kernel..");
                 else if (_installRequest.Status >= StatusCode.Failure)
-                    Debug.LogError($"[TheForge] Installation failed: {_installRequest.Error.message}");
+                    ForgeLogger.LogError($"[TheForge] Installation failed: {_installRequest.Error.message}");
 
                 EditorApplication.update -= ProgressPackageInstallation;
             }
@@ -229,7 +230,7 @@ namespace TheSingularityWorkshop.Forge.Builders.GuiBuilders
                 _statusLabel.text = "CONNECTION FAILED";
                 _testConnectionBtn.text = "RETRY PING";
                 _testConnectionBtn.style.backgroundColor = new Color(0.4f, 0.1f, 0.1f);
-                Debug.LogError($"[Forge] Unity Firewall Breach Failed: {ex.Message}");
+                ForgeLogger.LogError($"[Forge] Unity Firewall Breach Failed: {ex.Message}");
             }
 #endif
         }

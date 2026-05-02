@@ -1,113 +1,123 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+﻿using Assets.Scripts.Asteroids;
 using System;
 using System.Collections.Generic;
-using System.Linq; // For dictionary keys to list
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.Core.Diagnostics;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.IO;
 
-namespace TheSingularityWorkshop.Builders.GuiBuilders
+namespace Assets.Scripts.Builders.GuiBuilders
 {
+    /// <summary>
+    /// The Orchestrator for massive entity collectives.
+    /// Manages composition, logic-to-GPU handshakes, and remote telemetry spawning.
+    /// Reforged to follow the Forge Protocol and DOD standards.
+    /// </summary>
     public class SwarmGroupGuiBuilder : IGuiProvider
     {
-        private readonly SwarmGroupBuilder builder;
-
-        // In a real scenario, inject a reference to your "Drone Catalog"
-        private List<DroneBuilder> availableDrones;
+        private readonly SwarmGroupBuilder _builder;
+        private List<DroneBuilder> _availableDrones;
+        private VisualElement _compositionContainer;
 
         public SwarmGroupGuiBuilder(SwarmGroupBuilder builder)
         {
-            this.builder = builder;
-            // Mocking available drones for the dropdown (This should come from your persistence layer)
-            this.availableDrones = new List<DroneBuilder>()
+            _builder = builder;
+
+            // TODO: Replace with DataWarehouse.RetrieveRegistry<DroneBuilder>()
+            _availableDrones = new List<DroneBuilder>()
             {
                 new DroneBuilder().WithName("Scout_MK1").WithBehavior("Scout"),
-                new DroneBuilder().WithName("Heavy_Lifter").WithBehavior("Cargo"),
+                new DroneHelper().WithName("Heavy_Lifter").WithBehavior("Cargo"),
                 new DroneBuilder().WithName("Interceptor").WithBehavior("Aggressive")
             };
         }
 
-        public string Title { get; set; } = "Swarm Group Configuration";
+        public string Title { get; set; } = "SWARM CONFIGURATOR";
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            var root = new VisualElement();
+            var rootBuilder = new ForgeContainerBuilder("Swarm_Root")
+                .WithPadding(20f)
+                .WithBackgroundColor(new Color(0.05f, 0.05f, 0.07f))
+                .WithBorderWidth(1f)
+                .WithBorderColor(new Color(0.2f, 0.8f, 0.4f, 0.5f)); // "Lifeform" Green
 
-            // 1. Group Identity
-            var nameField = new TextField("Swarm Name") { value = builder.GroupName };
-            nameField.RegisterValueChangedCallback(evt => builder.WithName(evt.newValue));
-            root.Add(nameField);
+            // 1. Swarm Identity
+            rootBuilder.AddChild(new ForgeLabelBuilder("SWARM COLLECTIVE DESIGN")
+                .WithFontSize(18).WithBold().WithColor(new Color(0.4f, 1f, 0.6f)).WithMarginBottom(15f));
 
-            root.Add(new Label("Composition")
-            {
-                style = { marginTop = 15, unityFontStyleAndWeight = FontStyle.Bold, fontSize = 14 }
-            });
+            rootBuilder.AddChild(new ForgeTextFieldBuilder("COLLECTIVE DESIGNATION", _builder.GroupName)
+                .WithMarginBottom(15f)
+                .OnValueChanged(evt => _builder.WithName(evt.newValue)));
 
-            // 2. Render Existing Composition Rows
-            var compositionContainer = new VisualElement();
-            RefreshCompositionList(compositionContainer, ctx);
-            root.Add(compositionContainer);
+            // 2. Composition Manifest
+            rootBuilder.AddChild(new ForgeLabelBuilder("ENTITY COMPOSITION")
+                .WithFontSize(12).WithBold().WithColor(Color.cyan).WithMarginBottom(10f));
 
-            // 3. "Add Drone" Section
-            var addRow = new VisualElement()
-            {
-                style = { flexDirection = FlexDirection.Row, marginTop = 10, borderTopWidth = 1, borderTopColor = new Color(0.3f, 0.3f, 0.3f), paddingTop = 5 }
-            };
+            rootBuilder.AddChild(new ForgeContainerBuilder("CompositionArea")
+                .WithPadding(10f).WithBackgroundColor(new Color(0.1f, 0.1f, 0.12f)).WithBorderRadius(5f)
+                .OnBuild(ve => {
+                    _compositionContainer = ve;
+                    RefreshCompositionList(ctx);
+                }));
 
-            // Dropdown to select a drone prototype
-            var droneNames = availableDrones.Select(d => d.DroneName).ToList();
-            var droneSelector = new DropdownField("Add Type", droneNames, 0);
-            droneSelector.style.flexGrow = 1;
+            // 3. Spawning & Logic Controls
+            var actionRow = new ForgeContainerBuilder("AddEntityRow")
+                .WithDirection(FlexDirection.Row)
+                .WithMarginTop(10f)
+                .WithPadding(10f)
+                .WithBorderWidth(1f, 0, 0, 0).WithBorderColor(new Color(0.3f, 0.3f, 0.3f));
 
-            var addBtn = new Button(() => {
-                var selectedName = droneSelector.value;
-                var proto = availableDrones.Find(d => d.DroneName == selectedName);
-                if (proto != null)
-                {
-                    builder.AddDroneType(proto, 1); // Default to 1
-                    RefreshCompositionList(compositionContainer, ctx);
-                }
-            })
-            { text = "+" };
+            // Dropdown for entity selection
+            var droneNames = _availableDrones.Select(d => d.DroneName).ToList();
+            actionRow.AddChild(new DynamicGuiProvider(c => {
+                var dropdown = new DropdownField("ADD UNIT TYPE", droneNames, 0);
+                dropdown.style.flexGrow = 1f;
 
-            addRow.Add(droneSelector);
-            addRow.Add(addBtn);
-            root.Add(addRow);
+                var addBtn = new ForgeButtonBuilder("+")
+                    .WithWidth(40f).WithMarginLeft(5f)
+                    .OnClick(() => {
+                        var proto = _availableDrones.Find(d => d.DroneName == dropdown.value);
+                        if (proto != null)
+                        {
+                            _builder.AddDroneType(proto, 1);
+                            RefreshCompositionList(ctx);
+                        }
+                    }).Build();
 
-            // 4. Build Button
-            var buildBtn = new Button(() => {
-                builder.Build(Vector3.zero); // Or a specific spawn point
-                Debug.Log($"[SwarmBuilder] Spawning {builder.GroupName}..");
-            })
-            { text = "Spawn Swarm", style = { height = 30, marginTop = 20, backgroundColor = new Color(0.2f, 0.4f, 0.2f) } };
+                var container = new VisualElement { style = { flexDirection = FlexDirection.Row, flexGrow = 1 } };
+                container.Add(dropdown);
+                container.Add(addBtn);
+                return container;
+            }));
 
-            root.Add(buildBtn);
+            rootBuilder.AddChild(actionRow);
 
-            return root;
+            // 4. Manifestation Command
+            rootBuilder.AddChild(new ForgeButtonBuilder("🚀 MANIFEST SWARM")
+                .WithHeight(40f).WithMarginTop(20f)
+                .WithBackgroundColor(new Color(0.1f, 0.4f, 0.2f))
+                .WithBold()
+                .OnClick(() => {
+                    _builder.Build(Vector3.zero);
+                    ForgeLogger.Log($"<color=green>[SwarmForge]</color> Entity wave manifested: {_builder.GroupName}");
+                }));
+
+            return rootBuilder.Build();
         }
 
-        public void FromUIDocument(string assetPath)
+        private void RefreshCompositionList(GuiContext ctx)
         {
-            throw new NotImplementedException();
-        }
+            if (_compositionContainer == null) return;
+            _compositionContainer.Clear();
 
-        public Action<VisualElement> GetGuiBuilder()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ToUIDocument(string assetPath)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void RefreshCompositionList(VisualElement container, GuiContext ctx)
-        {
-            container.Clear();
-            var comp = builder.GetComposition();
-
+            var comp = _builder.GetComposition();
             if (comp.Count == 0)
             {
-                container.Add(new Label("No drones assigned.") { style = { opacity = 0.5f, marginLeft = 5 } });
+                _compositionContainer.Add(new ForgeLabelBuilder("EMPTY HIVE - NO ENTITIES ASSIGNED")
+                    .OnBuild(l => l.style.opacity = 0.5f).Build());
                 return;
             }
 
@@ -116,36 +126,31 @@ namespace TheSingularityWorkshop.Builders.GuiBuilders
                 var drone = entry.Key;
                 var count = entry.Value;
 
-                var row = new VisualElement()
-                {
-                    style = { flexDirection = FlexDirection.Row, marginBottom = 2, alignItems = Align.Center, backgroundColor = new Color(0.18f, 0.18f, 0.18f),  }
-                };
+                var row = new ForgeContainerBuilder($"Row_{drone.DroneName}")
+                    .WithDirection(FlexDirection.Row)
+                    .WithPadding(5f)
+                    .WithMarginBottom(2f)
+                    .WithBackgroundColor(new Color(0.15f, 0.15f, 0.18f))
+                    .AddChild(new ForgeLabelBuilder(drone.DroneName).WithBold().WithFlexGrow(1f))
+                    .AddChild(new DynamicGuiProvider(c => {
+                        var intField = new IntegerField { value = count };
+                        intField.style.width = 60f;
+                        intField.RegisterValueChangedCallback(evt => _builder.AddDroneType(drone, Mathf.Max(1, evt.newValue)));
+                        return intField;
+                    }))
+                    .AddChild(new ForgeButtonBuilder("X")
+                        .WithWidth(30f).WithColor(Color.red)
+                        .OnClick(() => {
+                            _builder.RemoveDroneType(drone);
+                            RefreshCompositionList(ctx);
+                        }));
 
-                // Name
-                var label = new Label(drone.DroneName) { style = { flexGrow = 1, unityFontStyleAndWeight = FontStyle.Bold } };
-
-                // Count Input
-                var countField = new IntegerField() { value = count };
-                countField.style.width = 50;
-                countField.RegisterValueChangedCallback(evt => {
-                    // Update builder directly
-                    builder.AddDroneType(drone, Mathf.Max(1, evt.newValue));
-                });
-
-                // Remove Button
-                var removeBtn = new Button(() => {
-                    builder.RemoveDroneType(drone);
-                    RefreshCompositionList(container, ctx);
-                })
-                { text = "X", style = { color = Color.red } };
-
-                row.Add(label);
-                row.Add(new Label("Count:") { style = { marginRight = 5, fontSize = 10 } });
-                row.Add(countField);
-                row.Add(removeBtn);
-
-                container.Add(row);
+                _compositionContainer.Add(row.Build());
             }
         }
+
+        public Action<VisualElement> GetGuiBuilder() => root => root.Add(CreateGui(new GuiContext()));
+        public void ToUIDocument(string path) => WorkshopUxmlBaker.Bake(CreateGui(new GuiContext()), "SwarmArchitect_Snapshot");
+        public void FromUIDocument(string path) { }
     }
 }

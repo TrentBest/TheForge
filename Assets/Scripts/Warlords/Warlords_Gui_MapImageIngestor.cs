@@ -1,11 +1,12 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.Core.Diagnostics;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Warlords
+namespace Assets.Scripts.Warlords
 {
     public class Warlords_Gui_MapImageIngestor : IGuiProvider
     {
@@ -39,7 +40,7 @@ namespace TheSingularityWorkshop.Warlords
             _lastCtx = ctx;
 
             // Instantly load and mathematically double the resolution
-            Texture2D rawImage = Resources.Load<Texture2D>(@"Images/Warlords/Illuria");
+            Texture2D rawImage = UnityEngine.Resources.Load<Texture2D>(@"Images/Warlords/Illuria");
             if (rawImage != null) _sourceImage = DoubleTextureResolution(rawImage);
 
             if (_sourceImage != null)
@@ -48,7 +49,7 @@ namespace TheSingularityWorkshop.Warlords
                 _endY = _sourceImage.height - 1;
             }
 
-            var splitPanel = new SplitPanelBuilder(sidebarWidth: 450); // Made slightly wider for new dropdowns
+            var splitPanel = new ForgeSplitPanelBuilder(sidebarWidth: 450); // Made slightly wider for new dropdowns
 
             splitPanel.WithSidebar(new GraphicalUserInterfaceBuilder("Ingestor_Sidebar")
                 .WithPadding(15).WithBackgroundColor(new Color(0.1f, 0.1f, 0.12f))
@@ -344,7 +345,7 @@ namespace TheSingularityWorkshop.Warlords
             string json = JsonUtility.ToJson(mapData, true);
             string filePath = System.IO.Path.Combine(Application.dataPath, "Illuria_Extracted.json");
             System.IO.File.WriteAllText(filePath, json);
-            Debug.Log($"[Cartographer] JSON saved with {mapData.PointsOfInterest?.Count ?? 0} POIs to: {filePath}");
+            ForgeLogger.Log($"[Cartographer] JSON saved with {mapData.PointsOfInterest?.Count ?? 0} POIs to: {filePath}");
 
             // The SAFE Seamless Handoff
             var mapEditor = new Warlords_Gui_MapEditor();

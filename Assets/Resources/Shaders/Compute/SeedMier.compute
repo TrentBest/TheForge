@@ -1,0 +1,85 @@
+﻿#pragma kernel MineSeed
+
+// The magic noise constants from your Rng.cs
+static const uint NOISE1 = 0xb5297a4d;
+static const uint NOISE2 = 0x68e31da4;
+static const uint NOISE3 = 0x1b56c4e9;
+
+// Squirrel3 implementation in HLSL
+uint Squirrel3(int position, uint seed)
+{
+    uint n = (uint) position;
+    n *= NOISE1;
+    n += seed;
+    n ^= n >> 8;
+    n += NOISE2;
+    n ^= n << 8;
+    n *= NOISE3;
+    n ^= n >> 8;
+    return n;
+}
+
+float GetFloat(int position, uint seed)
+{
+    return (float) Squirrel3(position, seed) / 4294967295.0; // Divide by uint.MaxValue
+}
+
+// --- MINING SETUP ---
+
+struct MiningResult
+{
+    uint Seed;
+    int MatchLength;
+};
+
+// The sequence of floats we are trying to reverse-engineer
+StructuredBuffer<float> TargetSequence;
+uint SequenceLength;
+float Tolerance;
+
+// A buffer to hold our best finds (e.g., top 100 closest matches)
+RWStructuredBuffer<MiningResult> ResultsBuffer;
+
+// The offset for the current batch (so we don't crash the GPU doing 4 billion at once)
+uint SeedBatchOffset;
+
+[numthreads(256, 1, 1)]
+void MineSeed(uint3 id : SV_DispatchThreadID)
+{
+    // The thread ID + the batch offset is the Seed we are testing
+    uint testSeed = id.x + SeedBatchOffset;
+    
+    int matchCount = 0;
+    
+    // Generate and compare the sequence
+    for (uint pos = 0; pos < SequenceLength; pos++)
+    {
+        float generatedValue = GetFloat(pos, testSeed);
+        float targetValue = TargetSequence[pos];
+        
+        // Did we hit the target within acceptable float tolerance?
+        if (abs(generatedValue - targetValue) <= Tolerance)
+        {
+            matchCount++;
+        }
+        else
+        {
+            break; // Stop immediately on the first failure to save ALU cycles
+        }
+    }
+    
+    // If we found a sequence that matches at least 2 numbers in a row...
+    if (matchCount > 1)
+    {
+        // Find a safe slot to write to (using a simple ring buffer approach based on the seed)
+        uint slot = testSeed % 1024; // Assuming a 1024-length results buffer
+        
+        // Only overwrite if our new match is better than what's currently in the slot
+        // (Note: Interlocked operations are better here for thread safety, but this is a fast/dirty approach)
+        if (matchCount > ResultsBuffer[slot].MatchLength)
+        {
+            ResultsBuffer[slot].Seed = testSeed;
+            ResultsBuffer[slot].MatchLength = matchCount;
+        }
+    }
+}

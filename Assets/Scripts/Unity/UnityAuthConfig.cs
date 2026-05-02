@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace TheSingularityWorkshop.UnityServices
+namespace Assets.Scripts.Unity
 {
     [CreateAssetMenu(fileName = "UnityAuthConfig", menuName = "The Singularity/Forge/Modules/Unity Auth Config")]
     public class UnityAuthConfig : ScriptableObject

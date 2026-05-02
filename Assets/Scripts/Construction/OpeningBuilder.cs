@@ -1,3 +1,6 @@
-﻿public class OpeningBuilder
+﻿namespace Assets.Scripts.Construction
 {
+    public class OpeningBuilder
+    {
+    }
 }

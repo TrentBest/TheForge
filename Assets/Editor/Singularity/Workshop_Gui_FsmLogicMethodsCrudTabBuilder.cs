@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders.Themes;
+using Workshop.Core.Extensions;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.Themes;
 
 namespace Assets.Editor.Singularity
 {
@@ -25,7 +25,7 @@ namespace Assets.Editor.Singularity
             var theme = GuiSkin.Active;
 
             // MISSION: Split layout for Registry vs Editor
-            var layout = new SplitPanelBuilder(sidebarWidth: 250, side: Side.Left)
+            var layout = new ForgeSplitPanelBuilder(sidebarWidth: 250, side: Side.Left)
                 .WithSidebar(BuildRegistrySidebar())
                 .WithMain(new ActionGuiProvider(BuildEditorWorkspace));
 

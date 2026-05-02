@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Assets.Scripts.Asteroids;
 using System.Collections.Generic;
 using System.Linq;
-using TheSingularityWorkshop.Builders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders.WorldBuilding;
-using TheSingularityWorkshop.Forge.WorldBuilding;
 using UnityEngine;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.WorldBuilding;
 
-namespace TheSingularityWorkshop.Libraries
+namespace Assets.Scripts.Builders
 {
     public static class BlueprintLibrary
     {
@@ -86,7 +84,7 @@ namespace TheSingularityWorkshop.Libraries
         public static MotorBuilder GetMotor(string name) => Motors.ContainsKey(name) ? Motors[name] : null;
 
         // --- Implementation of the Urban Logic ---
-        internal static GameObject GetUrbanBlueprint(UrbanZoneType zone, int techLevel, SettlementAdaptation adaptation)
+        public static GameObject GetUrbanBlueprint(UrbanZoneType zone, int techLevel, SettlementAdaptation adaptation)
         {
             if (!UrbanRegistry.ContainsKey(zone)) return null;
 
@@ -103,15 +101,5 @@ namespace TheSingularityWorkshop.Libraries
             return null; // Replace with actual loading logic (e.g., Resources.Load<GameObject>(match.PrefabID))
         }
     }
-
-    // Helper classes for the new Urban logic
-    public class UrbanBlueprint
-    {
-        public int TechLevel;
-        public SettlementAdaptation Adaptation;
-        public string PrefabID;
-    }
-
-    //public enum UrbanZoneType { Residential, Industrial, Commercial, Military, Research }
-    //public enum SettlementAdaptation { Terrestrial, Orbital, Subterranean, Aquatic }
 }
+

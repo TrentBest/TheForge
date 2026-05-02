@@ -1,11 +1,11 @@
 ﻿using Assets.Editor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders.Themes;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.Core.Extensions;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.Themes;
 
 namespace Singularity
 {
@@ -33,7 +33,7 @@ namespace Singularity
                 .AddChild(new ActionGuiProvider(context =>
                 {
                     // MISSION: 2 Columns, 1 Row for States vs Transitions
-                    var split = new SplitPanelBuilder(sidebarWidth: 500, side: Side.Left)
+                    var split = new ForgeSplitPanelBuilder(sidebarWidth: 500, side: Side.Left)
                         .WithSidebar(new ActionGuiProvider(BuildStateAssembly))
                         .WithMain(new ActionGuiProvider(BuildTransitionLogic));
 

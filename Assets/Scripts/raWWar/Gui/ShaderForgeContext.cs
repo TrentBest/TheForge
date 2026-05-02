@@ -4,7 +4,7 @@ using System.Collections.Generic;
 // Assuming your FSM namespace:
 // using TheSingularityWorkshop.FSMs; 
 
-namespace Assets.Scripts.raWWar.Editors.ShaderForge
+namespace Assets.Scripts.raWWar.Gui
 {
     public class ShaderForgeContext // : IStateContext (Assuming your interface here)
     {

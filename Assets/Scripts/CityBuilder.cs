@@ -1,9 +1,11 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System;
+﻿ 
 using System.Collections.Generic;
 using UnityEngine;
+using Workshop.Core.Diagnostics;
+using Workshop.GURPS.Construction;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop
+namespace Workshop
 {
     public class CityBuilder
     {
@@ -39,7 +41,7 @@ namespace TheSingularityWorkshop
 
         public void Build()
         {
-            Debug.Log($"Constructing {cityName} at {siteOrigin} with {buildings.Count} buildings.");
+            ForgeLogger.Log($"Constructing {cityName} at {siteOrigin} with {buildings.Count} buildings.");
             // Logic to instantiate the site context and iterate through building offsets
         }
 

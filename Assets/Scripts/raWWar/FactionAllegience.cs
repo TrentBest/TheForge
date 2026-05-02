@@ -1,1 +1,4 @@
-﻿public enum FactionAllegiance { Blue, Green, Red }
+﻿namespace Assets.Scripts.raWWar
+{
+    public enum FactionAllegiance { Blue, Green, Red }
+}

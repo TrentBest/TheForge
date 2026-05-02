@@ -1,7 +1,6 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace TheSingularityWorkshop.Asteroids.Editor
+namespace Workshop.Asteroids
 {
     public class HangarTheme
     {
@@ -20,4 +19,3 @@ namespace TheSingularityWorkshop.Asteroids.Editor
         public Color ViewerBackground = new Color(0.05f, 0.05f, 0.05f); // Deep space
     }
 }
-#endif

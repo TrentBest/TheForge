@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 public class GurpsCharacterSheetEditorWindow : EditorWindow
 {
@@ -41,8 +42,8 @@ public class GurpsCharacterSheetEditorWindow : EditorWindow
 
         root.AddChild(CreateHeader());
 
-        // Step 2: Main Workspace using your SplitPanelBuilder
-        root.AddChild(new SplitPanelBuilder(250)
+        // Step 2: Main Workspace using your ForgeSplitPanelBuilder
+        root.AddChild(new ForgeSplitPanelBuilder(250)
             .WithSidebar(CreateRegistrySidebar())
             .WithMain(CreateMainCharacterSheet()));
 

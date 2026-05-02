@@ -1,7 +1,7 @@
 ﻿// File: Assets/Editor/ActionGuiProvider.cs
 using System;
 using UnityEngine.UIElements;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 namespace Assets.Editor
 {
@@ -10,6 +10,11 @@ namespace Assets.Editor
         public string Title { get; set; }
         private Func<GuiContext, VisualElement> _factory;
         public ActionGuiProvider(Func<GuiContext, VisualElement> factory) => _factory = factory;
+
+        public ActionGuiProvider()
+        {
+        }
+
         public VisualElement CreateGui(GuiContext ctx) => _factory?.Invoke(ctx);
         public Action<VisualElement> GetGuiBuilder() => (root) => root.Add(CreateGui(new GuiContext()));
         public void ToUIDocument(string path) { }

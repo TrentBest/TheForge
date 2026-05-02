@@ -1,18 +1,22 @@
-Pink? If you import into your project and see materials in pink, simply open up the SRP folder and import the "URP_Upgrade" package if you have a Universal 3D project or import the "HDRP_Upgrade" package if you have a High Definition 3D project.
+Get Our Ultimate Spaceships Creator at Bargain Price Over Here: http://u3d.as/2zmk
 
-If scene lighting appears to be dark, you can go to the Window menu, Rendering, Lighting. Then from the Scene tab click on Generate lighting.
-
---------------------------------------------------------
-
-Build Your Own Spaceships
-You can build your own spaceships by quickly modifying the modular examples. In addition, you can also assemble your own spaceship from scratch by moving/rotating/scaling and duplicating the modules.
+Pink? Materials will appear pink or nothing will be visible if you are using High Definition 3D render pipeline (HDRP) or the Built-In render pipeline. To fix this. Simply open up the "Legacy" folder and import the "HDRP" package if you are using High Definition or the "Built-In" package if using Built-In.
 
 --------------------------------------------------------
 
-Changing Colors
-If you are using Universal 3D (URP) or High Definition 3D (HDRP) you will see a colorize folder once you import "URP_Upgrade" or "HDRP_Upgrade". In it you will find a colorize material that will enable you to pick your color in the editor. Provided shader graph should also be easy and straightforward to edit if needed.
+Pick your spaceship and assign a different color from the materials folder. You can also create your own custom colors through the Colorize material. 
 
-Additionally, I also included the PSD file in the "Masks" subfolder inside the "Textures" folder if you want to manually adjust the textures.
+The "Examples" prefabs are the spaceships with a single combined mesh. The "Modular Examples" have all the different modules separated so you can make your own changes.
+
+Create a new spaceship either by modifying an existing modular example or by creating a new one from scratch through the provided modules.
+
+I also provided the texture masks and a PSD file for anyone who wants to adjust the textures.
+
+--------------------------------------------------------
+
+For Built-In Render Pipeline Users Only
+
+To use the Colorize material and shader You will also need to install Unity's "Shader Graph" package. Otherwise the Colorize material will have missing shaders/pink color. To instal shader graph. Go to the "Package Manager" window then find "Shader Graph" Package inside "Pacakges: Unity Registry".
 
 --------------------------------------------------------
 
@@ -21,21 +25,25 @@ Yes! You can use this asset in your free or commercial game. We wish you all the
 
 --------------------------------------------------------
 
-This set has been provided as a free sample to test before purchasing the complete collection. The complete collection contains 18 spaceship sets like this one!
+This set has been provided as a free sample to test before purchasing the complete collection. The complete collection contains hundreds of spaceships and 18 different sets similar to this one!
+
 Get Our Ultimate Spaceships Creator at Bargain Price Over Here: http://u3d.as/2zmk
 
 Additionally, with the complete collection, you will get access to bonus files which also have the 4K version of the Star Sparrow textures.
 
 --------------------------------------------------------
 
-More Sci-Fi Assets
-https://assetstore.unity.com/publishers/24304
+Ultimate Spaceships Creator: 
+http://u3d.as/2zmk
 
-USC Online Manual
+Ultimate Spaceships Creator Online Manual: 
 https://ebal-studios.gitbook.io/usc
 
-Discord:
+More Sci-Fi Assets: 
+https://assetstore.unity.com/publishers/24304
+
+Discord: 
 https://discord.gg/G9HW7tst7x
 
-Website:
+Website: 
 https://www.ebalstudios.com

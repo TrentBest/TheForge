@@ -1,13 +1,11 @@
 ﻿#if UNITY_EDITOR
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
-using UnityEditor.UIElements; // Required for FloatField
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Asteroids.Editor
+namespace Workshop.Asteroids
 {
     public class Asteroids_Gui_ShipBuilder : IGuiProvider
     {

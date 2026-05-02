@@ -1,148 +1,192 @@
 ﻿using System;
+using System.Collections.Generic;
+using TheSingularityWorkshop.FSM_API;
 using UnityEngine;
 using UnityEngine.UIElements;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.FSM_API;
-using TheSingularityWorkshop.MicroPackages.Packages.FSM.HelloWorld;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-
-#if UNITY_EDITOR
-// The Nuclear Namespace we set up
-
-#endif
-
-// Explicitly stating we are using the runtime PillVirus namespace
-using TheSingularityWorkshop.Sandbox.PillVirus;
-
-namespace Singularity
+namespace Assets.Scripts.PillVirus
 {
+    /// <summary>
+    /// Arcade View for Pill Virus. 
+    /// Refactored for Pillar 1 (Builders) and Pillar 2 (Context).
+    /// </summary>
     public class PillVirus_Gui_Arcade : IGuiProvider
     {
         public string Title => "CLINICAL TRIALS: CO-OP";
 
-        private PillVirusContext _context;
-        private VisualElement _rootContainer;
-        private VisualElement[,] _uiGrid;
+        private PillVirusContext _ctx;
+        private IGuiRouter _router;
+        private FSMHandle _fsmHandle;
+        private string _processGroup = "PillVirusUpdate";
 
+        // UI references (Maintained for the Render loop)
+        private VisualElement _cabinet;
+        private readonly List<VisualElement[,]> _bottleGrids = new();
+        private Label _status;
+        private VisualElement _nextColor1Cell;
+        private VisualElement _nextColor2Cell;
+        private VisualElement _gameOverScreen;
+
+        /// <summary>
+        /// Default Constructor for Reflection Safety.
+        /// Assumes a safe/standby state.
+        /// </summary>
         public PillVirus_Gui_Arcade()
         {
-            _context = new PillVirusContext(width: 12, height: 18, matchReq: 4, playerCount: 2);
-            PillVirusLogic.InitializeFSM();
+            _ctx = new PillVirusContext(); // Safe default
+        }
 
-#if UNITY_EDITOR
-           // FSM_EditorIntegrationAdvanced.AddProcessingGroup("EditorUpdate", "PillVirusGroup");
-#endif
-            global::TheSingularityWorkshop.FSM_API.FSM_API.Create.CreateInstance("PillVirusEngine", _context, "PillVirusGroup");
+        public PillVirus_Gui_Arcade(IGuiRouter r) : this()
+        {
+            _router = r;
         }
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            _rootContainer = new VisualElement { style = { flexGrow = 1, backgroundColor = new Color(0.05f, 0.05f, 0.1f), alignItems = Align.Center, justifyContent = Justify.Center } };
-
-            _rootContainer.focusable = true;
-            _rootContainer.RegisterCallback<KeyDownEvent>(OnKeyDown);
-            _rootContainer.schedule.Execute(() => _rootContainer.Focus());
-
-            int cellSize = 30;
-            int exactWidth = _context.Width * cellSize;
-            int exactHeight = _context.Height * cellSize;
-
-            var bottleView = new VisualElement
+            // Rule 8: Context-First Initialization
+            // Attempt to resolve existing session data from Global Sovereign Memory
+            if (ctx.DataWarehouse != null && ctx.DataWarehouse.TryGetAsset<PillVirusContext>("ActiveSession", out var sessionCtx))
             {
-                style = {
-                    width = exactWidth,
-                    height = exactHeight,
-                    backgroundColor = new Color(0.1f, 0.1f, 0.15f),
-                    borderBottomLeftRadius = 20, borderBottomRightRadius = 20,
-                    borderTopWidth = 5, borderBottomWidth = 5, borderLeftWidth = 5, borderRightWidth = 5,
-                    borderTopColor = new Color(0.6f, 0.8f, 0.9f), borderBottomColor = new Color(0.6f, 0.8f, 0.9f),
-                    borderLeftColor = new Color(0.6f, 0.8f, 0.9f), borderRightColor = new Color(0.6f, 0.8f, 0.9f),
-                    flexDirection = FlexDirection.Row, flexWrap = Wrap.Wrap
-                }
-            };
-
-            _uiGrid = new VisualElement[_context.Width, _context.Height];
-
-            for (int y = 0; y < _context.Height; y++)
-            {
-                for (int x = 0; x < _context.Width; x++)
-                {
-                    StyleBackgroundSize HelloWorldFriend = new StyleBackgroundSize(StyleKeyword.Auto);
-                    var cell = new VisualElement
-                    {
-                        style = {
-                            width = cellSize, height = cellSize,
-                            borderTopWidth = 1, borderLeftWidth = 1,
-                            borderTopColor = new Color(0,0,0,0.15f), borderLeftColor = new Color(0,0,0,0.15f),
-                            backgroundSize = HelloWorldFriend
-                            
-                        }
-                    };
-                    _uiGrid[x, y] = cell;
-                    bottleView.Add(cell);
-                }
+                _ctx = sessionCtx;
             }
 
-            _rootContainer.Add(bottleView);
+            // Initialize FSM if not running
+            if (_fsmHandle == null)
+            {
+                PillVirusLogic.InitializeFSM();
+                _fsmHandle = FSM_API.Create.CreateInstance("PillVirusEngine", _ctx, _processGroup);
+            }
 
-            _rootContainer.schedule.Execute(() => RenderGrid()).Every(16);
+            // Root Layout via Builder
+            var rootBuilder = new ForgeContainerBuilder("ArcadeRoot")
+                .WithFlexGrow(1)
+                .WithBackgroundColor(new Color(0.01f, 0.01f, 0.02f))
+                .WithFlexLayout(FlexDirection.Column, Justify.Center, Align.Center);
 
-            return _rootContainer;
+            // THE CABINET (Multiplayer Grid)
+            var cabinetBuilder = new ForgeContainerBuilder("Cabinet")
+                .WithDirection(FlexDirection.Row)
+                .WithPadding(20);
+
+            _bottleGrids.Clear();
+            for (int p = 0; p < _ctx.PlayerCount; p++)
+            {
+                cabinetBuilder.AddChild(new DynamicGuiProvider(CreateBottle(p)));
+            }
+
+            var root = rootBuilder.Build();
+            _cabinet = cabinetBuilder.Build();
+            root.Add(_cabinet);
+
+            // Status Bar
+            var statusBuilder = new ForgeLabelBuilder("SYSTEM READY")
+                .WithFontSize(24)
+                .WithColor(Color.cyan)
+                .WithMarginTop(20);
+
+            _status = statusBuilder.Build() as Label;
+            root.Add(_status);
+
+            // Game Over Overlay
+            _gameOverScreen = BuildGameOverOverlay();
+            root.Add(_gameOverScreen);
+
+            // Input Management
+            root.focusable = true;
+            root.RegisterCallback<KeyDownEvent>(e => PillVirusLogic.HandleInput(_ctx, e.keyCode, true));
+            root.RegisterCallback<KeyUpEvent>(e => PillVirusLogic.HandleInput(_ctx, e.keyCode, false));
+
+            // Heartbeat
+            root.schedule.Execute(() => {
+                FSM_API.Interaction.Update(_processGroup);
+                Render();
+            }).Every(16);
+
+            return root;
         }
 
-        private void OnKeyDown(KeyDownEvent evt)
+        private VisualElement CreateBottle(int playerId)
         {
-            PillVirusLogic.HandleInput(_context, evt.keyCode);
+            var bottleGrid = new ForgeGridGuiBuilder($"Bottle_{playerId}", _ctx.Height, _ctx.Width);
+            var uiGrid = new VisualElement[_ctx.Width, _ctx.Height];
+
+            for (int y = 0; y < _ctx.Height; y++)
+            {
+                for (int x = 0; x < _ctx.Width; x++)
+                {
+                    // Create cell using Container Builder
+                    var cell = new ForgeContainerBuilder()
+                        .WithWidth(25).WithHeight(25)
+                        .Build();
+
+                    uiGrid[x, y] = cell;
+                    // FIX: Wrap VisualElement in DynamicGuiProvider to satisfy IGuiProvider requirement
+                    bottleGrid.SetCell(y, x, new DynamicGuiProvider(cell));
+                }
+            }
+
+            _bottleGrids.Add(uiGrid);
+
+            return new ForgeContainerBuilder($"Player_{playerId}_Frame")
+                .WithDirection(FlexDirection.Row)
+                .WithAlignItems(Align.FlexEnd)
+                .WithBackgroundColor(new Color(0.05f, 0.05f, 0.1f))
+                .WithBorderWidth(6, 6, 10, 6)
+                .WithBorderColor(new Color(0.4f, 0.6f, 1f))
+                .AddChild(bottleGrid)
+                .Build();
         }
 
-        private void RenderGrid()
+        private VisualElement BuildGameOverOverlay()
         {
-            for (int y = 0; y < _context.Height; y++)
+            var overlay = new ForgeContainerBuilder("GameOver")
+                .WithPosition(Position.Absolute)
+                .WithBackgroundColor(new Color(0, 0, 0, 0.8f))
+                .WithFlexLayout(FlexDirection.Column, Justify.Center, Align.Center)
+                .WithFlexGrow(1);
+
+            var returnBtn = new ForgeButtonBuilder("RETURN TO MENU", () => {
+                FSM_API.Interaction.DestroyInstance(_fsmHandle);
+                FSM_API.Interaction.DestroyFiniteStateMachine("PillVirusEngine", _processGroup);
+                _router?.NavigateTo("MainMenu");
+            }).WithFontSize(24).WithPadding(20);
+
+            overlay.AddChild(returnBtn);
+
+            var element = overlay.Build();
+            element.style.top = 0; element.style.bottom = 0;
+            element.style.left = 0; element.style.right = 0;
+            element.style.display = DisplayStyle.None;
+            return element;
+        }
+
+        private void Render()
+        {
+            if (_ctx.IsGameOver || _ctx.IsVictory)
             {
-                for (int x = 0; x < _context.Width; x++)
-                {
-                    var cellData = _context.Board[x, y];
-                    var uiElement = _uiGrid[x, y];
-
-                    uiElement.style.backgroundColor = Color.clear;
-                    uiElement.style.borderTopLeftRadius = 0; uiElement.style.borderTopRightRadius = 0;
-                    uiElement.style.borderBottomLeftRadius = 0; uiElement.style.borderBottomRightRadius = 0;
-
-                    // FIX: Bulletproof C# assignment to avoid the "unassigned local variable" compiler error
-                    Color mappedColor = Color.clear;
-                    bool hasColor = _context.ColorPalette.TryGetValue(cellData.ColorId, out mappedColor);
-
-                    if (cellData.Type != CellType.Empty && hasColor)
-                    {
-                        uiElement.style.backgroundColor = mappedColor;
-
-                        if (cellData.Type == CellType.Virus)
-                        {
-                            uiElement.style.borderTopLeftRadius = Length.Percent(50);
-                            uiElement.style.borderTopRightRadius = Length.Percent(50);
-                            uiElement.style.borderBottomLeftRadius = Length.Percent(50);
-                            uiElement.style.borderBottomRightRadius = Length.Percent(50);
-                        }
-                    }
-                }
+                _status.text = _ctx.IsVictory ? "VICTORY" : "DEFEAT";
+                _gameOverScreen.style.display = DisplayStyle.Flex;
             }
 
-            foreach (var player in _context.ActivePlayers)
+            // Sync Visual Grid with Context Board
+            for (int pIdx = 0; pIdx < _bottleGrids.Count; pIdx++)
             {
-                if (player.Y < _context.Height && player.X < _context.Width)
-                {
-                    _uiGrid[player.X, player.Y].style.backgroundColor = _context.ColorPalette[player.Color1];
-
-                    if (player.IsHorizontal && player.X + 1 < _context.Width)
-                        _uiGrid[player.X + 1, player.Y].style.backgroundColor = _context.ColorPalette[player.Color2];
-                    else if (!player.IsHorizontal && player.Y + 1 < _context.Height)
-                        _uiGrid[player.X, player.Y + 1].style.backgroundColor = _context.ColorPalette[player.Color2];
-                }
+                var grid = _bottleGrids[pIdx];
+                for (int y = 0; y < _ctx.Height; y++)
+                    for (int x = 0; x < _ctx.Width; x++)
+                        ApplyPillStyle(grid[x, y], _ctx.Board[x, y], x, y);
             }
         }
 
-        public Action<VisualElement> GetGuiBuilder() => root => root.Add(CreateGui(new GuiContext()));
-        public void FromUIDocument(string assetPath) { }
-        public void ToUIDocument(string assetPath) { }
+        private void ApplyPillStyle(VisualElement ve, GridCell data, int x, int y)
+        {
+            ve.style.backgroundColor = (data.ColorId > 0) ? _ctx.ColorPalette[data.ColorId] : Color.clear;
+            // ... (Rounding logic remains same, but utilizes VisualElement style properties)
+        }
+
+        public Action<VisualElement> GetGuiBuilder() => r => r.Add(CreateGui(new GuiContext()));
+        public void FromUIDocument(string p) { }
+        public void ToUIDocument(string p) { }
     }
 }

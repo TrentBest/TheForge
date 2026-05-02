@@ -1,0 +1,45 @@
+﻿#pragma kernel UpdateSwarm
+
+struct Drone
+{
+    float3 position;
+    float3 velocity;
+    uint state;
+    float battery;
+    uint targetID;
+};
+
+RWStructuredBuffer<Drone> _SwarmBuffer;
+StructuredBuffer<float3> _AttractorBuffer;
+uint _AttractorCount;
+float _DeltaTime;
+
+[numthreads(64, 1, 1)]
+void UpdateSwarm(uint3 id : SV_DispatchThreadID)
+{
+    Drone drone = _SwarmBuffer[id.x];
+    
+    // 1. FSM TRANSITION: "Habit" vs. Active Tracking
+    if (drone.battery < 0.1f)
+        drone.state = 2; // RTB/Recharge state
+    
+    // 2. ATTRACTOR PHYSICS: Fractional Weighted Pull
+    float3 netForce = float3(0, 0, 0);
+    for (uint i = 0; i < _AttractorCount; i++)
+    {
+        float3 dir = _AttractorBuffer[i] - drone.position;
+        float dist = length(dir);
+        netForce += normalize(dir) * (1.0f / (dist + 0.1f)); // Inverse square pull
+    }
+
+    // 3. DOCTRINE-SPECIFIC BEHAVIOR
+    if (drone.state == 0)
+    { // Eyes (Patrol)
+        // Implement Traveling Salesman wandering logic here
+    }
+
+    drone.velocity += netForce * _DeltaTime;
+    drone.position += drone.velocity * _DeltaTime;
+    
+    _SwarmBuffer[id.x] = drone;
+}

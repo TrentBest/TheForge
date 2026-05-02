@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Assets.Scripts
+namespace Workshop
 {
-    internal class CorsairsInSpace
+    public class CorsairsInSpace
     {
     }
 }

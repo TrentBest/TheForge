@@ -1,10 +1,8 @@
-﻿
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 
 
-namespace TheSingularityWorkshop.Warlords
+namespace Assets.Scripts.Warlords
 {
     public class WarlordsMapImporter : MonoBehaviour
     {

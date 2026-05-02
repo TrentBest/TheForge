@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TheSingularityWorkshop.FSM_API;
+using UnityEngine.Tilemaps;
 
-namespace TheSingularityWorkshop.Warlords
+namespace Assets.Scripts.Warlords
 {
     public class TileManager : MonoBehaviour, IStateContext
     {
@@ -18,7 +19,7 @@ namespace TheSingularityWorkshop.Warlords
         public class TerrainVisual
         {
             public TerrainType Type;
-            public Sprite Sprite;
+            public Tile TileAsset; // The actual Unity Tile used by Tilemaps
         }
 
         [Serializable]
@@ -28,13 +29,19 @@ namespace TheSingularityWorkshop.Warlords
             public Sprite Sprite;
         }
 
-        void Awake()
+        void Awake() => IsValid = true;
+
+        // HELPER: Returns the actual Tile asset (used for 2D/3D Tilemap rendering)
+        public Tile GetTile(TerrainType type) => TerrainAssets.Find(x => x.Type == type)?.TileAsset;
+
+        // HELPER: Returns the Sprite inside a Tile (used for UI Elements / Map Editor)
+        public Sprite GetSprite(TerrainType type)
         {
-            IsValid = true;
+            var visual = TerrainAssets.Find(x => x.Type == type);
+            return visual?.TileAsset != null ? visual.TileAsset.sprite : null;
         }
 
-        // Helper methods for the Editor to call
-        public Sprite GetSprite(TerrainType type) => TerrainAssets.Find(x => x.Type == type)?.Sprite;
+        // HELPER: Returns the POI sprite (Cities, Ruins, etc.)
         public Sprite GetSprite(POIType type) => POIAssets.Find(x => x.Type == type)?.Sprite;
     }
 }

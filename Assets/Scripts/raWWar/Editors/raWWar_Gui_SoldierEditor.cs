@@ -1,10 +1,11 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using Assets.Scripts.raWWar;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Assets.Scripts.raWWar.Gameplay;
+
+
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -35,7 +36,7 @@ namespace Assets.Scripts.raWWar.Editors
         Infinitum = 10000000000, // Latin: "Unbounded" (Sector-wide swarm)
         Aeterna = 100000000000   // Latin: "Eternal" (The final number)
     }
-
+    public enum FactionAllegiance { Blue, Red, Green, Gold, Magenta, Orange }
     public class raWWar_Gui_SoldierEditor : IGuiProvider
     {
         public string Title => "raWWar Tactical Forge";
@@ -58,10 +59,14 @@ namespace Assets.Scripts.raWWar.Editors
         // Reference to the active LMP so we can trigger updates/cleanup
         private LiveModelPreviewBuilder _activeLmp;
 
+        public raWWar_Gui_SoldierEditor()
+        {
+        }
+
         public VisualElement CreateGui(GuiContext ctx)
         {
-            // Pattern: SplitPanelBuilder for layout abstraction
-            return new SplitPanelBuilder(sidebarWidth: 380, Side.Left)
+            // Pattern: ForgeSplitPanelBuilder for layout abstraction
+            return new ForgeSplitPanelBuilder(sidebarWidth: 380, Side.Left)
                 .WithSidebar(BuildControlsSidebar(ctx))
                 .WithMain(BuildMainPreview(ctx))
                 .CreateGui(ctx);
@@ -82,13 +87,15 @@ namespace Assets.Scripts.raWWar.Editors
                 // Tactical Scale (Echelon Tabs refactored to Button Data)
                 .AddChild(new Label("TACTICAL DEPLOYMENT SCALE") { style = { color = Color.white, fontSize = 14, unityFontStyleAndWeight = FontStyle.Bold, marginTop = 15 } })
                 .OnBuild(ve => {
-                    // Logic to build echelon buttons using your control pattern
                     foreach (EchelonScale scale in Enum.GetValues(typeof(EchelonScale)))
                     {
                         var isAct = _currentScale == scale;
-                        // Injecting a button into the build stream
                         ve.Add(new Button(() => {
                             _currentScale = scale;
+
+                            // ---> FIRE THE DEPLOYMENT ORDER HERE <---
+                            TacticalCommander.DeployFormation(scale, GetFactionColor(_currentFaction));
+
                             Refresh(ctx);
                         })
                         {
@@ -113,6 +120,20 @@ namespace Assets.Scripts.raWWar.Editors
                     _currentFaction = v;
                     Refresh(ctx);
                 });
+        }
+
+        private Color GetFactionColor(FactionAllegiance faction)
+        {
+            return faction switch
+            {
+                FactionAllegiance.Red => Color.red,
+                FactionAllegiance.Green => Color.green,
+                FactionAllegiance.Blue => Color.blue,
+                FactionAllegiance.Gold => new Color(1f, 0.8f, 0f),
+                FactionAllegiance.Magenta => Color.magenta,
+                FactionAllegiance.Orange => new Color(1f, 0.5f, 0f),
+                _ => Color.white
+            };
         }
 
         private IGuiProvider BuildMainPreview(GuiContext ctx)

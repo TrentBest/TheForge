@@ -1,6 +1,5 @@
 ﻿using UnityEngine.UIElements;
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 namespace Assets.Editor.raWWar
 {

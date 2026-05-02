@@ -1,133 +1,114 @@
 ﻿using System;
 using System.Collections.Generic;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Assets.Scripts.Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Builders.GuiBuilders
+namespace Assets.Scripts.Builders.GuiBuilders
 {
+    /// <summary>
+    /// Refactored State Property Editor.
+    /// Migrated to Forge Builders to ensure theme consistency and systemic content creation.
+    /// </summary>
     public class Workshop_Gui_FsmStateGuiBuilder : IGuiProvider
     {
         public string Title { get; set; } = "State Properties";
+        private GuiContext _lastCtx;
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            var builder = new GraphicalUserInterfaceBuilder("StateView")
-                .WithPadding(15)
-                .WithEditorMode(true);
+            _lastCtx = ctx;
 
-            builder.AddChild(c => new TextField("State Identifier"));
+            // ROOT: Using ForgeContainerBuilder to follow the Granular Padding Protocol
+            var root = new ForgeContainerBuilder("StateView_Root")
+                .WithPadding(15)
+                .WithFlexGrow(1);
+
+            // 1. Identity Field
+            root.AddChild(new ForgeTextFieldBuilder("State Identifier")
+                .OnChanged(val => Debug.Log($"[FSM] State renamed to: {val}")));
+
+            // 2. Lifecycle Dropdowns using ForgeDropdownBuilder
+            // Note: We use OnBuild to apply the specific UI Toolkit formatting callbacks
 
             // --- ON ENTER ---
-            builder.AddChild(c =>
-            {
-                var dropdown = new DropdownField("OnEnter:", GetRegisteredOnEnterMethods(), 0);
-                dropdown.formatSelectedValueCallback = OnEnterFormatSelectedValueCallback;
-                dropdown.formatListItemCallback = OnEnterFormatListItemCallback;
-                return dropdown;
-            });
+            root.AddChild(new ForgeDropdownBuilder("OnEnter:", GetRegisteredOnEnterMethods())
+                .OnBuild(ve =>
+                {
+                    if (ve is DropdownField df)
+                    {
+                        df.formatSelectedValueCallback = OnEnterFormatSelectedValueCallback;
+                        df.formatListItemCallback = OnEnterFormatListItemCallback;
+                    }
+                }));
 
             // --- ON UPDATE ---
-            builder.AddChild(c =>
-            {
-                // Fixed Label: Was "OnEnter", changed to "OnUpdate"
-                var dropdown = new DropdownField("OnUpdate:", GetRegisteredOnUpdateMethods(), 0);
-                dropdown.formatSelectedValueCallback = OnUpdateFormatSelectedValueCallback;
-                dropdown.formatListItemCallback = OnUpdateFormatListItemCallback;
-                return dropdown;
-            });
+            root.AddChild(new ForgeDropdownBuilder("OnUpdate:", GetRegisteredOnUpdateMethods())
+                .OnBuild(ve =>
+                {
+                    if (ve is DropdownField df)
+                    {
+                        df.formatSelectedValueCallback = OnUpdateFormatSelectedValueCallback;
+                        df.formatListItemCallback = OnUpdateFormatListItemCallback;
+                    }
+                }));
 
             // --- ON EXIT ---
-            builder.AddChild(c =>
-            {
-                // Fixed Label: Was "OnEnter", changed to "OnExit"
-                var dropdown = new DropdownField("OnExit:", GetRegisteredOnExitMethods(), 0);
-                dropdown.formatSelectedValueCallback = OnExitFormatSelectedValueCallback;
-                dropdown.formatListItemCallback = OnExitFormatListItemCallback;
-                return dropdown;
-            });
+            root.AddChild(new ForgeDropdownBuilder("OnExit:", GetRegisteredOnExitMethods())
+                .OnBuild(ve =>
+                {
+                    if (ve is DropdownField df)
+                    {
+                        df.formatSelectedValueCallback = OnExitFormatSelectedValueCallback;
+                        df.formatListItemCallback = OnExitFormatListItemCallback;
+                    }
+                }));
 
-            return builder.Build();
+            return root.CreateGui(ctx);
         }
 
         // --------------------------------------------------------------------------------
-        // CALLBACK IMPLEMENTATIONS
+        // CALLBACK IMPLEMENTATIONS (Experience Model Logic)
         // --------------------------------------------------------------------------------
 
-        // -- OnEnter --
-        private string OnEnterFormatListItemCallback(string arg)
-        {
-            // If the list item is null/empty, show "(None)" in the list
-            return string.IsNullOrEmpty(arg) ? "(None)" : arg;
-        }
+        private string OnEnterFormatListItemCallback(string arg) => string.IsNullOrEmpty(arg) ? "(None)" : arg;
+        private string OnEnterFormatSelectedValueCallback(string arg) => string.IsNullOrEmpty(arg) ? "Select Enter Logic.." : arg;
 
-        private string OnEnterFormatSelectedValueCallback(string arg)
-        {
-            // If nothing is selected, prompt the user
-            return string.IsNullOrEmpty(arg) ? "Select Enter Logic.." : arg;
-        }
+        private string OnUpdateFormatListItemCallback(string arg) => string.IsNullOrEmpty(arg) ? "(None)" : arg;
+        private string OnUpdateFormatSelectedValueCallback(string arg) => string.IsNullOrEmpty(arg) ? "Select Update Logic.." : arg;
 
-        // -- OnUpdate --
-        private string OnUpdateFormatListItemCallback(string arg)
-        {
-            return string.IsNullOrEmpty(arg) ? "(None)" : arg;
-        }
-
-        private string OnUpdateFormatSelectedValueCallback(string arg)
-        {
-            return string.IsNullOrEmpty(arg) ? "Select Update Logic.." : arg;
-        }
-
-        // -- OnExit --
-        private string OnExitFormatListItemCallback(string arg)
-        {
-            return string.IsNullOrEmpty(arg) ? "(None)" : arg;
-        }
-
-        private string OnExitFormatSelectedValueCallback(string arg)
-        {
-            return string.IsNullOrEmpty(arg) ? "Select Exit Logic.." : arg;
-        }
+        private string OnExitFormatListItemCallback(string arg) => string.IsNullOrEmpty(arg) ? "(None)" : arg;
+        private string OnExitFormatSelectedValueCallback(string arg) => string.IsNullOrEmpty(arg) ? "Select Exit Logic.." : arg;
 
         // --------------------------------------------------------------------------------
-        // DATA FETCHING
+        // DATA FETCHING (Stubs)
         // --------------------------------------------------------------------------------
 
-        private List<string> GetRegisteredOnExitMethods()
-        {
-            List<string> methods = new List<string> { "" }; // Add empty string for "None" option
-            // Assuming FSM_DefinitionsLibrary exists
-            //methods.AddRange(FSM_DefinitionsLibrary.LoadRegisteredOnExitMethods());
-            return methods;
-        }
+        private List<string> GetRegisteredOnExitMethods() => new List<string> { "" };
+        private List<string> GetRegisteredOnUpdateMethods() => new List<string> { "" };
+        private List<string> GetRegisteredOnEnterMethods() => new List<string> { "" };
 
-        private List<string> GetRegisteredOnUpdateMethods()
-        {
-            List<string> methods = new List<string> { "" };
-           // methods.AddRange(FSM_DefinitionsLibrary.LoadRegisteredOnUpdateMethods());
-            return methods;
-        }
-
-        List<string> GetRegisteredOnEnterMethods()
-        {
-            List<string> methods = new List<string> { "" };
-            //methods.AddRange(FSM_DefinitionsLibrary.LoadRegisteredOnEnterMethods());
-            return methods;
-        }
+        // --------------------------------------------------------------------------------
+        // IGuiProvider Implementation
+        // --------------------------------------------------------------------------------
 
         public Action<VisualElement> GetGuiBuilder()
         {
-            throw new NotImplementedException();
+            return (root) => root.Add(CreateGui(new GuiContext { Name = "FsmState_Inspector" }));
         }
 
         public void ToUIDocument(string assetPath)
         {
-            throw new NotImplementedException();
+            var root = CreateGui(_lastCtx ?? new GuiContext());
+            string fileName = string.IsNullOrEmpty(assetPath) ? "FsmState_Properties_Bake" : System.IO.Path.GetFileNameWithoutExtension(assetPath);
+            WorkshopUxmlBaker.Bake(root, fileName);
         }
 
         public void FromUIDocument(string assetPath)
         {
-            throw new NotImplementedException();
+            // Hydration logic for the State View would go here if loading from static templates
+            Debug.Log($"[FSM] State GUI hydration requested from {assetPath}");
         }
     }
 }

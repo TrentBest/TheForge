@@ -1,10 +1,8 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using TheSingularityWorkshop.FSM_API;
 using UnityEngine;
-using UnityEditor;
 
-namespace TheSingularityWorkshop.Asteroids.Editor
+namespace Workshop.Asteroids
 {
     public class FighterPreviewFSM : MonoBehaviour, IStateContext
     {
@@ -35,12 +33,13 @@ namespace TheSingularityWorkshop.Asteroids.Editor
 
         public void Initialize()
         {
-            LastTime = EditorApplication.timeSinceStartup;
+            // FIXED: Migrated from EditorApplication to universal runtime time tracking
+            LastTime = Time.realtimeSinceStartup;
             transform.localRotation = ShowcaseAngles[0]; // Start exactly on waypoint 1
 
-            if ( !FSM_API.FSM_API.Interaction.Exists("FighterPreviewMode", "HangarPreview"))
+            if (!FSM_API.Interaction.Exists("FighterPreviewMode", "HangarPreview"))
             {
-                FSM_API.FSM_API.Create.CreateFiniteStateMachine("FighterPreviewMode", -1, "HangarPreview")
+                FSM_API.Create.CreateFiniteStateMachine("FighterPreviewMode", -1, "HangarPreview")
                     .State("Tour_Moving", null, OnUpdateMoving, null)
                     .State("Tour_Paused", OnEnterPaused, OnUpdatePaused, null)
                     .State("Manual_Override", OnEnterManual, OnUpdateManual, null)
@@ -77,12 +76,13 @@ namespace TheSingularityWorkshop.Asteroids.Editor
                     .BuildDefinition();
             }
 
-            Status = FSM_API.FSM_API.Create.CreateInstance("FighterPreviewMode", this, "HangarPreview");
+            Status = FSM_API.Create.CreateInstance("FighterPreviewMode", this, "HangarPreview");
         }
 
         private static float GetDeltaTime(FighterPreviewFSM fsm)
         {
-            double currentTime = EditorApplication.timeSinceStartup;
+            // FIXED: Safe for both Editor and Runtime
+            double currentTime = Time.realtimeSinceStartup;
             float dt = (float)(currentTime - fsm.LastTime);
             fsm.LastTime = currentTime;
             return dt;
@@ -143,4 +143,3 @@ namespace TheSingularityWorkshop.Asteroids.Editor
         }
     }
 }
-#endif

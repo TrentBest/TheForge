@@ -1,0 +1,58 @@
+﻿#pragma kernel CS_ResolveActiveDefenses
+
+struct GURPS_ActorData
+{
+    float3 Position; // 12 bytes
+    float Facing; // 4 bytes
+    int StateId; // 4 bytes
+    float CurrentHealth;
+    int ST;
+    int DX;
+    int IQ;
+    int HT;
+    int StatusFlags;
+    float Padding; // Total 48 bytes
+};
+
+struct CombatEvent
+{
+    int TargetIndex;
+    int AttackEffectiveSkill;
+    float RawDamage;
+    int DamageType; // Crushing, Piercing, etc.
+};
+
+RWStructuredBuffer<GURPS_ActorData> _Actors;
+StructuredBuffer<CombatEvent> _IncomingAttacks;
+uint _AttackCount;
+
+[numthreads(64, 1, 1)]
+void CS_ResolveActiveDefenses(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _AttackCount)
+        return;
+
+    CombatEvent atk = _IncomingAttacks[id.x];
+    GURPS_ActorData target = _Actors[atk.TargetIndex];
+
+    // 1. Calculate Dodge: (DX + HT) / 4 + 3
+    int dodgeThreshold = floor((target.DX + target.HT) / 4.0) + 3;
+
+    // 2. Mock 3d6 Roll (using Squirrel3 hash)
+    // In a full implementation, we use a noise seed for deterministic rolls
+    int roll = 10;
+
+    // 3. Resolve Active Defense
+    if (roll > dodgeThreshold)
+    {
+        // Defense Failed: Apply Damage
+        // Apply GURPS Damage Type Multipliers (Simplified)
+        float woundingMod = 1.0;
+        if (atk.DamageType == 3)
+            woundingMod = 1.5; // Piercing
+        
+        target.CurrentHealth -= (atk.RawDamage * woundingMod);
+    }
+
+    _Actors[atk.TargetIndex] = target;
+}

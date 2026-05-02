@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Assets.Scripts.raWWar.Gui
 {
-    internal class MainMenu_raWWar
+    public class MainMenu_raWWar
     {
     }
 }

@@ -1,85 +1,61 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
-using TheSingularityWorkshop.Builders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+﻿using Assets.Scripts.Asteroids;
+using Assets.Scripts.Builders;
 using System;
+using UnityEngine;
+using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Builders.GuiBuilders
+namespace Assets.Scripts.Builders.GuiBuilders
 {
     public class DroneGuiBuilder : IGuiProvider
     {
-        private readonly DroneBuilder builder;
+        private readonly DroneBuilder _builder;
 
-        public DroneGuiBuilder(DroneBuilder builder)
+        public DroneGuiBuilder(DroneBuilder builder) { _builder = builder; }
+
+        public DroneGuiBuilder()
         {
-            this.builder = builder;
+            _builder = new DroneBuilder();
         }
 
-        public string Title => "Drone Swarm";
+        public string Title => "Drone Swarm Architect";
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            var root = new VisualElement();
+            var rootBuilder = new ForgeContainerBuilder("DroneGui_Root")
+                .WithFlexGrow(1f).WithPadding(20f).WithBackgroundColor(new Color(0.08f, 0.08f, 0.1f));
 
-            // 1. Drone Settings
-            var nameField = new TextField("Drone Name") { value = builder.DroneName };
-            nameField.RegisterValueChangedCallback(evt => builder.WithName(evt.newValue));
-            root.Add(nameField);
+            rootBuilder.AddChild(new ForgeContainerBuilder("Header").WithMarginBottom(15f)
+                .AddChild(new ForgeLabelBuilder("DRONE UNIT MANIFEST").WithFontSize(22).WithBold().WithColor(new Color(0.4f, 0.8f, 1.0f)))
+                .AddChild(new ForgeLabelBuilder("Configure propulsion array.").WithColor(Color.gray)));
 
-            var behaviorField = new TextField("Behavior ID") { value = builder.BehaviorID };
-            behaviorField.RegisterValueChangedCallback(evt => builder.WithBehavior(evt.newValue));
-            root.Add(behaviorField);
+            var propArray = new ForgeContainerBuilder("Propulsion").WithDirection(FlexDirection.Column);
+            propArray.AddChild(RenderMotorSlot("FRONT PORT", _builder.FrontLeft, ctx));
+            propArray.AddChild(RenderMotorSlot("FRONT STBD", _builder.FrontRight, ctx));
 
-            root.Add(new Label("Motor Configuration")
+            rootBuilder.AddChild(propArray);
+            return rootBuilder.Build();
+        }
+
+        private VisualElement RenderMotorSlot(string label, MotorBuilder motor, GuiContext ctx)
+        {
+            var container = new ForgeContainerBuilder($"Slot_{label}")
+                .WithMarginBottom(10f).WithPadding(12f).WithBackgroundColor(new Color(0.12f, 0.12f, 0.15f)).WithBorderRadius(5f);
+
+            container.AddChild(new ForgeLabelBuilder(label).WithFontSize(10).WithColor(Color.gray).WithMarginBottom(8f));
+
+            // FIXED: Decoupled Logic - UI Provider creates the sub-UI, not the data class
+            if (motor != null)
             {
-                style = { marginTop = 15, unityFontStyleAndWeight = FontStyle.Bold, fontSize = 14 }
-            });
+                var motorUi = new MotorGuiBuilder(motor);
+                container.AddChild(motorUi.CreateGui(ctx));
+            }
 
-            // 2. Embed Motor GUIs
-            var frontRow = new VisualElement() { style = { flexDirection = FlexDirection.Row, justifyContent = Justify.SpaceBetween } };
-            frontRow.Add(RenderMotor(builder.FrontLeft, ctx));
-            frontRow.Add(RenderMotor(builder.FrontRight, ctx));
-            root.Add(frontRow);
-
-            var rearRow = new VisualElement() { style = { flexDirection = FlexDirection.Row, justifyContent = Justify.SpaceBetween, marginTop = 5 } };
-            rearRow.Add(RenderMotor(builder.RearLeft, ctx));
-            rearRow.Add(RenderMotor(builder.RearRight, ctx));
-            root.Add(rearRow);
-
-            // 3. Build Button
-            var buildBtn = new Button(() => {
-                builder.Build(Vector3.zero);
-                Debug.Log($"[DroneBuilder] Constructed {builder.DroneName}");
-            })
-            { text = "Construct Drone", style = { height = 30, marginTop = 20 } };
-            root.Add(buildBtn);
-
-            return root;
+            return container.Build();
         }
 
-        public void FromUIDocument(string assetPath)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Action<VisualElement> GetGuiBuilder()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ToUIDocument(string assetPath)
-        {
-            throw new NotImplementedException();
-        }
-
-        private VisualElement RenderMotor(MotorBuilder motorBuilder, GuiContext ctx)
-        {
-            // Use the parameterless Build() to match your existing AtomBuilder pattern
-            var element = motorBuilder.GetGuiBuilder().Build();
-
-            element.style.flexGrow = 1;
-            element.style.width = Length.Percent(48);
-            return element;
-        }
+        public Action<VisualElement> GetGuiBuilder() => root => root.Add(CreateGui(new GuiContext()));
+        public void ToUIDocument(string path) { }
+        public void FromUIDocument(string path) { }
     }
 }

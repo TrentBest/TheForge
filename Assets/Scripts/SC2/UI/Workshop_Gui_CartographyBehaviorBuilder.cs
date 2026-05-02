@@ -1,9 +1,8 @@
 ﻿using UnityEngine.UIElements;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.SC2.Data;
 using System;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Forge.SC2.UI
+namespace Assets.Scripts.SC2.UI
 {
     public class Workshop_Gui_CartographyBehaviorBuilder : IGuiProvider
     {
@@ -14,57 +13,44 @@ namespace TheSingularityWorkshop.Forge.SC2.UI
             _data = data;
         }
 
-        // 1. Fulfill the contract property
         public string Title => "Cartography & Scouting Config";
 
         public VisualElement CreateGui(GuiContext context)
         {
-            // LEVERAGING THE WORKSHOP ECOSYSTEM:
-            // We use your GraphicalUserInterfaceBuilder (and underlying IControlFactory)
-            // so we don't have to care if this is rendering in a Unity EditorWindow 
-            // or inside the diegetic in-game AR terminal.
+            var guiBuilder = new GraphicalUserInterfaceBuilder(context.Name)
+                .WithTitle(Title)
+                .WithPadding(10)
+                .WithAutoGrow();
 
-            var guiBuilder = new GraphicalUserInterfaceBuilder(context.Name);
+            // Hand the data object to the ReflectiveGuiBuilder to handle the 0-100 sliders
+            var reflector = new ReflectiveGuiBuilder<CartographyBehaviorData>(_data)
+                .WithRecursion(2)
+                .WithTitle("Tactical Scouting Parameters");
 
-            // Because you have solved reflective GUI generation, we don't need to manually 
-            // declare sliders and text fields. We just hand the builder the data object!
+            guiBuilder.AddChild(reflector);
 
-            // Example of how your fluent GraphicalUserInterfaceBuilder / Reflective builder handles it:
-            //var root = guiBuilder
-            //    .BeginPanel(Title)
-            //    .InjectReflectiveControls(_data) // Auto-generates the 0-100 Sliders and binds the callbacks
-            //    .EndPanel()
-            //    .Build();
-
-            //return root;
             return guiBuilder.CreateGui(context);
         }
 
-        // --- Implementing the rest of your IGuiProvider Contract ---
-
         public Action<VisualElement> GetGuiBuilder()
         {
-            // Returns the delegate to hydrate a parent container on demand
-            return (container) =>
-            {
-                container.Clear();
-                container.Add(CreateGui(new GuiContext()));
-            };
+            return (container) => container.Add(CreateGui(new GuiContext { Name = "Cartography_Panel" }));
         }
 
         public void FromUIDocument(string assetPath)
         {
-            // Bypasses dynamic generation and loads the UI from a pre-authored 
-            // UXML file via your Workshop's IO/Asset tools.
-            throw new NotImplementedException("Cartography UI is currently dynamically generated via Workshop Factories.");
+            // Trigger a refresh from a pre-authored UXML template if available
+            var visualTree = UnityEngine.Resources.Load<VisualTreeAsset>(assetPath);
+            if (visualTree != null) this.CreateGui(new GuiContext { Name = "Hydrated_Cartography" });
         }
 
+#if UNITY_EDITOR
         public void ToUIDocument(string assetPath)
         {
-            // The true power of your system: taking the dynamically generated 
-            // GraphicalUserInterfaceBuilder layout and serializing it out to a physical UXML asset!
-            // Workshop_Gui_AssetIngestor or ForgeManipulator would handle the disk write here.
-            throw new NotImplementedException("Serialization of this layout to disk is pending.");
+            // Serialize the dynamically generated layout to a physical UXML asset
+            var root = CreateGui(new GuiContext());
+            GraphicalUserInterfaceBuilder.ConvertToUIDocument(root, assetPath);
         }
+#endif
     }
 }

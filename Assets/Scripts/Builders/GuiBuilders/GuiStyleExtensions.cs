@@ -1,9 +1,7 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders.Themes;
-using UnityEngine;
-using UnityEngine.UIElements;
+﻿using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.Themes;
 
-namespace TheSingularityWorkshop.Builders.GuiBuilders
+namespace Assets.Scripts.Builders.GuiBuilders
 {
     public static class GuiStyleExtensions
     {

@@ -1,16 +1,17 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using TheSingularityWorkshop.FSM_API;
 using UnityEditor;
 using UnityEngine;
-using TheSingularityWorkshop.FSM_API;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.Themes;
 
 
 
 namespace TheSingularityWorkshop.FsmEditorHooks
 {
     /// <summary>
-    /// The dedicated Editor-Time pacemaker. Completely decoupled from FSM_UnityIntegrationAdvanced.
+    /// The dedicated Editor-Chronos pacemaker. Completely decoupled from FSM_UnityIntegrationAdvanced.
     /// Drives UI Toolkit, live previews, and Forge tools with variable frequency targets.
     /// </summary>
     [InitializeOnLoad]
@@ -25,7 +26,7 @@ namespace TheSingularityWorkshop.FsmEditorHooks
         }
 
         // Internal groups managed specifically for Editor life-cycles
-        public static readonly List<string> EditorUpdateGroups = new List<string> { "EditorUpdate", "Panels" };
+        public static readonly List<string> EditorUpdateGroups = new List<string> { "EditorUpdate", "Panels", "GUI_Effects" };
 
         // Dynamic groups registered by Forge UI windows or user tools
         private static readonly Dictionary<string, TickProfile> _registeredGroups = new Dictionary<string, TickProfile>();
@@ -34,7 +35,13 @@ namespace TheSingularityWorkshop.FsmEditorHooks
 
         static FSM_EditorIntegrationAdvanced()
         {
+
             Subscribe();
+
+            // Register the Sovereign Kernel groups automatically in the Editor
+            RegisterEditorGroup("Core_Logic", 0f);
+            RegisterEditorGroup("Render_Sync", 0f);
+
         }
 
         public static void Subscribe()

@@ -1,160 +1,155 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.Builders;
+using Assets.Scripts.Builders.GuiBuilders;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using TheSingularityWorkshop.Libraries;
-using TheSingularityWorkshop.Builders; // For MotorBuilder
-using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.IO;
+using Random = UnityEngine.Random;
 
 namespace TheSingularityWorkshop.Editors
 {
+    /// <summary>
+    /// The Management Hub for Motor Blueprints.
+    /// Handles the CRUD lifecycle of propulsion units within the Singularity Workshop.
+    /// Reforged to follow the Forge Protocol and kill raw instantiations.
+    /// </summary>
     public class MotorLibraryGui : IGuiProvider
     {
-        private MotorBuilder currentSelection;
-        private string selectedKey; // Tracks the dictionary key (to handle renaming)
-        private VisualElement rightPane;
-        private VisualElement listContainer;
+        public string Title => "MOTOR LIBRARY";
 
-        public string Title => "Motor Library";
+        private MotorBuilder _currentSelection;
+        private string _selectedKey;
+        private VisualElement _rightPane;
+        private VisualElement _listContainer;
 
         public VisualElement CreateGui(GuiContext ctx)
         {
-            var root = new VisualElement()
-            {
-                style = { flexDirection = FlexDirection.Row, flexGrow = 1, minHeight = 400 }
-            };
+            // 1. Root Split Layout
+            var rootBuilder = new ForgeContainerBuilder("MotorLibrary_Root")
+                .WithDirection(FlexDirection.Row)
+                .WithFlexGrow(1f);
 
-            // --- LEFT PANE (Navigation / Create) ---
-            var leftPane = new VisualElement()
-            {
-                style = { width = 200, borderRightWidth = 1, borderRightColor = new Color(0.3f, 0.3f, 0.3f), }
-            };
+            // 2. LEFT PANE: Navigation & Creation
+            var leftPane = new ForgeContainerBuilder("NavigationPane")
+                .WithWidth(200f)
+                .WithPadding(10f)
+                .WithBorderWidth(0, 1f, 0, 0)
+                .WithBorderColor(new Color(0.3f, 0.3f, 0.3f))
+                .AddChild(new ForgeButtonBuilder("+ Create New Motor")
+                    .WithHeight(30f)
+                    .WithMarginBottom(10f)
+                    .OnClick(() => {
+                        // Utilizing the updated 2-argument constructor
+                        var newMotor = new MotorBuilder("New_Motor_" + Random.Range(100, 999), 100f);
+                        BlueprintLibrary.Register(newMotor);
+                        SelectMotor(newMotor, ctx);
+                        RefreshList(ctx);
+                    }));
 
-            // 1. CREATE Button
-            var createBtn = new Button(() => {
-                var newMotor = new MotorBuilder("New_Motor_" + Random.Range(100, 999), 100f);
-                BlueprintLibrary.Register(newMotor);
-                SelectMotor(newMotor, ctx);
+            // Wrap ScrollView in DynamicGuiProvider for reactive list updates
+            leftPane.AddChild(new DynamicGuiProvider(c => {
+                _listContainer = new ScrollView(ScrollViewMode.Vertical);
                 RefreshList(ctx);
-            })
-            { text = "+ Create New Motor", style = { marginBottom = 10, height = 30 } };
-            leftPane.Add(createBtn);
+                return _listContainer;
+            }));
 
-            // 2. READ List
-            listContainer = new ScrollView();
-            RefreshList(ctx);
-            leftPane.Add(listContainer);
+            // 3. RIGHT PANE: The Architect
+            var rightPaneBuilder = new ForgeContainerBuilder("EditorPane")
+                .WithFlexGrow(1f)
+                .WithPadding(20f)
+                .OnBuild(ve => {
+                    _rightPane = ve;
+                    // Initial empty state
+                    ve.Add(new ForgeLabelBuilder("SELECT A MOTOR TO INITIALIZE ARCHITECT")
+                        .WithBold()
+                        .OnBuild(l => l.style.opacity = 0.5f)
+                        .Build());
+                });
 
-            // --- RIGHT PANE (Update / Delete) ---
-            rightPane = new VisualElement()
-            {
-                style = { flexGrow = 1,  }
-            };
+            rootBuilder.AddChild(leftPane);
+            rootBuilder.AddChild(rightPaneBuilder);
 
-            // Initial Empty State
-            rightPane.Add(new Label("Select a Motor to Edit")
-            {
-                style = { unityFontStyleAndWeight = FontStyle.Italic, opacity = 0.5f }
-            });
-
-            root.Add(leftPane);
-            root.Add(rightPane);
-
-            return root;
+            return rootBuilder.Build();
         }
 
-        // --- Helper: Select and Render Right Pane ---
         private void SelectMotor(MotorBuilder motor, GuiContext ctx)
         {
-            currentSelection = motor;
-            selectedKey = motor.Name; // Store original name to handle renames
-            rightPane.Clear();
+            _currentSelection = motor;
+            _selectedKey = motor?.Name;
+
+            if (_rightPane == null) return;
+            _rightPane.Clear();
 
             if (motor == null) return;
 
-            // Header Actions
-            var headerRow = new VisualElement() { style = { flexDirection = FlexDirection.Row, marginBottom = 10, justifyContent = Justify.FlexEnd } };
+            // Header Actions (Save / Delete)
+            var actionHeader = new ForgeContainerBuilder("ActionHeader")
+                .WithDirection(FlexDirection.Row)
+                .WithJustifyContent(Justify.FlexEnd)
+                .WithMarginBottom(10f)
+                .AddChild(new ForgeButtonBuilder("DELETE")
+                    .WithBackgroundColor(new Color(0.6f, 0.2f, 0.2f))
+                    .WithMarginRight(5f)
+                    .OnClick(() => {
+                        BlueprintLibrary.DeleteMotor(_selectedKey);
+                        _currentSelection = null;
+                        _rightPane.Clear();
+                        RefreshList(ctx);
+                    }))
+                .AddChild(new ForgeButtonBuilder("SAVE / UPDATE")
+                    .WithWidth(120f)
+                    .WithBackgroundColor(new Color(0.1f, 0.4f, 0.2f))
+                    .OnClick(() => {
+                        BlueprintLibrary.RenameMotor(_selectedKey, _currentSelection);
+                        _selectedKey = _currentSelection.Name;
+                        RefreshList(ctx);
+                    }));
 
-            // 4. DELETE Button
-            var deleteBtn = new Button(() => {
-                BlueprintLibrary.DeleteMotor(selectedKey);
-                currentSelection = null;
-                rightPane.Clear();
-                RefreshList(ctx);
-            })
-            { text = "Delete", style = { backgroundColor = new Color(0.6f, 0.2f, 0.2f) } };
+            _rightPane.Add(actionHeader.Build());
 
-            // 3. UPDATE (Save) Button
-            var saveBtn = new Button(() => {
-                // Handle Rename logic via Library
-                BlueprintLibrary.RenameMotor(selectedKey, currentSelection);
-
-                // Update our tracking key
-                selectedKey = currentSelection.Name;
-
-                RefreshList(ctx); // Refresh list in case name changed
-                Debug.Log($"Saved {selectedKey}");
-            })
-            { text = "Save / Update", style = { width = 120 } };
-
-            headerRow.Add(deleteBtn);
-            headerRow.Add(saveBtn);
-            rightPane.Add(headerRow);
-
-            // Embed the User's MotorGuiBuilder
-            var editorGui = new MotorGuiBuilder(currentSelection).CreateGui(ctx);
-
-            // Style the container for visual separation
-            var editorContainer = new VisualElement()
-            {
-                style = {
-                    //borderWidth = 1,
-                    //borderColor = new Color(0.3f,0.3f,0.3f),
-                    //paddingAll = 10,
-                    backgroundColor = new Color(0.15f, 0.15f, 0.15f),
-                    //borderRadius = 4
-                }
-            };
-            editorContainer.Add(editorGui);
-            rightPane.Add(editorContainer);
+            // 4. Embed the Motor Property Architect
+            var motorEditor = new MotorGuiBuilder(_currentSelection);
+            _rightPane.Add(motorEditor.CreateGui(ctx));
         }
 
-        // --- Helper: Refresh the List ---
         private void RefreshList(GuiContext ctx)
         {
-            listContainer.Clear();
+            if (_listContainer == null) return;
+            _listContainer.Clear();
+
             foreach (var name in BlueprintLibrary.GetMotorNames())
             {
-                var btn = new Button(() => {
-                    var m = BlueprintLibrary.GetMotor(name);
-                    SelectMotor(m, ctx);
-                })
-                { text = name };
+                var capturedName = name;
+                var isSelected = _currentSelection != null && capturedName == _currentSelection.Name;
 
-                // Highlight active selection
-                if (currentSelection != null && name == currentSelection.Name)
-                {
-                    btn.style.color = new Color(0.4f, 0.8f, 1f);
-                    btn.style.unityFontStyleAndWeight = FontStyle.Bold;
-                }
+                var motorBtn = new ForgeButtonBuilder(capturedName)
+                    .WithMarginBottom(4f)
+                    .WithBackgroundColor(isSelected ? new Color(0.2f, 0.35f, 0.5f) : new Color(0.15f, 0.15f, 0.18f))
+                    .OnClick(() => {
+                        var m = BlueprintLibrary.GetMotor(capturedName);
+                        SelectMotor(m, ctx);
+                    });
 
-                listContainer.Add(btn);
+                if (isSelected) motorBtn.WithBold();
+
+                _listContainer.Add(motorBtn.Build());
             }
         }
 
-        public System.Action<VisualElement> GetGuiBuilder()
-        {
-            throw new System.NotImplementedException();
-        }
+        public Action<VisualElement> GetGuiBuilder() => root => root.Add(CreateGui(new GuiContext()));
 
         public void ToUIDocument(string assetPath)
         {
-            throw new System.NotImplementedException();
+            var root = CreateGui(new GuiContext());
+            string name = string.IsNullOrEmpty(assetPath) ? "MotorLibrary_Snapshot" : assetPath;
+            WorkshopUxmlBaker.Bake(root, name);
         }
 
         public void FromUIDocument(string assetPath)
         {
-            throw new System.NotImplementedException();
+            Debug.LogWarning("[MotorLibrary] Static hydration from UXML is bypassed. Library state is synchronized via BlueprintLibrary.");
         }
     }
 }

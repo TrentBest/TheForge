@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders.Themes;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.Core.Extensions;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders.Themes;
 
 namespace Singularity
 {
@@ -67,7 +67,7 @@ namespace Singularity
             return new GraphicalUserInterfaceBuilder("TransitionTelemetry")
                 .WithPadding(10)
                 .AddChild(new Label("METADEV TELEMETRY").Bold().FontSize(10).Color(theme.SecondaryAccent))
-                .AddChild(new Label("• Avg Evaluation Time: 0.02ms").FontSize(9).Color(Color.gray))
+                .AddChild(new Label("• Avg Evaluation Chronos: 0.02ms").FontSize(9).Color(Color.gray))
                 .AddChild(new Label($"• Global Transition Count: {_availableConditions.Count}").FontSize(9).Color(Color.gray))
                 .AddChild(new ActionGuiProvider(ctx => {
                     // Visual separator logic handled via builder-compatible VE

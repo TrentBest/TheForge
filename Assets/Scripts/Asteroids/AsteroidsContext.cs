@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using TheSingularityWorkshop.FSM_API;
 using UnityEngine;
 
-namespace TheSingularityWorkshop.Asteroids
+namespace Workshop.Asteroids
 {
     public enum AsteroidsDifficulty
     {
@@ -27,15 +25,15 @@ namespace TheSingularityWorkshop.Asteroids
         public List<GameObject> fighterPrefabs;
         public List<GameObject> fighterPartPrefabs;
         public AsteroidScore Score { get; set; }
-        public Vector2 ScreenBounds { get; internal set; }
+        public Vector2 ScreenBounds { get;  set; }
         public int Level { get; set; }
         public int Difficulty { get; private set; }
 
         public void Awake()
         {
-            if( !FSM_API.FSM_API.Interaction.Exists("Asteroids", "Update"))
+            if( !FSM_API.Interaction.Exists("Asteroids", "Update"))
             {
-                FSM_API.FSM_API.Create.CreateFiniteStateMachine("Asteroids", -1, "Update")
+                FSM_API.Create.CreateFiniteStateMachine("Asteroids", -1, "Update")
                     .State("Initializing", OnEnterInitializing, null, null)
                     .State("Running", OnEnterRunning, OnUpdateRunning, OnExitRunning)
                     .State("Shutdown", OnEnterShutdown, null, null)
@@ -44,7 +42,7 @@ namespace TheSingularityWorkshop.Asteroids
                     .Transition("Running", "Shutdown", ShouldShutdown)
                     .BuildDefinition();
             }
-            Status = FSM_API.FSM_API.Create.CreateInstance("Asteroids", this, "Update");
+            Status = FSM_API.Create.CreateInstance("Asteroids", this, "Update");
             IsValid = true;
         }
 
@@ -136,6 +134,50 @@ namespace TheSingularityWorkshop.Asteroids
         public int SizeTier { get; set; } = 3; // e.g., 3 = Large, 2 = Medium, 1 = Small
         public int PointValue { get; set; } = 100;
         public bool IsDestroyed { get; set; } = false;
+
+        private void OnUpdateRunning(IStateContext context)
+        {
+            if (context is AsteroidsContext asteroids)
+            {
+                float dt = Time.deltaTime;
+
+                // --- 1. Fighter Flight Physics ---
+                var ship = asteroids.Fighter;
+                if (ship != null)
+                {
+                    // Apply thrust from input (Arrow keys mapped to ThrustInput)
+                    ship.Velocity += ship.ThrustInput * ship.ThrustPower * dt;
+
+                    // Apply Drag & Clamp
+                    ship.Velocity *= ship.Drag;
+                    if (ship.Velocity.magnitude > ship.MaxSpeed)
+                        ship.Velocity = ship.Velocity.normalized * ship.MaxSpeed;
+
+                    ship.Position += ship.Velocity * dt;
+                    ship.Position = Wrap(ship.Position, asteroids.ScreenBounds);
+                }
+
+                // --- 2. Asteroid Movement ---
+                foreach (var asteroid in asteroids.Asteroids)
+                {
+                    asteroid.Position += asteroid.Velocity * dt;
+                    asteroid.Rotation += asteroid.RotationSpeed * dt;
+                    asteroid.Position = Wrap(asteroid.Position, asteroids.ScreenBounds);
+                }
+            }
+        }
+
+        // Helper to keep everything inside the viewport
+        private Vector2 Wrap(Vector2 pos, Vector2 bounds)
+        {
+            if (pos.x > bounds.x) pos.x = -bounds.x;
+            else if (pos.x < -bounds.x) pos.x = bounds.x;
+
+            if (pos.y > bounds.y) pos.y = -bounds.y;
+            else if (pos.y < -bounds.y) pos.y = bounds.y;
+
+            return pos;
+        }
     }
 
     public class AsteroidFighter : IStateContext

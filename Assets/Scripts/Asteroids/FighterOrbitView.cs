@@ -3,7 +3,7 @@ using TheSingularityWorkshop.FSM_API;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace TheSingularityWorkshop.Asteroids.Editor
+namespace Workshop.Asteroids
 {
     public class FighterOrbitView : VisualElement
     {
@@ -82,7 +82,7 @@ namespace TheSingularityWorkshop.Asteroids.Editor
                 this.schedule.Execute(() => {
                     if (IsInteractive && _fsmDriver != null)
                     {
-                        FSM_API.FSM_API.Interaction.Update("HangarPreview");
+                        FSM_API.Interaction.Update("HangarPreview");
                     }
                     ForceRender();
                 }).Every(16); // ~60fps

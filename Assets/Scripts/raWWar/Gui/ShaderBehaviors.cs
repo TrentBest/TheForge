@@ -1,4 +1,4 @@
-﻿namespace Assets.Scripts.raWWar.Editors.ShaderForge
+﻿namespace Assets.Scripts.raWWar.Gui
 {
     public static class ShaderBehaviors
     {

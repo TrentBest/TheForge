@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TheSingularityWorkshop.Forge.SC2.Data
+namespace Assets.Scripts.SC2
 {
     public class SC2BotBlueprint
     {

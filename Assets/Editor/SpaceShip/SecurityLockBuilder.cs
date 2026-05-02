@@ -1,107 +1,148 @@
-﻿using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.UI_And_Tools.Forge.IO;
 
-public class SecurityLockBuilder : IGuiProvider
+namespace Workshop.UI_And_Tools.Forge.Security
 {
-    private string name;
-    private string _inputBuffer = "";
-    private string _correctCode = "1234"; // Default code
-    public Action OnUnlocked;
-
-    public string Title => "Lock Creator";
-
-    public SecurityLockBuilder(string name, string code = "1234")
+    /// <summary>
+    /// A high-fidelity security keypad for diegetic interaction.
+    /// Reforged to follow the Forge Protocol and the Singularity Experience Model.
+    /// </summary>
+    public class SecurityLockBuilder : IGuiProvider
     {
-        this.name = name;
-        this._correctCode = code;
-    }
+        public string Title => "LOCK ARCHITECT";
 
-    public VisualElement CreateGui(GuiContext ctx)
-    {
-        var root = new GraphicalUserInterfaceBuilder(name)
-            .WithTitle(name.ToUpper())
-            .WithPadding(20)
-            .WithBackgroundColor(new Color(0.1f, 0.1f, 0.1f))
-            .WithBorderWidth(2)
-            .WithBorderColor(Color.gray)
-            .WithFlexLayout(FlexDirection.Column, Justify.Center, Align.Center);
+        private readonly string _name;
+        private readonly string _correctCode;
+        private string _inputBuffer = "";
 
-        // Display Screen
-        root.WithPanel("LockDisplay")
-            .WithBackgroundColor(Color.black)
-            .WithPadding(10)
-            .WithMarginBottom(15)
-            .AddChild(ctx2 => new Label(new string('*', _inputBuffer.Length))
+        // UI References for dynamic updates
+        private Label _displayLabel;
+
+        public Action OnUnlocked;
+
+        public SecurityLockBuilder(string name, string code = "1234")
+        {
+            _name = name;
+            _correctCode = code;
+        }
+
+        public VisualElement CreateGui(GuiContext ctx)
+        {
+            var rootBuilder = new ForgeContainerBuilder(_name)
+                .WithPadding(20f)
+                .WithBackgroundColor(new Color(0.05f, 0.05f, 0.05f)) // Industrial Obsidian
+                .WithBorderWidth(2f)
+                .WithBorderColor(new Color(0.3f, 0.3f, 0.35f))
+                .WithAlignItems(Align.Center);
+
+            // 1. Header Designation
+            rootBuilder.AddChild(new ForgeLabelBuilder(_name.ToUpper())
+                .WithFontSize(14)
+                .WithBold()
+                .WithColor(Color.cyan)
+                .WithMarginBottom(15f));
+
+            // 2. Display Screen (Wrapped in DynamicGuiProvider for reactivity)
+            rootBuilder.AddChild(new ForgeContainerBuilder("LockDisplay")
+                .WithWidth(180f)
+                .WithHeight(50f)
+                .WithBackgroundColor(Color.black)
+                .WithPadding(10f)
+                .WithMarginBottom(20f)
+                .WithBorderWidth(1f)
+                .WithBorderColor(new Color(0f, 1f, 0f, 0.2f)) // Faint green glow
+                .AddChild(new DynamicGuiProvider(c => {
+                    _displayLabel = new Label(GetMaskedBuffer())
+                    {
+                        style = {
+                            color = Color.green,
+                            fontSize = 24,
+                            unityTextAlign = TextAnchor.MiddleCenter,
+                            flexGrow = 1
+                        }
+                    };
+                    return _displayLabel;
+                })));
+
+            // 3. 10-Digit Keypad Grid
+            var keypadGrid = new ForgeContainerBuilder("KeypadGrid")
+                .WithDirection(FlexDirection.Row)
+                .WithFlexWrap(Wrap.Wrap)
+                .WithWidth(180f)
+                .WithJustifyContent(Justify.Center);
+
+            // Generate 1-9
+            for (int i = 1; i <= 9; i++)
             {
-                style = { color = Color.green, fontSize = 24, unityTextAlign = TextAnchor.MiddleCenter }
-            })
-            .EndPanel();
-
-        // 10-Digit Keypad Grid
-        root.WithPanel("KeypadGrid")
-            .WithFlexLayout(FlexDirection.Row, Justify.Center, Align.Center)
-            .WithFlexWrap(Wrap.Wrap)
-            .WithSize(180, 0)
-            .AddChild(ctx2 => {
-                var container = new VisualElement { style = { flexDirection = FlexDirection.Row, flexWrap = Wrap.Wrap, justifyContent = Justify.Center } };
-
-                for (int i = 1; i <= 9; i++) container.Add(CreateNumButton(i.ToString()));
-
-                container.Add(CreateNumButton("CLR", Color.red));
-                container.Add(CreateNumButton("0"));
-                container.Add(CreateNumButton("ENT", Color.green));
-
-                return container;
-            })
-            .EndPanel();
-
-        return root.CreateGui(ctx);
-    }
-
-    private Button CreateNumButton(string text, Color? color = null)
-    {
-        var btn = new Button(() => HandleInput(text))
-        {
-            text = text,
-            style = {
-                width = 50, height = 50, 
-                backgroundColor = color ?? new Color(0.2f, 0.2f, 0.2f),
-                color = Color.white, unityFontStyleAndWeight = FontStyle.Bold
+                keypadGrid.AddChild(CreateNumButton(i.ToString()));
             }
-        };
-        return btn;
-    }
 
-    private void HandleInput(string input)
-    {
-        if (input == "CLR") _inputBuffer = "";
-        else if (input == "ENT")
-        {
-            if (_inputBuffer == _correctCode) OnUnlocked?.Invoke();
-            else _inputBuffer = ""; // Reset on fail
+            // Bottom Row
+            keypadGrid.AddChild(CreateNumButton("CLR", new Color(0.4f, 0.1f, 0.1f)));
+            keypadGrid.AddChild(CreateNumButton("0"));
+            keypadGrid.AddChild(CreateNumButton("ENT", new Color(0.1f, 0.4f, 0.2f)));
+
+            rootBuilder.AddChild(keypadGrid);
+
+            return rootBuilder.Build();
         }
-        else if (_inputBuffer.Length < 8)
+
+        private IGuiProvider CreateNumButton(string text, Color? color = null)
         {
-            _inputBuffer += input;
+            return new ForgeButtonBuilder(text)
+                .WithWidth(50f)
+                .WithHeight(50f)
+                .WithMargin(2f)
+                .WithBackgroundColor(color ?? new Color(0.15f, 0.15f, 0.18f))
+                .WithBold()
+                .OnClick(() => HandleInput(text));
         }
-        // In a real editor window, you'd trigger a Refresh() here.
-    }
 
-    public Action<VisualElement> GetGuiBuilder()
-    {
-        throw new NotImplementedException();
-    }
+        private void HandleInput(string input)
+        {
+            if (input == "CLR")
+            {
+                _inputBuffer = "";
+            }
+            else if (input == "ENT")
+            {
+                if (_inputBuffer == _correctCode)
+                {
+                    Debug.Log("<color=green>[SECURITY]</color> ACCESS GRANTED.");
+                    OnUnlocked?.Invoke();
+                }
+                _inputBuffer = ""; // Reset regardless of success for security
+            }
+            else if (_inputBuffer.Length < 8)
+            {
+                _inputBuffer += input;
+            }
 
-    public void ToUIDocument(string assetPath)
-    {
-        throw new NotImplementedException();
-    }
+            // Reactive Update
+            if (_displayLabel != null)
+            {
+                _displayLabel.text = GetMaskedBuffer();
+            }
+        }
 
-    public void FromUIDocument(string assetPath)
-    {
-        throw new NotImplementedException();
+        private string GetMaskedBuffer() => new string('*', _inputBuffer.Length);
+
+        // --- IGUIProvider Implementation ---
+
+        public Action<VisualElement> GetGuiBuilder() => root => root.Add(CreateGui(new GuiContext()));
+
+        public void ToUIDocument(string assetPath)
+        {
+            var snapshot = CreateGui(new GuiContext());
+            WorkshopUxmlBaker.Bake(snapshot, $"{_name}_Keypad_Export");
+        }
+
+        public void FromUIDocument(string assetPath)
+        {
+            Debug.LogWarning("[SecurityLock] Static hydration is bypassed. Keypad logic is procedurally driven.");
+        }
     }
 }

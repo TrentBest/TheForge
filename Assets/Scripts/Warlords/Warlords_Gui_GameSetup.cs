@@ -1,10 +1,10 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Warlords
+namespace Assets.Scripts.Warlords
 {
     public class Warlords_Gui_GameSetup : IGuiProvider
     {
@@ -13,80 +13,89 @@ namespace TheSingularityWorkshop.Warlords
 
         private VisualElement _loreCardContainer;
         private WarlordFactionData _activeFaction;
+        private IGuiRouter _router;
+
+        // Tracks whether each faction is set to Human, AI, or Closed
+        private Dictionary<string, string> _factionControl = new Dictionary<string, string>();
+        // Tracks the AI difficulty for each faction
+        private Dictionary<string, string> _factionDifficulty = new Dictionary<string, string>();
 
         [Serializable]
-        private class WarlordFactionData
+        public class WarlordFactionData
         {
             public string Name;
             public Color ThemeColor;
             public string Subtitle;
             public string Lore;
             public string Strengths;
-
-            // Added to support your incoming art assets
             public Texture2D FactionRender;
         }
 
         private readonly List<WarlordFactionData> _factions = new List<WarlordFactionData>
-{
-    new WarlordFactionData {
-        Name = "Sirians", ThemeColor = Color.white, Subtitle = "Defenders of the White Citadel",
-        Strengths = "Centralized Strongholds, Versatile Infantry, Access to Aerial Mounts",
-        Lore = "The noble Sirians stand as the enduring shield of humanity against the encroaching darkness. Centered around the grand city of Siria, their knights are renowned for their unwavering valor.",
-        FactionRender = Resources.Load<Texture2D>("Images/Warlords/SiriansFactionArt")
-    },
-    new WarlordFactionData {
-        Name = "Storm Giants", ThemeColor = Color.yellow, Subtitle = "Lords of the Cloud Peaks",
-        Strengths = "Rugged Terrain Defense, Heavy Shock Troops, High-Altitude Beasts",
-        Lore = "Towering above the petty squabbles of men and elves, the Storm Giants dwell in the craggy, thunder-lashed heights of the north. They are an ancient, proud race, slow to anger but devastating when roused.",
-        FactionRender = Resources.Load<Texture2D>("Images/Warlords/StormGiants")
-    },
-    new WarlordFactionData {
-        Name = "Grey Dwarves", ThemeColor = new Color(1f, 0.5f, 0f), Subtitle = "Masters of the Deep Forge",
-        Strengths = "Mountainous Chokepoints, Unyielding Shield Walls, Heavy Infantry",
-        Lore = "Hewn from the living rock of Illuria's mountain ranges, the Grey Dwarves are as unyielding as the stone they mine. Driven by ancient grudges, they have forged a bitter, martial society.",
-        FactionRender = Resources.Load<Texture2D>("Images/Warlords/GreyDwarves")
-    },
-    new WarlordFactionData {
-        Name = "Orcs of Kor", ThemeColor = new Color(0.8f, 0.1f, 0.1f), Subtitle = "The Crimson Horde",
-        Strengths = "Rapid Mustering, Swarm Tactics, Desolate Terrain Control",
-        Lore = "From the desolate wastelands and festering swamps, the Orcs of Kor pour forth in a never-ending tide of violence. Driven only by an innate bloodlust and the dark will of their shamans.",
-        FactionRender = Resources.Load<Texture2D>("Images/Warlords/OrcsofKor")
-    },
-    new WarlordFactionData {
-        Name = "Elvallie", ThemeColor = new Color(0.1f, 0.6f, 0.2f), Subtitle = "Wardens of the Deep Wood",
-        Strengths = "Dense Forest Protection, Elite Archery, Mythical Woodland Allies",
-        Lore = "Deep within the ancient, whispering forests of Illuria reside the Elvallie. Aloof and immortal, they view the wars of shorter-lived races with sorrow and disdain.",
-        FactionRender = Resources.Load<Texture2D>("Images/Warlords/Elvelie")
-    },
-    new WarlordFactionData {
-        Name = "Selentines",
-        ThemeColor = new Color(0.1f, 0.2f, 0.6f), // Dark Royal Blue
-        Subtitle = "The Azure Empire",
-        Strengths = "Wealthy Coastal Cities, Naval Dominance, Disciplined Legions",
-        Lore = "The Selentine Empire once stretched across the known world, bringing law and science to the untamed lands. Now a shadow of its former glory, the empire still commands strategic coastal regions.",
-        FactionRender =Resources.Load<Texture2D>("Images/Warlords/Selentines")
-    },
-    new WarlordFactionData {
-        Name = "Horse Lords",
-        ThemeColor = new Color(0.4f, 0.7f, 1.0f), // Light Blue
-        Subtitle = "Nomads of the Endless Plains",
-        Strengths = "Unrivaled Map Mobility, Swift Cavalry, Expansive Open Borders",
-        Lore = "Born in the saddle and raised on the sweeping winds of the eastern steppes, the Horse Lords are a nomadic people of unparalleled mobility. They strike like lightning and vanish before a counterattack.",
-        FactionRender = Resources.Load<Texture2D>("Images/Warlords/HorseLords")
-    },
-    new WarlordFactionData {
-        Name = "Lord Bane", ThemeColor = new Color(0.5f, 0f, 0.8f), Subtitle = "Sovereign of the Black Wastes",
-        Strengths = "Monstrous City Roster, Proximity to Dark Allies, Psychological Terror",
-        Lore = "An ancient and malevolent entity, Lord Bane rules from his dark citadel, seeking to plunge all of Illuria into eternal night. His armies are a nightmare made flesh—undead thralls, summoned demons, and twisted beasts.",
-        FactionRender = Resources.Load<Texture2D>("Images/Warlords/LordBane")
-    }
-};
+        {
+            new WarlordFactionData {
+                Name = "Sirians", ThemeColor = Color.white, Subtitle = "Defenders of the White Citadel",
+                Strengths = "Centralized Strongholds, Versatile Infantry, Access to Aerial Mounts",
+                Lore = "The noble Sirians stand as the enduring shield of humanity against the encroaching darkness. Centered around the grand city of Siria, their knights are renowned for their unwavering valor.",
+                FactionRender = UnityEngine.Resources.Load<Texture2D>("Images/Warlords/SiriansFactionArt")
+            },
+            new WarlordFactionData {
+                Name = "Storm Giants", ThemeColor = Color.yellow, Subtitle = "Lords of the Cloud Peaks",
+                Strengths = "Rugged Terrain Defense, Heavy Shock Troops, High-Altitude Beasts",
+                Lore = "Towering above the petty squabbles of men and elves, the Storm Giants dwell in the craggy, thunder-lashed heights of the north. They are an ancient, proud race, slow to anger but devastating when roused.",
+                FactionRender = UnityEngine.Resources.Load<Texture2D>("Images/Warlords/StormGiants")
+            },
+            new WarlordFactionData {
+                Name = "Grey Dwarves", ThemeColor = new Color(1f, 0.5f, 0f), Subtitle = "Masters of the Deep Forge",
+                Strengths = "Mountainous Chokepoints, Unyielding Shield Walls, Heavy Infantry",
+                Lore = "Hewn from the living rock of Illuria's mountain ranges, the Grey Dwarves are as unyielding as the stone they mine. Driven by ancient grudges, they have forged a bitter, martial society.",
+                FactionRender = UnityEngine.Resources.Load<Texture2D>("Images/Warlords/GreyDwarves")
+            },
+            new WarlordFactionData {
+                Name = "Orcs of Kor", ThemeColor = new Color(0.8f, 0.1f, 0.1f), Subtitle = "The Crimson Horde",
+                Strengths = "Rapid Mustering, Swarm Tactics, Desolate Terrain Control",
+                Lore = "From the desolate wastelands and festering swamps, the Orcs of Kor pour forth in a never-ending tide of violence. Driven only by an innate bloodlust and the dark will of their shamans.",
+                FactionRender = UnityEngine.Resources.Load<Texture2D>("Images/Warlords/OrcsofKor")
+            },
+            new WarlordFactionData {
+                Name = "Elvallie", ThemeColor = new Color(0.1f, 0.6f, 0.2f), Subtitle = "Wardens of the Deep Wood",
+                Strengths = "Dense Forest Protection, Elite Archery, Mythical Woodland Allies",
+                Lore = "Deep within the ancient, whispering forests of Illuria reside the Elvallie. Aloof and immortal, they view the wars of shorter-lived races with sorrow and disdain.",
+                FactionRender = UnityEngine.Resources.Load<Texture2D>("Images/Warlords/Elvelie")
+            },
+            new WarlordFactionData {
+                Name = "Selentines", ThemeColor = new Color(0.1f, 0.2f, 0.6f), Subtitle = "The Azure Empire",
+                Strengths = "Wealthy Coastal Cities, Naval Dominance, Disciplined Legions",
+                Lore = "The Selentine Empire once stretched across the known world, bringing law and science to the untamed lands. Now a shadow of its former glory, the empire still commands strategic coastal regions.",
+                FactionRender = UnityEngine.Resources.Load<Texture2D>("Images/Warlords/Selentines")
+            },
+            new WarlordFactionData {
+                Name = "Horse Lords", ThemeColor = new Color(0.4f, 0.7f, 1.0f), Subtitle = "Nomads of the Endless Plains",
+                Strengths = "Unrivaled Map Mobility, Swift Cavalry, Expansive Open Borders",
+                Lore = "Born in the saddle and raised on the sweeping winds of the eastern steppes, the Horse Lords are a nomadic people of unparalleled mobility. They strike like lightning and vanish before a counterattack.",
+                FactionRender = UnityEngine.Resources.Load<Texture2D>("Images/Warlords/HorseLords")
+            },
+            new WarlordFactionData {
+                Name = "Lord Bane", ThemeColor = new Color(0.5f, 0f, 0.8f), Subtitle = "Sovereign of the Black Wastes",
+                Strengths = "Monstrous City Roster, Proximity to Dark Allies, Psychological Terror",
+                Lore = "An ancient and malevolent entity, Lord Bane rules from his dark citadel, seeking to plunge all of Illuria into eternal night. His armies are a nightmare made flesh—undead thralls, summoned demons, and twisted beasts.",
+                FactionRender = UnityEngine.Resources.Load<Texture2D>("Images/Warlords/LordBane")
+            }
+        };
+
+        public Warlords_Gui_GameSetup() { }
+
+        public Warlords_Gui_GameSetup(IGuiRouter r)
+        {
+            _router = r;
+        }
 
         public VisualElement CreateGui(GuiContext ctx)
         {
             _lastCtx = ctx;
             _activeFaction = _factions[0];
+            _factionControl.Clear();
+            _factionDifficulty.Clear();
 
             var rootBuilder = new GraphicalUserInterfaceBuilder("Warlords_GameSetup_Root")
                 .WithFlexLayout(FlexDirection.Row, Justify.FlexStart, Align.Stretch)
@@ -121,12 +130,33 @@ namespace TheSingularityWorkshop.Warlords
                 leftPanelBuilder.AddChild(CreateFactionSlot(faction));
             }
 
-            // Command Buttons
+            // Command Buttons using ForgeButtonBuilder
             leftPanelBuilder.AddChild(new GraphicalUserInterfaceBuilder("ButtonsRow")
                 .WithFlexLayout(FlexDirection.Row, Justify.SpaceBetween, Align.Center)
-                .OnBuild(ve => { ve.style.marginTop = Length.Auto(); }) // Pushes buttons to bottom
-                .AddChild(new Button() { text = "RETREAT", style = { width = 150, height = 40, backgroundColor = new Color(0.15f, 0.15f, 0.15f), color = Color.white, unityFontStyleAndWeight = FontStyle.Bold } })
-                .AddChild(new Button() { text = "MARCH TO WAR", style = { flexGrow = 1, marginLeft = 10, height = 40, backgroundColor = new Color(0.2f, 0.05f, 0.05f), color = Color.white, unityFontStyleAndWeight = FontStyle.Bold } })
+                .OnBuild(ve => { ve.style.marginTop = Length.Auto(); })
+
+                // RETREAT BUTTON
+                .AddChild(bCtx => new ForgeButtonBuilder("RETREAT", () => { _router?.NavigateTo("MainMenu"); })
+                    .WithWidth(150)
+                    .WithHeight(40)
+                    .WithBackgroundColor(new Color(0.15f, 0.15f, 0.15f))
+                    .WithTextColor(Color.white)
+                    .WithFontStyle(FontStyle.Bold)
+                    .CreateGui(bCtx))
+
+                // MARCH TO WAR BUTTON
+                .AddChild(bCtx =>
+                {
+                    var btn = new ForgeButtonBuilder("MARCH TO WAR", HandleMarchToWar)
+                        .WithHeight(40)
+                        .WithBackgroundColor(new Color(0.2f, 0.05f, 0.05f))
+                        .WithTextColor(Color.white)
+                        .WithFontStyle(FontStyle.Bold)
+                        .WithMargin(0, 0, 0, 10)
+                        .CreateGui(bCtx);
+                    btn.style.flexGrow = 1;
+                    return btn;
+                })
                 .Build());
 
             rootBuilder.AddChild(leftPanelBuilder.Build());
@@ -151,6 +181,8 @@ namespace TheSingularityWorkshop.Warlords
         private VisualElement CreateFactionSlot(WarlordFactionData faction)
         {
             string defaultControl = faction.Name == "Sirians" ? "Human" : "AI";
+            _factionControl[faction.Name] = defaultControl;
+            _factionDifficulty[faction.Name] = "Baron";
 
             var nameLabel = new Label(faction.Name) { style = { color = Color.white, fontSize = 14, unityFontStyleAndWeight = FontStyle.Bold } };
 
@@ -163,7 +195,9 @@ namespace TheSingularityWorkshop.Warlords
             var diffDropdown = new DropdownField(new List<string> { "Knight", "Baron", "Lord", "Warlord" }, "Baron") { style = { width = 110, backgroundColor = new Color(0.1f, 0.1f, 0.1f), color = Color.white } };
 
             diffDropdown.SetEnabled(defaultControl == "AI");
+
             controlDropdown.RegisterValueChangedCallback(evt => {
+                _factionControl[faction.Name] = evt.newValue;
                 diffDropdown.SetEnabled(evt.newValue == "AI");
                 if (evt.newValue == "Closed")
                 {
@@ -175,6 +209,10 @@ namespace TheSingularityWorkshop.Warlords
                     nameLabel.style.color = Color.white;
                     colorSwatch.style.opacity = 1f;
                 }
+            });
+
+            diffDropdown.RegisterValueChangedCallback(evt => {
+                _factionDifficulty[faction.Name] = evt.newValue;
             });
 
             return new GraphicalUserInterfaceBuilder($"Slot_{faction.Name}")
@@ -213,20 +251,19 @@ namespace TheSingularityWorkshop.Warlords
             var cardBuilder = new GraphicalUserInterfaceBuilder("LoreCard")
                 .WithFlexLayout(FlexDirection.Column, Justify.FlexStart, Align.Stretch)
                 .WithBackgroundColor(new Color(0.1f, 0.1f, 0.12f))
+
                 .OnBuild(ve =>
                 {
-                    // --- STRICT SIZING: Fixes the inconsistent card size ---
                     ve.style.width = 450;
-                    ve.style.height = 750; // Fixed height so the card doesn't jump
+                    ve.style.height = 750;
                     ve.style.minHeight = 750;
 
                     ve.style.paddingTop = 25; ve.style.paddingBottom = 25; ve.style.paddingLeft = 25; ve.style.paddingRight = 25;
-                    ve.style.borderTopWidth = 2; ve.style.borderBottomWidth = 2; ve.style.borderLeftWidth = 2; ve.style.borderRightWidth = 2;
+                    ve.style.borderTopWidth = 8; ve.style.borderBottomWidth = 8; ve.style.borderLeftWidth = 8; ve.style.borderRightWidth = 8;
                     ve.style.borderTopColor = _activeFaction.ThemeColor; ve.style.borderBottomColor = _activeFaction.ThemeColor; ve.style.borderLeftColor = _activeFaction.ThemeColor; ve.style.borderRightColor = _activeFaction.ThemeColor;
                     ve.style.borderTopLeftRadius = 8; ve.style.borderTopRightRadius = 8; ve.style.borderBottomLeftRadius = 8; ve.style.borderBottomRightRadius = 8;
                 });
 
-            // 1. Image Frame (Fixed Height)
             if (_activeFaction.FactionRender != null)
             {
                 cardBuilder.AddChild(new GraphicalUserInterfaceBuilder("RenderFrameWrapper")
@@ -259,52 +296,75 @@ namespace TheSingularityWorkshop.Warlords
                     .Build());
             }
 
-            // 2. Titles
             cardBuilder
                 .AddChild(new Label(_activeFaction.Name.ToUpper()) { style = { color = Color.white, fontSize = 24, unityFontStyleAndWeight = FontStyle.Bold, unityTextAlign = TextAnchor.MiddleCenter } })
                 .AddChild(new Label(_activeFaction.Subtitle) { style = { color = _activeFaction.ThemeColor, fontSize = 14, unityFontStyleAndWeight = FontStyle.Italic, unityTextAlign = TextAnchor.MiddleCenter, marginBottom = 15 } })
                 .AddChild(new VisualElement { style = { height = 1, backgroundColor = new Color(0.3f, 0.3f, 0.3f), marginBottom = 15 } });
 
-            // 3. Scrollable Lore Area (Prevents text length from resizing the card)
             cardBuilder.AddChild(root => {
                 var scroll = new ScrollView(ScrollViewMode.Vertical);
-                scroll.style.flexGrow = 1; // Takes up remaining space inside the fixed 750px card
+                scroll.style.flexGrow = 1;
 
-                var loreLabel = new Label(_activeFaction.Lore)
-                {
-                    style = {
-                color = new Color(0.8f, 0.8f, 0.8f),
-                whiteSpace = WhiteSpace.Normal,
-                marginBottom = 20,
-                fontSize = 14
-            }
-                };
+                scroll.Add(new Label(_activeFaction.Lore) { style = { color = new Color(0.8f, 0.8f, 0.8f), whiteSpace = WhiteSpace.Normal, marginBottom = 20, fontSize = 14 } });
+                scroll.Add(new Label("KNOWN STRENGTHS") { style = { color = Color.gray, fontSize = 12, unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 5 } });
+                scroll.Add(new Label(_activeFaction.Strengths) { style = { color = new Color(0.9f, 0.8f, 0.2f), fontSize = 13 } });
 
-                var strengthsHeader = new Label("KNOWN STRENGTHS")
-                {
-                    style = {
-                color = Color.gray,
-                fontSize = 12,
-                unityFontStyleAndWeight = FontStyle.Bold,
-                marginBottom = 5
-            }
-                };
-
-                var strengthsLabel = new Label(_activeFaction.Strengths)
-                {
-                    style = {
-                color = new Color(0.9f, 0.8f, 0.2f),
-                fontSize = 13
-            }
-                };
-
-                scroll.Add(loreLabel);
-                scroll.Add(strengthsHeader);
-                scroll.Add(strengthsLabel);
                 return scroll;
             });
 
             _loreCardContainer.Add(cardBuilder.Build());
+        }
+
+        private void HandleMarchToWar()
+        {
+            // --- GENERALIZED DATA EXTRACTION ---
+
+            // 1. Locate or create the generalized WarlordsContext
+            var context = UnityEngine.Object.FindObjectOfType<WarlordsContext>();
+            if (context == null)
+            {
+                var go = new GameObject("[WARLORDS_CONTEXT]");
+                context = go.AddComponent<WarlordsContext>();
+            }
+
+            context.ActiveFactions.Clear();
+
+            // 2. Map UI selections directly into the Generalized State Container
+            foreach (var factionData in _factions)
+            {
+                if (_factionControl.TryGetValue(factionData.Name, out string controlState) && controlState != "Closed")
+                {
+                    context.ActiveFactions.Add(new WarlordFaction
+                    {
+                        FactionName = factionData.Name,
+                        FactionColor = factionData.ThemeColor,
+                        IsAI = (controlState == "AI"),
+                        Difficulty = _factionDifficulty.TryGetValue(factionData.Name, out string diff) ? diff : "Baron"
+                    });
+                }
+            }
+
+            if (context.ActiveFactions.Count < 2)
+            {
+                Debug.LogWarning("[WARLORDS SETUP] You must have at least 2 active factions to march to war.");
+                return;
+            }
+
+            // 3. Initialize the FSM Engine using the Forge ecosystem
+            context.InitializeFSM();
+
+            // Kickoff the state machine
+            context.Status.TransitionTo("Deployment");
+
+            // 4. Route to Tactical View
+            if (_router != null)
+            {
+                _router.NavigateTo("InGame");
+            }
+            else
+            {
+                Debug.LogWarning("Cannot March to War: IGuiRouter is null.");
+            }
         }
 
         public Action<VisualElement> GetGuiBuilder() => (root) => root.Add(CreateGui(new GuiContext()));

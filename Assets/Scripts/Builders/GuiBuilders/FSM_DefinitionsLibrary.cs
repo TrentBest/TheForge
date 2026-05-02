@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using TheSingularityWorkshop.FSM_API;
 
-namespace TheSingularityWorkshop
+namespace Assets.Scripts.Builders.GuiBuilders
 {
     // --- 1. Data Definitions ---
 

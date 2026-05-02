@@ -1,4 +1,4 @@
-﻿namespace TheSingularityWorkshop
+﻿namespace Workshop
 {
     public readonly struct ElementKey
     {

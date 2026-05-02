@@ -1,14 +1,12 @@
 ﻿#if UNITY_EDITOR
-using TheSingularityWorkshop.Builders.GuiBuilders;
-
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Asteroids.Editor
-{
+namespace Workshop.Asteroids
+{ 
     public class AsteroidsGameEditorTab : IGuiProvider
     {
         public string TabName => "Asteroids Builder";
@@ -38,7 +36,7 @@ namespace TheSingularityWorkshop.Asteroids.Editor
         {
             _rootContainer.Clear();
 
-            var splitPanel = new SplitPanelBuilder(200)
+            var splitPanel = new ForgeSplitPanelBuilder(200)
                 .WithSidebar(CreateSidebar())
                 .WithMain(CreateMainContent());
 

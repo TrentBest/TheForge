@@ -1,8 +1,7 @@
 ﻿#if UNITY_EDITOR
+using Assets.Scripts.Asteroids;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
-using TheSingularityWorkshop.Builders;
 
 namespace TheSingularityWorkshop.Editors
 {

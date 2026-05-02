@@ -1,12 +1,34 @@
 ﻿using System;
+using Workshop.Core.Diagnostics;
+using Workshop.UI_And_Tools.Forge.IO;
 
-namespace TheSingularityWorkshop.Forge.AI
+namespace Workshop
 {
-    internal class ForgeInputContext
+    public class ForgeInputContext
     {
-        internal void SubmitInput(string value)
+        private readonly string _agentId;
+
+        public ForgeInputContext(string agentId)
         {
-            throw new NotImplementedException();
+            _agentId = agentId;
+        }
+
+        /// <summary>
+        /// Universal entry point for Agent intent. 
+        /// Routes thoughts directly into the Forge's arbitration nervous system.
+        /// </summary>
+        public void SubmitInput(string value)
+        {
+            // If the Bus is online, push the data to the central nervous system
+            if (SingularityDataBus.Instance != null)
+            {
+                // We target "Hermit_Output" so the Manifestation Chamber UI picks it up
+                SingularityDataBus.Instance.SendLocal("Hermit_Output", value);
+            }
+            else
+            {
+                ForgeLogger.LogWarning($"[ForgeInputContext] Agent {_agentId} attempted to submit input, but the Data Bus is offline.");
+            }
         }
     }
 }

@@ -1,8 +1,7 @@
 ﻿#if UNITY_EDITOR
+using Assets.Scripts.Builders;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
-using TheSingularityWorkshop.Builders;
 
 namespace TheSingularityWorkshop.Editors
 {
@@ -18,13 +17,13 @@ namespace TheSingularityWorkshop.Editors
 
         private void OnEnable()
         {
-            rootVisualElement.Clear();
+            //rootVisualElement.Clear();
 
-            var builder = new MotorBuilder("Prototype_Thruster", 250f);
+            //var builder = new MotorBuilder("Prototype_Thruster", 250f);
 
-            // FIX: Removed 'new GuiContext()'
-            var panel = builder.GetGuiBuilder().Build();
-            rootVisualElement.Add(panel);
+            //// FIX: Removed 'new GuiContext()'
+            //var panel = builder.GetGuiBuilder().Build();
+            //rootVisualElement.Add(panel);
         }
     }
 }

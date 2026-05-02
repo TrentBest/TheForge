@@ -1,11 +1,11 @@
-﻿using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UIElements;
 using System;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
+using Workshop.Core.Diagnostics;
 
 
-namespace TheSingularityWorkshop.Warlords
+namespace Assets.Scripts.Warlords
 {
     public class Warlords_Gui_MapEditor : IGuiProvider
     {
@@ -276,63 +276,12 @@ namespace TheSingularityWorkshop.Warlords
         }
 
         private class TileData { public TerrainType Terrain; public POIType? POI; }
-        private void SaveMapData() => Debug.Log($"MAP FORGE: Saved {_mapName}");
+        private void SaveMapData() => ForgeLogger.Log($"MAP FORGE: Saved {_mapName}");
 
         public System.Action<VisualElement> GetGuiBuilder() => (root) => root.Add(CreateGui(new GuiContext()));
 #if UNITY_EDITOR
         public void ToUIDocument(string assetPath) => GraphicalUserInterfaceBuilder.ConvertToUIDocument(CreateGui(new GuiContext()), assetPath);
 #endif
         public void FromUIDocument(string assetPath) => _lastCtx?.OnBuilt?.Invoke(GraphicalUserInterfaceBuilder.ConvertFromUIDocument(assetPath));
-    }
-
-
-
-
-
-
-
-    public interface IMapPresenter
-    {
-        void BuildMap(WarlordsMapData mapData);
-        void UpdateTile(WarlordsMapData mapData, int x, int y);
-        void PlacePOI(PointOfInterest poi);
-        void ClearMap();
-        Vector2Int GetGridPositionFromMouse(Vector2 mouseScreenPosition);
-    }
-
-    public enum POIType : byte { City, Ruin, Temple, Signpost, Tower }
-
-    [Serializable]
-    public enum TerrainType : byte
-    {
-        OpenWater = 0, Plains = 1, Forest = 2, Hills = 3, Mountains = 4, Swamp = 5, Road = 6, Bridge = 7, HorizontalRiverBottom = 8, HorizontalRiverTop = 9, VerticalRiverRight = 10, VerticalRiverLeft = 11
-    }
-
-    [Serializable]
-    public class PointOfInterest
-    {
-        public string Name;
-        public int X;
-        public int Y;
-        public POIType Type;
-        public int OwnerId;
-        public int ProductionIncome;
-    }
-
-    [Serializable]
-    public class WarlordsMapData
-    {
-        public string MapName;
-        public int Width;
-        public int Height;
-        public TerrainType[] TerrainData;
-        public List<PointOfInterest> PointsOfInterest = new List<PointOfInterest>();
-
-        public WarlordsMapData(int width, int height)
-        {
-            Width = width;
-            Height = height;
-            TerrainData = new TerrainType[width * height];
-        }
     }
 }

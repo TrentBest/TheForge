@@ -1,5 +1,4 @@
-﻿using TheSingularityWorkshop;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+﻿using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 public interface IShipTabBuilder : IGuiProvider
 {

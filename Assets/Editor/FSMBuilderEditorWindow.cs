@@ -1,17 +1,12 @@
 #if UNITY_EDITOR
-using TheSingularityWorkshop;
-using TheSingularityWorkshop.Builders.GuiBuilders;
-
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using TheSingularityWorkshop.FSM_API;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
 namespace TheSingularityWorkshop.FSM_API.Editor
 {

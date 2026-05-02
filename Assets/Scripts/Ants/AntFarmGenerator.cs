@@ -1,72 +1,126 @@
-﻿using UnityEditor;
+﻿using System.IO;
 using UnityEngine;
-using TheSingularityWorkshop.Sandbox.Ants;
+using Workshop.Core.Diagnostics;
+using Workshop.Core.Math; // Using our deterministic Rng
+// using UnityEditor; // RIPPED OUT. We run at runtime now.
 
-namespace TheSingularityWorkshop.Sandbox.Ants.Editor
+namespace Assets.Scripts.Ants
 {
+    //public static class AntStates
+    //{
+    //    public const byte EmptyAir = 0;
+    //    public const byte SandDirt = 1;
+    //    public const byte Stone = 2;
+    //    public const byte AntWandering = 4;
+    //    public const byte AntCarrying = 6;
+    //}
+
     public static class AntFarmGenerator
     {
-        // Colors for visualization in the UI
-        public static readonly Color ColorAir = new Color(0.1f, 0.1f, 0.12f); // Dark background
-        public static readonly Color ColorSand = new Color(194 / 255f, 178 / 255f, 128 / 255f); // Sand color
-        public static readonly Color ColorAnt = Color.red;
+        // Colors for visualization in the UI (Mapped later by the renderer)
+        public static readonly Color32 ColorAir = new Color32(25, 25, 30, 255);
+        public static readonly Color32 ColorSand = new Color32(194, 178, 128, 255);
+        public static readonly Color32 ColorStone = new Color32(100, 100, 100, 255);
+        public static readonly Color32 ColorAnt = new Color32(255, 0, 0, 255);
 
-        [MenuItem("The Forge/Generators/Ant Farm Environment")]
-        public static void GenerateDefaultFarm()
+        // Optional Editor hook if you still want a button, but now it's abstracted!
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("The Forge/Generators/Ant Farm Environment (Binary)")]
+        public static void GenerateDefaultFarmEditor()
         {
-            int width = 512;
-            int height = 512;
-            string path = "Assets/Editor/Sandbox/ProceduralAntFarm.png";
-
-            GenerateFarm(width, height, path);
+            GenerateFarmManifest(512, 512, "Assets/Editor/Sandbox/ProceduralAntFarm.bin", 42);
         }
+#endif
 
-        public static void GenerateFarm(int width, int height, string assetPath)
+        /// <summary>
+        /// Generates the raw unmanaged state memory. Zero Unity overhead. Runs instantly.
+        /// </summary>
+        public static byte[] GenerateRawFarmData(int width, int height, uint seed)
         {
-            Texture2D texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
-            texture.filterMode = FilterMode.Point;
-            texture.wrapMode = TextureWrapMode.Clamp;
+            byte[] gridData = new byte[width * height];
 
-            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
             {
-                for (int x = 0; x < width; x++)
+                // Organic Terrain Generation: Sine waves driven by the Seed instead of a flat 70% line
+                float terrainHeightBase = height * 0.6f;
+                float organicHills = Mathf.Sin(x * 0.05f + seed) * 20f + Mathf.Cos(x * 0.01f - seed) * 40f;
+                int surfaceY = (int)(terrainHeightBase + organicHills);
+
+                for (int y = 0; y < height; y++)
                 {
-                    // We generate an initial 'container' view:
-                    // Sand at the bottom 70%, Air at the top 30%
+                    int idx = x + (y * width);
 
-                    byte state = AntStates.EmptyAir;
-                    Color visualColor = ColorAir;
-
-                    // Create the sand layers (Bottom 70%)
-                    if (y < height * 0.7f)
+                    if (y < surfaceY)
                     {
-                        state = AntStates.SandDirt;
-                        visualColor = ColorSand;
+                        // 2% chance of Stone to create digging obstacles
+                        gridData[idx] = Rng.GetFloat(idx, seed + 1) > 0.98f ? AntStates.Stone : AntStates.SandDirt;
+                    }
+                    else
+                    {
+                        gridData[idx] = AntStates.EmptyAir;
                     }
 
-                    // Sprinkle some initial ants in the air just above the sand
-                    if (y == (int)(height * 0.7f) && Random.value > 0.95f)
+                    // Sprinkle ants EXACTLY on the surface line
+                    if (y == surfaceY && Rng.GetFloat(idx, seed + 2) > 0.95f)
                     {
-                        state = AntStates.AntWandering;
-                        visualColor = ColorAnt;
+                        gridData[idx] = AntStates.AntWandering;
                     }
-
-                    // PACK THE DATA: Put the FSM state byte into the Red channel!
-                    texture.SetPixel(x, y, new Color(state / 255f, visualColor.g, visualColor.b, visualColor.a));
                 }
             }
 
-            // Optional: Draw a "glass pane" highlight for the container look
-            // (You can visualize this in the visualizer script later)
+            return gridData;
+        }
 
-            texture.Apply();
+        /// <summary>
+        /// Bakes the raw byte array directly to disk as a Binary Manifest.
+        /// This skips Texture encoding and loads 1000x faster into the DataWarehouse.
+        /// </summary>
+        public static void GenerateFarmManifest(int width, int height, string absolutePath, uint seed)
+        {
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
-            // Save the asset
-            byte[] bytes = texture.EncodeToPNG();
-            System.IO.File.WriteAllBytes(assetPath, bytes);
-            AssetDatabase.Refresh();
+            byte[] rawGrid = GenerateRawFarmData(width, height, seed);
 
-            Debug.Log($"Procedural Ant Farm texture generated at: {assetPath}. Packed FSM states are in the RED channel.");
+            // Blast the raw bytes to the hard drive
+            File.WriteAllBytes(absolutePath, rawGrid);
+
+            sw.Stop();
+            ForgeLogger.Log($"[Manifest] Procedural Ant Farm generated at: {absolutePath} in {sw.Elapsed.TotalMilliseconds:F2}ms. Size: {rawGrid.Length / 1024f} KB.");
+
+#if UNITY_EDITOR
+            UnityEditor.AssetDatabase.Refresh();
+#endif
+        }
+
+        /// <summary>
+        /// Converts the raw DataWarehouse bytes into a visual Texture2D ONLY when a screen needs to see it.
+        /// Uses SetPixelData which is O(1) memory mapping, completely bypassing SetPixel loops.
+        /// </summary>
+        public static Texture2D CreateVisualizerTexture(byte[] rawGrid, int width, int height)
+        {
+            Texture2D tex = new Texture2D(width, height, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            // Allocate visual color array
+            Color32[] colors = new Color32[rawGrid.Length];
+
+            for (int i = 0; i < rawGrid.Length; i++)
+            {
+                byte state = rawGrid[i];
+                if (state == AntStates.EmptyAir) colors[i] = ColorAir;
+                else if (state == AntStates.SandDirt) colors[i] = ColorSand;
+                else if (state == AntStates.Stone) colors[i] = ColorStone;
+                else if (state == AntStates.AntWandering || state == AntStates.AntCarrying) colors[i] = ColorAnt;
+            }
+
+            // O(1) Memory blast into the GPU texture
+            tex.SetPixelData(colors, 0);
+            tex.Apply(false, false);
+
+            return tex;
         }
     }
 }

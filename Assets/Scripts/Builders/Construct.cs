@@ -1,111 +1,71 @@
-﻿using TheSingularityWorkshop.Builders.GuiBuilders;
-using TheSingularityWorkshop.Forge.Builders;
-using TheSingularityWorkshop.Forge.Builders.GuiBuilders;
+﻿using Assets.Scripts.MastersOfOrionII;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using UnityEngine;
 using UnityEngine.UIElements;
+using Workshop.UI_And_Tools.Forge.Builders;
+using Workshop.UI_And_Tools.Forge.Builders.GuiBuilders;
 
-namespace TheSingularityWorkshop.Builders
+namespace Assets.Scripts.Asteroids
 {
+    // --- RUNTIME DATA INSTANCE ---
     public class Construct
     {
-        /// <summary>
-        /// the data the construct holds as a string, the key is the ConstructDataType
-        /// </summary>
-        private Dictionary<int, string> data;
+        public string ClassificationId { get; private set; }
+        // Universe Scale Logic: Addresses the 'where' in infinite space
+        public UniversePosition Position;
 
-        public Construct(Dictionary<int, string> data)
+        private Dictionary<int, string> _data;
+
+        public Construct(string classificationId, Dictionary<int, string> data)
         {
-            this.data = data;
+            this.ClassificationId = classificationId;
+            this._data = data ?? new Dictionary<int, string>();
         }
 
-
-        //API
         static public ConstructBuilder Create(string constructClassification)
         {
             return new ConstructBuilder(constructClassification);
         }
     }
 
-    public class ConstructBuilder : IForgeBuilder
+    // --- INSTANCE BUILDER ---
+    public class ConstructBuilder : IForgeBuilder, IGuiProvider
     {
-        public ConstructBuilder(string constructClassification)
-        {
-        }
+        private string _classificationTarget;
+        public string Name => $"Construct_Builder_{_classificationTarget}";
+        public string ToolName => "Construct Instance Spawner";
+        public Type GetProductType() => typeof(Construct);
 
-        public string Name { get; }
+        public ConstructBuilder(string constructClassification) { _classificationTarget = constructClassification; }
 
-        public string ToolName { get; }
+        public IGuiProvider GetGuiProvider() => this;
 
         public object Build()
         {
-            throw new NotImplementedException();
+            Debug.Log($"[ConstructBuilder] Spawning instance of {_classificationTarget} in sector zero.");
+            return new Construct(_classificationTarget, new Dictionary<int, string>());
         }
 
-       
+        // --- GUI GENERATION (Forge Protocol) ---
+        public string Title => ToolName;
 
-        public IGuiProvider GetGuiProvider()
+        public VisualElement CreateGui(GuiContext ctx)
         {
-            throw new NotImplementedException();
+            var rootBuilder = new ForgeContainerBuilder("HeadlessBuilderWarning")
+                .WithPadding(20f)
+                .WithBackgroundColor(new Color(0.12f, 0.12f, 0.15f))
+                .AddChild(new ForgeLabelBuilder("HEADLESS API COMPONENT").WithColor(new Color(0.9f, 0.6f, 0.2f)).WithBold().WithFontSize(16))
+                .AddChild(new ForgeLabelBuilder($"Spawning blueprint: '{_classificationTarget}'").WithColor(Color.gray).WithMarginBottom(20f))
+                .AddChild(new ForgeButtonBuilder($"⚙️ Force Spawn Instance")
+                    .WithBackgroundColor(new Color(0.2f, 0.5f, 0.8f)).WithPadding(10f)
+                    .OnClick(() => Build()));
+
+            return rootBuilder.Build();
         }
 
-        public Type GetProductType()
-        {
-            throw new NotImplementedException();
-        }
+        public Action<VisualElement> GetGuiBuilder() => root => root.Add(CreateGui(new GuiContext()));
+        public void ToUIDocument(string path) => WorkshopUxmlBaker.Bake(CreateGui(new GuiContext()), "SpawnerSnapshot");
+        public void FromUIDocument(string path) { }
     }
-
-    public class ConstructClassification
-    {
-        public string Name { get; set; }
-        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
-        public Dictionary<string, object> Fields { get; set;  } = new Dictionary<string, object>();
-
-        /// <summary>
-        /// key is process group, and the list of strings are the FSM definitions it consumes.
-        /// </summary>
-        public Dictionary<string, List<string>> Behaviors { get; set; } = new Dictionary<string, List<string>>();
-    }
-
-    public class ConstructClassificationBuilder : IForgeBuilder
-    {
-        public string Name  { get; }
-
-        public string ToolName { get; }
-
-        public object Build()
-        {
-            throw new NotImplementedException();
-        }
-
-        
-
-        public IGuiProvider GetGuiProvider()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Type GetProductType()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    //public class ConstructClassificationGuiBuilder : IGuiBuilder
-    //{
-    //    public VisualElement Build()
-    //    {
-    //        return new GraphicalUserInterfaceBuilder("ConstructBuilder").WithPanel("Properties", true)
-    //            .WithPanel("PropertiesList").WithScrollable(true, ScrollViewMode.VerticalAndHorizontal)
-                
-    //            .ContinueWithParentPanel().WithPanel("Fields", true).WithScrollable(true, ScrollViewMode.VerticalAndHorizontal)
-    //            .ContinueWithParentPanel().WithPanel("Behaviors", true).AddChild(new Workshop_Gui_FsmBuilderGui()).Build();
-    //    }
-
-    //    object IBuilder.Build()
-    //    {
-    //        return Build();
-    //    }
-    //}
 }
