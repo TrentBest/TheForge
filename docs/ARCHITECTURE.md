@@ -166,6 +166,8 @@ The first server implementation should remain provider-neutral and runnable loca
 
 The Forge should explain itself visually because its job is to expose composition.
 
+![Forge ecosystem architecture](assets/forge-ecosystem.svg)
+
 The intended presentation is a connected map rather than a conventional form-heavy editor:
 
 ```
