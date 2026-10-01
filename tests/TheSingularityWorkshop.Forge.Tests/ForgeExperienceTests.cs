@@ -1,3 +1,4 @@
+using Xunit;
 using TheSingularityWorkshop.Forge;
 
 namespace TheSingularityWorkshop.Forge.Tests;
