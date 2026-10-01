@@ -9,7 +9,7 @@ public sealed class ForgeExperienceTests
     public void ExperienceCompilesIntoCurrentFsmCosManifest()
     {
         var experience = new ForgeExperience(3010, "REST Capability Lab", [1, 2, 3, 4, 5, 6, 7, 8, 9]);
-        experience.AddMicroBundle(4010, "1.0.0", configuration: [1, 2, 3]);
+        experience.AddMicroBundle(4010, "1.0.0", configuration: new byte[] { 1, 2, 3 });
 
         var manifest = experience.Compile();
 
