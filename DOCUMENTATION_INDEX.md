@@ -1,0 +1,37 @@
+# The Forge Documentation Index
+
+The README is the front door. Use this index to move from orientation to the specific question you need answered.
+
+## Resume and implementation status
+
+| If you want to... | Start here |
+|---|---|
+| Resume work after a conversation reset; see the ordered implementation queue, boundaries, and current proof requirements | [Forge Continuation Brief](docs/CONTINUATION_BRIEF.md) |
+| Understand what The Forge is and what it owns | [README](README.md) |
+| Explore what diegetic (in-world) authoring should mean, and the product and architecture questions it raises | [Diegetic Experience Authoring: Questions and Design Principles](docs/diegetic-experience-authoring.md) |
+| Understand the proposed standalone HTTP-agent package, optional ProtocolAi/GrammarAi integrations, and the living Forge's Hermit/minion/Titan visual language | [HeadlessAi and the Living Forge](docs/headless-ai-and-living-forge.md) |
+| Design live editing with immediate preview, ontology vending, and cloning published content into a changed draft | [Live Authoring, Ontology Vending, and the Cloning Machine](docs/live-authoring-ontology-and-cloning.md) |
+| Understand why Forge owns authored configuration documents and manifest source, while runtime payload codecs and FSM_COS remain explicit boundaries | [Forge-Owned Configuration and Manifest Boundary](docs/forge-owned-configuration-boundary.md) |
+| Design the MicroBundle claw, inspectable package slot, crank-driven assembly pipeline, honest processing show, and integer-backed artifact mapping | [MicroBundle Assembly Adventure](docs/microbundle-assembly-adventure.md) |
+| Understand how MicroBundles could optionally contribute tools to a relocatable, tethered Forge, and how tooling differs from runtime behavior and configuration schemas | [Forge Tooling Provider Contract: Design Direction](docs/tooling-provider-contract.md) |
+| Understand the smallest testable prototype before committing to a spatial renderer or public provider API | [Tooling Provider: First Vertical Slice](docs/tooling-provider-first-vertical-slice.md) |
+| Understand the current provider-neutral core and proposed nested Experience composition | [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) |
+| Separate current Forge implementation from the intended architecture and future work | [Forge Architecture](docs/ARCHITECTURE.md) |
+| Understand the Workshop's shared documentation conventions | [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md) |
+| Understand the Forge-to-FSM_COS boundary | [README architecture overview](README.md) and the composition design note |
+| Inspect the current implementation | Browse [src](src/) and [tests](tests/) on this branch |
+| Understand the historical Unity implementation during migration | Browse the legacy project areas; treat them as history unless current source and tests establish otherwise |
+
+## Status discipline
+
+- **Implemented** means current code provides the behavior and relevant tests cover it.
+- **Partial** means behavior exists with named limitations.
+- **Proposed** means a design recommendation, not implementation.
+- **Decision required** means a semantic or product choice remains open.
+- **Deferred** means intentionally outside the current work.
+
+The README and design notes distinguish current behavior from the intended architecture. When they disagree with source or tests, record and resolve the discrepancy rather than treating prose as proof.
+
+---
+
+<p align="center><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong></p>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+<rect width="1200" height="620" fill="#081018"/>
+<g fill="none" stroke="#5ee7ff" stroke-width="3" opacity=".8">
+<path d="M600 145V205M300 360H900M300 360V430M600 360V430M900 360V430"/>
+<path d="M600 275V360"/>
+</g>
+<g fill="#0d1c28" stroke="#5ee7ff" stroke-width="3">
+<rect x="425" y="45" width="350" height="100" rx="18"/>
+<rect x="425" y="205" width="350" height="140" rx="18"/>
+<rect x="90" y="430" width="270" height="100" rx="18"/>
+<rect x="465" y="430" width="270" height="100" rx="18"/>
+<rect x="840" y="430" width="270" height="100" rx="18"/>
+</g>
+<g fill="#f5fbff" font-family="Arial, sans-serif" text-anchor="middle">
+<text x="600" y="88" font-size="28" font-weight="700">THE FORGE</text>
+<text x="600" y="118" font-size="18">Experience Authoring</text>
+<text x="600" y="245" font-size="27" font-weight="700">FSM_COS</text>
+<text x="600" y="277" font-size="17">composition / RuntimeAssembly</text>
+<text x="225" y="472" font-size="26" font-weight="700">ANYAPP</text>
+<text x="225" y="501" font-size="16">native host</text>
+<text x="600" y="472" font-size="26" font-weight="700">WEBFORGE</text>
+<text x="600" y="501" font-size="16">web presentation</text>
+<text x="975" y="472" font-size="26" font-weight="700">SERVER</text>
+<text x="975" y="501" font-size="16">service host</text>
+</g>
+<g fill="#5ee7ff" font-family="Arial, sans-serif" text-anchor="middle">
+<text x="600" y="580" font-size="18">author → compose → publish → execute → manifest</text>
+</g>
+</svg>
