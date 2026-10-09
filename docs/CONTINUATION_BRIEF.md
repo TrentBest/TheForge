@@ -6,7 +6,7 @@
 
 ## Resume immediately
 
-1. Confirm the live branch head and open pull requests before changing files. This brief was created against `forge/native-experience-authoring` at `ca8283b67266d30580a681fdedde1dc6066bb24d`; re-check because another contributor/LLM may have advanced it.
+1. Confirm the live branch head and open pull requests before changing files. The initial snapshot was `ca8283b67266d30580a681fdedde1dc6066bb24d`; most recently observed before this brief update was `657dd57f939be8e06242ed0556b364f77ad4c18b`. Re-check because another contributor/LLM may have advanced it.
 2. Work only in `TrentBest/TheForge` unless the user explicitly redirects the task. Do not make further FSM_COS changes.
 3. Review the documentation inventory and source/tests together. Treat prose as a claim to verify, not proof that a feature exists.
 4. Choose one small, observable vertical slice at a time. Implement it in the provider-neutral .NET core first, add tests, then connect it to a host/UI.
@@ -37,9 +37,9 @@ Do not blur authored source, runtime configuration payload, runtime manifest, re
 - Repository: [TrentBest/TheForge](https://github.com/TrentBest/TheForge)
 - Default branch: `master`
 - Active working branch: `forge/native-experience-authoring`
-- Observed branch head at the latest documentation/dependency cleanup: `48a608b2a7956a09e00c75bc93da81a75b094223` (verify live head before resuming)
+- Observed branch head before this continuation-brief update: `657dd57f939be8e06242ed0556b364f77ad4c18b` (the brief update itself will create a newer commit; verify live head before resuming)
 - Existing pull request: [#9 — feat: establish Forge as provider-neutral Experience authoring](https://github.com/TrentBest/TheForge/pull/9) (verify current status and head before acting)
-- Current core targets .NET 8 and contains an Experience model, revisioned in-memory draft, read-only MicroBundle schema inspection, and a minimal external-submission wrapper.
+- Current core targets .NET 8 and contains an Experience model, revisioned in-memory draft, read-only MicroBundle schema inspection, immutable typed field values, schema-value validation, and a minimal external-submission wrapper. Typed values/validation are not yet integrated into revision-safe draft edits or runtime payload encoding.
 - The Forge core currently has direct package references to FSM_COS `0.1.0-alpha.3` and MicroBundleDomain `1.0.1`. Unused GUI.Core and FSM_Serialization references were removed from the core project because no current source uses them; add them back only when a tested capability requires their APIs. Do not target an unpublished API/package.
 - At the time this brief was created, the branch was focused on a provider-neutral authoring core; do not assume a browser/desktop Forge UI is already connected to it.
 - The repository includes a legacy Unity project. Preserve useful design history, but do not treat Unity as the new runtime foundation or let legacy files obscure the provider-neutral path.
@@ -59,11 +59,12 @@ Keep statuses honest: **Implemented** requires code and relevant tests; **Partia
 
 ### P1 — Complete a useful, testable authoring core
 
-- [ ] Introduce a typed, detached field-value model for the currently supported schema kinds (String, Integer, Float, Boolean, Object); do not edit through formatted display strings.
-- [ ] Define field-path identity and deterministic handling for nested objects, unknown fields, missing values, defaults, and bounds.
-- [ ] Implement validation-before-acceptance: rejected edits leave the previous valid draft and revision unchanged.
-- [ ] Define an explicit codec interface tied to the intended MicroBundle identity/version. Never guess JSON, binary layout, or field order from schema metadata.
-- [ ] Add tests for culture independence, bounds, malformed values, nested paths, detached snapshots, and rejected edits.
+- [x] Introduce an immutable typed field-value model for String, Integer, Float, Boolean, and Object; values do not round-trip through display strings.
+- [x] Establish schema-value rules for type matching, inclusive numeric bounds, non-finite floats, nested diagnostic paths, unknown supplied fields, and read-only detached object values. Missing values are allowed; defaults are not silently applied.
+- [ ] Define stable field-path identity and decide how duplicate/invalid schema field names are reported.
+- [ ] Integrate validation-before-acceptance into ForgeExperienceDraft: rejected edits must preserve the previous valid state and revision.
+- [ ] Define an explicit codec interface tied to MicroBundle identity/version. Never guess JSON, binary layout, or field order from schema metadata.
+- [x] Add tests for culture independence, bounds, nested paths, detached snapshots, and unknown fields. Rejected draft-edit tests remain pending because draft integration is not implemented.
 - [ ] Keep opaque byte-payload editing separate from typed editing when no compatible codec exists.
 - [ ] Define a portable Forge project/Experience artifact format and round-trip persistence only after its schema/version and compatibility semantics are explicit.
 - [ ] Preserve provenance and diagnostics through parse → validate → resolve → compile.
@@ -96,14 +97,14 @@ Audit in small batches, then update this table as each file is checked against s
 |---|---|---|
 | `README.md` | Does the front door clearly separate vision, current implementation, and next working path? | First pass updated; deeper review remains |
 | `DOCUMENTATION_INDEX.md` | Does every major document have a useful entry and status? | Updated with continuation brief; first pass complete |
-| `docs/ARCHITECTURE.md` | Are package ownership and current-vs-proposed behavior accurate? | First pass complete; deeper source audit remains |
+| `docs/ARCHITECTURE.md` | Are package ownership and current-vs-proposed behavior accurate? | Updated with typed-value milestone; deeper source audit remains |
 | `docs/diegetic-experience-authoring.md` | Which in-world authoring ideas are decisions, open questions, or implementable slices? | First pass complete; design-only status is explicit |
 | `docs/experience-composition-design.md` | Are portable artifact, graph, validation, and runtime compilation boundaries explicit? | Updated for lossy compiler limitation; first pass complete |
-| `docs/forge-owned-configuration-boundary.md` | Does the draft/typed-value/codec/persistence boundary match code? | Updated for lossy compiler limitation; first pass complete |
+| `docs/forge-owned-configuration-boundary.md` | Does the draft/typed-value/codec/persistence boundary match code? | Updated with typed values and validation; draft integration/codecs remain open |
 | `docs/live-authoring-ontology-and-cloning.md` | What is the smallest safe revision/clone/preview increment? | First pass complete; preview/clone remain proposed |
 | `docs/microbundle-assembly-adventure.md` | Which metaphorical assembly stages map to tested contracts? | First pass complete; proposed pipeline is explicit |
 | `docs/tooling-provider-contract.md` | Are provider/tool semantics distinguished from runtime MicroBundle providers? | First pass complete; proposed API status is explicit |
-| `docs/tooling-provider-first-vertical-slice.md` | Is the read-only inspector accurately described and is the next slice concrete? | First pass complete; inspector is distinguished from editing |
+| `docs/tooling-provider-first-vertical-slice.md` | Is the read-only inspector accurately described and is the next slice concrete? | Updated: typed value validator exists; revision-safe draft editing remains open |
 | `src/**`, `tests/**` | Do all public behaviors and stated claims have relevant tests? | Current core/tests inspected; full claim-by-claim audit remains |
 | `.github/workflows/**` | Are build/test jobs active and package publication explicitly gated? | Build/test workflow verified; no publish job exists in this workflow |
 
@@ -116,11 +117,18 @@ Audit in small batches, then update this table as each file is checked against s
 - `docs/diegetic-experience-authoring.md`: correctly labeled design exploration; spatial model, authoring lifecycle, nested composition, and publication/trust concerns are not presented as complete implementation.
 - `docs/microbundle-assembly-adventure.md`: correctly labeled proposed pipeline; the claw, assembly show, integer-backed mapping, and publication flow are not claimed to exist.
 - `docs/tooling-provider-contract.md`: correctly labeled proposed; no public diegetic tooling-provider API is claimed to exist.
-- `docs/tooling-provider-first-vertical-slice.md`: accurately distinguishes the implemented read-only schema inspector from proposed editing/provider/spatial behavior.
-- `docs/ARCHITECTURE.md`: first-pass status separates present core from future work; full line-by-line source verification remains open.
-- `README.md`: updated to link the continuation brief and all major design documents, to expose the lossy legacy manifest compilation limitation, and to list only current direct package dependencies.
+- `docs/tooling-provider-first-vertical-slice.md`: updated to record typed values/schema validation while distinguishing them from revision-safe draft editing, codec support, providers, and spatial behavior.
+- `docs/ARCHITECTURE.md`: updated to record the typed-value/validator slice; full line-by-line source verification remains open.
+- `README.md`: updated to link the continuation brief and major design documents, expose the lossy legacy compiler limitation, list only current direct package dependencies, and distinguish the new typed validator from not-yet-integrated draft editing.
 - `src/TheSingularityWorkshop.Forge/TheSingularityWorkshop.Forge.csproj`: removed unused GUI.Core and FSM_Serialization direct dependencies; current code only uses FSM_COS and MicroBundleDomain.
-- CI: exact commit `db42b436fc3beca26dafe8c414bd28aa6f02b267` passed on [PR run 37985803397](https://github.com/TrentBest/TheForge/actions/runs/37985803397) and [push run 37985797306](https://github.com/TrentBest/TheForge/actions/runs/37985797306). The workflow is build/test only and contains no publish job. The next documentation update will trigger a fresh run.
+- Typed value implementation: `aae363f1ef2378bf2e71e9d6fb5c6fc4d504610a`; tests: `b1d41a753c2bcdf7b786f9635a703a9ca48b9157`. CI passed on the test commit via [PR run 37986169800](https://github.com/TrentBest/TheForge/actions/runs/37986169800) and [push run 37986162045](https://github.com/TrentBest/TheForge/actions/runs/37986162045). Subsequent documentation updates are being checked on their exact commit; the workflow is build/test only and contains no publish job.
+
+## Latest incremental implementation (2026-10-09)
+
+- Added `src/TheSingularityWorkshop.Forge/ForgeFieldValue.cs`: immutable typed values for String, Integer, Float, Boolean, and nested Object; schema validator emits machine-readable diagnostics with dotted field paths, enforces numeric bounds and finite floats, rejects unknown supplied fields, and deliberately neither fills defaults nor serializes runtime bytes.
+- Added `tests/TheSingularityWorkshop.Forge.Tests/ForgeFieldValueTests.cs`: checks detached/read-only object values, duplicate/blank keys, kind mismatch, bounds, culture-independent numeric validation, non-finite floats, nested paths, unknown fields, and omitted values.
+- CI passed for implementation+tests at `b1d41a753c2bcdf7b786f9635a703a9ca48b9157` on PR run 37986169800 and push run 37986162045. Later documentation-only commits are queued/running at the time of this note; verify latest HEAD CI before treating the whole branch as green.
+- Updated configuration-boundary, vertical-slice, architecture, and README status. Next work: connect the value model to `ForgeExperienceDraft` with validate-before-acceptance and revision safety; first decide deterministic schema field identity/duplicate handling. Do not add payload encoding until a real codec contract exists.
 
 ## Acceptance rule for every increment
 
