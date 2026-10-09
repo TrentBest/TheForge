@@ -2,10 +2,11 @@
 
 The README is the front door. Use this index to move from orientation to the specific question you need answered.
 
-## Choose a path
+## Resume and implementation status
 
 | If you want to... | Start here |
 |---|---|
+| Resume work after a conversation reset; see the ordered implementation queue, boundaries, and current proof requirements | [Forge Continuation Brief](docs/CONTINUATION_BRIEF.md) |
 | Understand what The Forge is and what it owns | [README](README.md) |
 | Explore what diegetic (in-world) authoring should mean, and the product and architecture questions it raises | [Diegetic Experience Authoring: Questions and Design Principles](docs/diegetic-experience-authoring.md) |
 | Design live editing with immediate preview, ontology vending, and cloning published content into a changed draft | [Live Authoring, Ontology Vending, and the Cloning Machine](docs/live-authoring-ontology-and-cloning.md) |
@@ -32,4 +33,4 @@ The README and design notes distinguish current behavior from the intended archi
 
 ---
 
-<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong></p>
+<p align="center><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong></p>
