@@ -249,9 +249,9 @@ The provider-neutral core currently compiles a flat list of MicroBundles into an
 
 See [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) for the current-state boundary, proposed nested-composition rules, validation flow, acceptance tests, and unresolved decisions. For the larger product questions—including diegetic authoring, portable artifacts, lifecycle, and trust—see [Diegetic Experience Authoring: Questions and Design Principles](docs/diegetic-experience-authoring.md).
 
-## 🟪 12 Documentation map and further reading
+## <img src="docs/assets/section-markers/12-documentation-map.svg" alt="" width="20" height="20"> 12 Documentation map and further reading
 
-<img src="docs/assets/section-dividers/13-related-projects.svg" alt="" width="100%">
+<img src="docs/assets/section-dividers/12-documentation-map.svg" alt="" width="100%">
 
 - [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md) — product and architecture questions for in-world creation.
 - [Experience Composition Design](docs/experience-composition-design.md) — current implementation boundary and proposed nested composition.
