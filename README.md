@@ -1,8 +1,17 @@
-# The Forge
+# 00 ⚫ The Forge
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build](https://img.shields.io/github/actions/workflow/status/TrentBest/TheForge/forge.yml?branch=master&style=flat-square&logo=github)](https://github.com/TrentBest/TheForge/actions)
+
+## 01 🔵 Definition
+
+**The Forge is a provider-neutral authoring Experience for composing, validating, and preparing portable Experiences from reusable MicroBundles.**
 
 ### *The Experience that forges Experiences.*
 
 The Forge is the authoring Experience of **The Singularity Workshop**.
+
+This README follows the [Workshop Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). The [documentation index](DOCUMENTATION_INDEX.md) provides focused paths into the Forge's theory, architecture, contracts, and implementation status.
 
 It is the place where Experiences and MicroBundles can be selected, composed, configured, visualized, validated, and eventually published — while remaining completely optional as an authoring client.
 
@@ -10,7 +19,7 @@ It is the place where Experiences and MicroBundles can be selected, composed, co
 
 The Forge itself is an Experience. That means it participates in the same ecosystem it creates.
 
-## The architecture
+## 07 🟠 Architecture and ecosystem
 
 ```
                          ┌─────────────────────────┐
@@ -44,7 +53,7 @@ The Forge itself is an Experience. That means it participates in the same ecosys
 
 **The Forge authors. FSM_COS composes. The host makes it real.**
 
-## What the Forge creates
+## 09 🟪 Core concepts: what the Forge creates
 
 ### MicroBundles
 
@@ -77,7 +86,7 @@ The Forge can eventually author Experiences that:
 
 The same machinery can author the Workshop itself.
 
-## The Forge is not the only way to create an Experience
+## 06 🟢 Responsibility boundary: authoring is not locked to the Forge
 
 This is a deliberate design constraint.
 
@@ -111,7 +120,7 @@ The Forge is therefore an **authoring client**, not an authoring prison.
 
 This is one of the most important architectural decisions in the project.
 
-## Ontology and visual composition
+### Ontology and visual composition
 
 The Forge is where human semantic choices can become machine-oriented composition.
 
@@ -140,7 +149,7 @@ Visuals are not decoration here. The Forge exists to expose relationships that a
 
 The intended interface is therefore a **living composition graph** rather than a conventional collection of property forms.
 
-## External authoring and server-side submission
+## 10 🩵 External authoring and submission
 
 The Workshop should be capable of accepting an Experience built somewhere else.
 
@@ -172,7 +181,7 @@ This allows the Workshop to become infrastructure for creators rather than a too
 
 See [Issue #8](https://github.com/TrentBest/TheForge/issues/8).
 
-## Provider-neutral runtime
+### Provider-neutral runtime
 
 The Forge does not decide where an Experience runs.
 
@@ -185,7 +194,7 @@ The same published composition can eventually be consumed by:
 
 FSM_COS remains the host-neutral composition boundary.
 
-## Current migration
+## 11 🩶 Current migration and verification
 
 The original Forge was built heavily around Unity. It contains useful architectural history:
 
@@ -213,7 +222,7 @@ Current foundation:
 
 The old Unity implementation can be retired incrementally after the new contracts prove themselves.
 
-## Development
+### Development
 
 The provider-neutral core targets .NET 8.
 
@@ -221,7 +230,7 @@ CI builds and tests the new Forge core independently of Unity.
 
 The Unity material remains in the repository during migration so useful prior work is not discarded before its concepts have been recovered.
 
-## Related projects
+## 13 🟨 Related projects and Workshop identity
 
 - [FSM_API](https://github.com/TrentBest/FSM_API) — state/process foundation
 - [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) — composition and runtime assembly
@@ -231,7 +240,7 @@ The Unity material remains in the repository during migration so useful prior wo
 - [WebPage / WebForge](https://github.com/TrentBest/WebPage) — web Experience proving ground
 - [AnyApp](https://github.com/TrentBest/AnyApp) — native RuntimeAssembly host
 
-## Guiding principle
+### Guiding principle
 
 > **The Workshop should never be the reason a creator cannot build what they imagine.**
 
@@ -240,10 +249,10 @@ The Forge provides a vocabulary and composition system.
 It does not define the limits of imagination.
 
 
-## Experience composition: implementation status
+## 09 🟪 Experience composition: implementation status
 
 The current provider-neutral core compiles a flat list of MicroBundles into an FSM_COS runtime manifest. Nested Experiences and the complete portable-artifact submission pipeline remain design work; the README's long-term capabilities are not a claim that all of them are already implemented.
 
 See [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) for the current-state boundary, proposed nested-composition rules, validation flow, acceptance tests, and decisions still requiring an explicit choice.
 
-The design note is provisional with respect to the Workshop-wide documentation standard. Its status labels and diagrams should be reconciled with the authoritative standard once that document is identified.
+The design note follows the Workshop-wide documentation standard. Its implementation-status statements must still be checked against source and tests; proposed architecture is not evidence of implemented behavior.
