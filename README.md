@@ -22,6 +22,13 @@ It is the place where Experiences and MicroBundles can be selected, composed, co
 
 The Forge itself is an Experience. That means it participates in the same ecosystem it creates.
 
+
+### The Forge as a tethered place
+
+The Forge is envisioned as a place-like authoring presence that can be tethered anywhere in the Experience being created. The authored world renders around it; within the Forge, installed MicroBundles may contribute their own tooling representations through optional providers. The Forge hosts those tools under shared spatial and interaction rules rather than hard-coding a custom screen for every capability.
+
+The tether and tool arrangement are authoring-session presentation, not hidden changes to the portable Experience. This spatial/provider model is **proposed design**, not implemented behavior. See [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md#spatial-model-a-tethered-forge-with-a-world-around-it).
+
 ## <img src="docs/assets/section-markers/07-architecture-ecosystem.svg" alt="" width="20" height="20"> 07 Architecture and ecosystem
 
 <img src="docs/assets/section-dividers/07-architecture-ecosystem.svg" alt="" width="100%">
