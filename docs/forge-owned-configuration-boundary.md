@@ -60,7 +60,8 @@ The schema description alone does not supply enough information to invent the co
 - **Implemented:** ForgeExperienceDraft provides revisioned in-memory edits to Experience name, ontology, composition, and opaque configuration payloads.
 - **Implemented:** MicroBundleSchemaInspector exposes detached read-only field metadata, including nested fields and bounds.
 - **Not implemented:** a durable Forge project/configuration file format and round-trip persistence workflow.
-- **Not implemented:** a typed editable-value tree, typed validation pipeline, or codec-backed conversion from typed values to a MicroBundle's runtime bytes.
+- **Implemented:** immutable typed values, schema validation, and revision-safe draft field edits for top-level fields (with nested Object values). Rejected edits do not change the draft; accepted semantic changes advance the revision.
+- **Not implemented:** durable typed-value persistence, edit provenance, or codec-backed conversion from typed values to a MicroBundle's runtime bytes.
 - **Not implemented:** migration to the newer FSM_COS development manifest and separate configuration-source contract.
 - **Not implemented:** a revision-scoped live preview pipeline or publication workflow.
 
