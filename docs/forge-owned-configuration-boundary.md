@@ -1,6 +1,6 @@
 # Forge-Owned Configuration and Manifest Boundary
 
-> **Status:** Architecture decision for the provider-neutral Forge authoring core. The draft model, immutable typed field-value model, schema-value validator, and compilation against Forge's currently referenced FSM_COS package are implemented. Draft-integrated edit acceptance, durable configuration files, and codec-backed payload generation remain future work.
+> **Status:** Architecture decision for the provider-neutral Forge authoring core. The draft model, immutable typed field-value model, schema-value validator, and compilation against Forge's currently referenced FSM_COS package are implemented. Durable configuration files and codec-backed payload generation remain future work.
 
 ## Decision
 
@@ -41,7 +41,7 @@ The FSM_COS development branch also records a passed correctness gate for duplic
 
 ## Typed editing without a guessed serializer
 
-MicroBundleDefinition and MicroBundleField provide useful editor-time metadata: field kinds, defaults, numeric bounds, and nested children. Forge's MicroBundleSchemaInspector projects that information into a detached, read-only view. Its DefaultValueDisplay is formatted text for inspection; it is not a typed value store or a serialization contract. Forge now also has an immutable ForgeFieldValue model and ForgeFieldValueValidator for String, Integer, Float, Boolean, and nested Object values. The validator checks kind compatibility, numeric bounds, nested paths, and unknown supplied fields. Missing fields remain omitted; defaults are not silently injected. This is the first typed-validation slice, not yet an edit API on ForgeExperienceDraft.
+MicroBundleDefinition and MicroBundleField provide useful editor-time metadata: field kinds, defaults, numeric bounds, and nested children. Forge's MicroBundleSchemaInspector projects that information into a detached, read-only view. Its DefaultValueDisplay is formatted text for inspection; it is not a typed value store or a serialization contract. Forge now also has an immutable ForgeFieldValue model and ForgeFieldValueValidator for String, Integer, Float, Boolean, and nested Object values. The validator checks kind compatibility, numeric bounds, nested paths, and unknown supplied fields. Missing fields remain omitted; defaults are not silently injected. The draft now accepts typed field edits through `TrySetFieldValue`, validating before acceptance and advancing its revision only for a changed, valid value. It requires an exact MicroBundle ID/version schema match. `ToExperience()` refuses to compile a draft that contains typed edits until a compatible codec exists, so values cannot be silently discarded.
 
 The next authoring implementation should therefore stay Forge-owned and separate these responsibilities:
 
