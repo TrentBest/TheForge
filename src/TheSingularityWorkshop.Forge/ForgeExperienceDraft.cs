@@ -144,22 +144,22 @@ public sealed class ForgeExperienceDraft
 
         var bundle = _bundles.SingleOrDefault(x => x.Descriptor.Id == bundleId);
         if (bundle is null)
-            return ForgeFieldEditResult.Rejected(new("bundle-not-in-draft", fieldName,
+            return ForgeFieldEditResult.Rejected(new ForgeFieldValueDiagnostic("bundle-not-in-draft", fieldName,
                 $"MicroBundle {bundleId} is not part of draft Experience {_id}."));
 
         if (definition.Id != bundle.Descriptor.Id ||
             !string.Equals(definition.Version, bundle.Descriptor.Version, StringComparison.Ordinal))
         {
-            return ForgeFieldEditResult.Rejected(new("schema-identity-mismatch", fieldName,
+            return ForgeFieldEditResult.Rejected(new ForgeFieldValueDiagnostic("schema-identity-mismatch", fieldName,
                 $"The supplied schema identity/version does not match MicroBundle {bundleId} at version '{bundle.Descriptor.Version}'."));
         }
 
         var matches = definition.Fields.Where(x => string.Equals(x.Name, fieldName, StringComparison.Ordinal)).ToArray();
         if (matches.Length == 0)
-            return ForgeFieldEditResult.Rejected(new("unknown-field", fieldName,
+            return ForgeFieldEditResult.Rejected(new ForgeFieldValueDiagnostic("unknown-field", fieldName,
                 $"Field '{fieldName}' is not declared by MicroBundle {bundleId}'s schema."));
         if (matches.Length > 1)
-            return ForgeFieldEditResult.Rejected(new("duplicate-schema-field", fieldName,
+            return ForgeFieldEditResult.Rejected(new ForgeFieldValueDiagnostic("duplicate-schema-field", fieldName,
                 $"Schema field name '{fieldName}' is declared more than once and cannot be addressed unambiguously."));
 
         var diagnostics = ForgeFieldValueValidator.Validate(matches[0], value, fieldName);
