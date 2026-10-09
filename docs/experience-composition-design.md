@@ -48,6 +48,8 @@ ForgeSubmission currently provides a minimal wrapper and basic null/format/versi
 
 The current model does **not** yet establish a serialized, versioned portable Experience schema, nested Experience references, graph-cycle detection, identity/version resolution, configuration override rules, or complete submission diagnostics. Do not describe these as implemented until code and tests prove them.
 
+**Important current compiler limitation:** the legacy FSM_COS manifest emitted by `ForgeExperience.Compile()` currently carries only MicroBundle ID and opaque configuration bytes. It drops the descriptor version, dependency/provider declarations, and Experience ontology. This makes compilation a narrow API-compatibility smoke path, not a lossless or runtime-ready compilation of the full authored model. The migration must preserve and validate those semantics against an actually released runtime contract; it must not silently pretend the omitted data was applied.
+
 ## Proposed portable model
 
 Keep the authoring artifact distinct from FSM_COS.RuntimeManifest. The authoring artifact records creator intent and portable references; the runtime manifest is a target-specific compilation product.
