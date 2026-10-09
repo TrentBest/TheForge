@@ -6,7 +6,7 @@
 
 ## Resume immediately
 
-1. Confirm the live branch head and open pull requests before changing files. The initial snapshot was `ca8283b67266d30580a681fdedde1dc6066bb24d`; most recently observed before this brief update was `d1ff04231d0a00405cd92a4717e83e21881bb8ac`. Re-check because another contributor/LLM may have advanced it.
+1. Confirm the live branch head and open pull requests before changing files. The initial snapshot was `ca8283b67266d30580a681fdedde1dc6066bb24d`; most recently observed before this brief update was `f76a28dced931025b9dcce04aa970eccdb051e03`. Re-check because another contributor/LLM may have advanced it.
 2. Work only in `TrentBest/TheForge` unless the user explicitly redirects the task. Do not make further FSM_COS changes.
 3. Review the documentation inventory and source/tests together. Treat prose as a claim to verify, not proof that a feature exists.
 4. Choose one small, observable vertical slice at a time. Implement it in the provider-neutral .NET core first, add tests, then connect it to a host/UI.
@@ -37,7 +37,7 @@ Do not blur authored source, runtime configuration payload, runtime manifest, re
 - Repository: [TrentBest/TheForge](https://github.com/TrentBest/TheForge)
 - Default branch: `master`
 - Active working branch: `forge/native-experience-authoring`
-- Observed branch head before this continuation-brief update: `d1ff04231d0a00405cd92a4717e83e21881bb8ac` (the brief update itself will create a newer commit; verify live head before resuming)
+- Observed branch head before this continuation-brief update: `f76a28dced931025b9dcce04aa970eccdb051e03` (the brief update itself will create a newer commit; verify live head before resuming)
 - Existing pull request: [#9 — feat: establish Forge as provider-neutral Experience authoring](https://github.com/TrentBest/TheForge/pull/9) (verify current status and head before acting)
 - Current core targets .NET 8 and contains an Experience model, revisioned in-memory draft, read-only MicroBundle schema inspection, immutable typed field values, schema-value validation, and a minimal external-submission wrapper. Typed values/validation are not yet integrated into revision-safe draft edits or runtime payload encoding.
 - The Forge core currently has direct package references to FSM_COS `0.1.0-alpha.3` and MicroBundleDomain `1.0.1`. Unused GUI.Core and FSM_Serialization references were removed from the core project because no current source uses them; add them back only when a tested capability requires their APIs. Do not target an unpublished API/package.
@@ -62,7 +62,7 @@ Keep statuses honest: **Implemented** requires code and relevant tests; **Partia
 - [x] Introduce an immutable typed field-value model for String, Integer, Float, Boolean, and Object; values do not round-trip through display strings.
 - [x] Establish schema-value rules for type matching, inclusive numeric bounds, non-finite floats, nested diagnostic paths, unknown supplied fields, and read-only detached object values. Missing values are allowed; defaults are not silently applied.
 - [ ] Define stable field-path identity and decide how duplicate/invalid schema field names are reported.
-- [ ] Integrate validation-before-acceptance into ForgeExperienceDraft: rejected edits must preserve the previous valid state and revision.
+- [x] Integrate validation-before-acceptance into ForgeExperienceDraft: rejected edits preserve the previous valid state and revision; no-op edits do not advance revision; clearing an edit restores baseline while revision remains monotonic.
 - [ ] Define an explicit codec interface tied to MicroBundle identity/version. Never guess JSON, binary layout, or field order from schema metadata.
 - [x] Add tests for culture independence, bounds, nested paths, detached snapshots, and unknown fields. Rejected draft-edit tests remain pending because draft integration is not implemented.
 - [ ] Keep opaque byte-payload editing separate from typed editing when no compatible codec exists.
@@ -100,11 +100,11 @@ Audit in small batches, then update this table as each file is checked against s
 | `docs/ARCHITECTURE.md` | Are package ownership and current-vs-proposed behavior accurate? | Updated with typed-value milestone; deeper source audit remains |
 | `docs/diegetic-experience-authoring.md` | Which in-world authoring ideas are decisions, open questions, or implementable slices? | First pass complete; design-only status is explicit |
 | `docs/experience-composition-design.md` | Are portable artifact, graph, validation, and runtime compilation boundaries explicit? | Updated for lossy compiler limitation; first pass complete |
-| `docs/forge-owned-configuration-boundary.md` | Does the draft/typed-value/codec/persistence boundary match code? | Updated with typed values and validation; draft integration/codecs remain open |
+| `docs/forge-owned-configuration-boundary.md` | Does the draft/typed-value/codec/persistence boundary match code? | Updated with typed values, validation, and revision-safe draft edits; codecs remain open |
 | `docs/live-authoring-ontology-and-cloning.md` | What is the smallest safe revision/clone/preview increment? | First pass complete; preview/clone remain proposed |
 | `docs/microbundle-assembly-adventure.md` | Which metaphorical assembly stages map to tested contracts? | First pass complete; proposed pipeline is explicit |
 | `docs/tooling-provider-contract.md` | Are provider/tool semantics distinguished from runtime MicroBundle providers? | First pass complete; proposed API status is explicit |
-| `docs/tooling-provider-first-vertical-slice.md` | Is the read-only inspector accurately described and is the next slice concrete? | Updated: typed value validator exists; revision-safe draft editing remains open |
+| `docs/tooling-provider-first-vertical-slice.md` | Is the read-only inspector accurately described and is the next slice concrete? | Updated: typed value validator and revision-safe draft editing are implemented; codecs remain open |
 | `src/**`, `tests/**` | Do all public behaviors and stated claims have relevant tests? | Current core/tests inspected; full claim-by-claim audit remains |
 | `.github/workflows/**` | Are build/test jobs active and package publication explicitly gated? | Build/test workflow verified; no publish job exists in this workflow |
 
@@ -127,8 +127,17 @@ Audit in small batches, then update this table as each file is checked against s
 
 - Added `src/TheSingularityWorkshop.Forge/ForgeFieldValue.cs`: immutable typed values for String, Integer, Float, Boolean, and nested Object; schema validator emits machine-readable diagnostics with dotted field paths, enforces numeric bounds and finite floats, rejects unknown supplied fields, and deliberately neither fills defaults nor serializes runtime bytes.
 - Added `tests/TheSingularityWorkshop.Forge.Tests/ForgeFieldValueTests.cs`: checks detached/read-only object values, duplicate/blank keys, kind mismatch, bounds, culture-independent numeric validation, non-finite floats, nested paths, unknown fields, and omitted values.
-- CI passed for the initial implementation+tests at `b1d41a753c2bcdf7b786f9635a703a9ca48b9157` on PR run 37986169800 and push run 37986162045. Added explicit handling/tests for duplicate schema field names and invariant-culture diagnostic text in commits `8325b7a1d3145f4dbbbcb871a29632fda117a837` and `d1ff04231d0a00405cd92a4717e83e21881bb8ac`; CI for those latest commits is still in progress and must be checked before calling the slice green.
-- Updated configuration-boundary, vertical-slice, architecture, and README status. Next work: connect the value model to `ForgeExperienceDraft` with validate-before-acceptance and revision safety; first decide deterministic schema field identity/duplicate handling. Do not add payload encoding until a real codec contract exists.
+- CI passed for the initial implementation+tests at `b1d41a753c2bcdf7b786f9635a703a9ca48b9157` on PR run 37986169800 and push run 37986162045. Added invariant-culture diagnostic handling; MicroBundleDomain itself rejects duplicate field names, so a test attempting to create such a schema was removed after CI exposed that domain invariant. Subsequent draft-edit work found and fixed a compile error; check the latest exact-HEAD CI before calling the full slice green.
+- Integrated typed values into `ForgeExperienceDraft.TrySetFieldValue` with exact schema identity/version matching, validation-before-acceptance, no-op handling, monotonic revision changes, clear-to-baseline support, and an explicit refusal to compile typed edits without a codec. Tests cover accepted/rejected/no-op edits, revision safety, identity mismatch, and the codec boundary.
+- Corrected a compile issue found by CI (explicit diagnostic constructors) and removed a test that tried to construct duplicate schema fields, which MicroBundleDomain correctly forbids. The validator retains defensive duplicate handling.
+- Updated configuration-boundary, vertical-slice, architecture, and README status. Next work: define a real codec contract for one concrete MicroBundle identity/version, including encode/decode and compatibility rules, then add a deterministic round-trip test. Do not add generic payload encoding based on schema display defaults.
+
+## Latest incremental implementation (2026-10-09)
+
+- `ForgeExperienceDraft.TrySetFieldValue` accepts a top-level field name, typed value, and MicroBundleDefinition only when the definition's ID/version exactly match the draft entry. It validates the value before mutation; invalid edits preserve values, `IsModified`, and `Revision`.
+- No-op values are accepted without advancing revision. Accepted changes advance revision; `ClearFieldValue` advances revision and can restore the original baseline. `GetFieldValues` returns a detached read-only snapshot.
+- `ToExperience()` throws when typed edits exist without a codec rather than silently discarding typed values into the legacy opaque-byte manifest path. This is deliberate and tested.
+- Code/test commits: initial value model `aae363f1ef2378bf2e71e9d6fb5c6fc4d504610a`; draft integration `794116650b8883c32f8126f07d791218b394f284`; follow-up compile/test corrections `8f61ef9fed708dd674819cfbad4392c476756638`, `f76a28dced931025b9dcce04aa970eccdb051e03`. Latest CI is pending at time of this update; verify before declaring green.
 
 ## Acceptance rule for every increment
 
