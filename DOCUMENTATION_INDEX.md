@@ -9,6 +9,7 @@ The README is the front door. Use this index to move from orientation to the spe
 | Resume work after a conversation reset; see the ordered implementation queue, boundaries, and current proof requirements | [Forge Continuation Brief](docs/CONTINUATION_BRIEF.md) |
 | Understand what The Forge is and what it owns | [README](README.md) |
 | Explore what diegetic (in-world) authoring should mean, and the product and architecture questions it raises | [Diegetic Experience Authoring: Questions and Design Principles](docs/diegetic-experience-authoring.md) |
+| Understand the proposed standalone HTTP-agent package, optional ProtocolAi/GrammarAi integrations, and the living Forge's Hermit/minion/Titan visual language | [HeadlessAi and the Living Forge](docs/headless-ai-and-living-forge.md) |
 | Design live editing with immediate preview, ontology vending, and cloning published content into a changed draft | [Live Authoring, Ontology Vending, and the Cloning Machine](docs/live-authoring-ontology-and-cloning.md) |
 | Understand why Forge owns authored configuration documents and manifest source, while runtime payload codecs and FSM_COS remain explicit boundaries | [Forge-Owned Configuration and Manifest Boundary](docs/forge-owned-configuration-boundary.md) |
 | Design the MicroBundle claw, inspectable package slot, crank-driven assembly pipeline, honest processing show, and integer-backed artifact mapping | [MicroBundle Assembly Adventure](docs/microbundle-assembly-adventure.md) |
