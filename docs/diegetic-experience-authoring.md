@@ -35,6 +35,46 @@ The greenhouse is the authored Experience. The in-world workshop is one possible
 
 This example is illustrative, not a claim that these interactions exist today.
 
+## The Forge's "Iron": deliberate data manipulation
+
+The Forge is not merely a scene editor or a collection of diegetic widgets. Its core responsibility is to make structured data understandable and safely transformable: create definitions, inspect schemas, compose MicroBundles, edit configuration, resolve relationships, validate changes, and prepare portable artifacts. The world-facing tools are expressive handles on that underlying authoring system.
+
+A useful guiding image is a **conveyor belt that passes through the Forge wall and disappears into the ether**. The creator can see the object or artifact being worked on, the current operation, its provenance, and the checks it has passed. They do not need to see every internal mechanism or pretend the entire downstream ecosystem is physically inside the room. The disappearance beyond the wall communicates that the Forge can prepare and hand off work to systems beyond its immediate presentation. It must not imply that an artifact has been published, executed, or accepted unless that has actually happened.
+
+### Runtime changes must use FSM_API as the reference
+
+The Workshop's [FSM_API](https://github.com/TrentBest/FSM_API) is the authoritative reference when designing runtime behavior changes. It is not a generic FSM placeholder: its definitions are runtime-modifiable, it separates behavior from POCO context data, and structural modifications are deferred so they can be applied safely after an update cycle rather than corrupting the active tick. Its named processing groups and instance lifecycle are also part of the real API vocabulary.
+
+That distinction changes how Forge should be designed:
+
+- **Authoring edits** change the creator's proposed Experience or MicroBundle configuration.
+- **Runtime structural changes** change the live FSM/API structures through the actual FSM_API capabilities and their mutation-safety rules.
+- **Runtime context changes** change data owned by the running system, with the context and its invariants remaining explicit.
+- **Presentation changes** move, select, open, or arrange diegetic tools and must not silently alter the authored artifact or live runtime.
+- **Compilation/composition** translates an authored artifact into the downstream FSM_COS/runtime contracts; it is not itself proof that a live FSM has been changed.
+
+Forge should call or generate against real package contracts, not invent a parallel "runtime mutation" abstraction that accidentally restricts FSM_API or misrepresents its guarantees. Where a request cannot safely take effect during the current tick, the UI should show it as pending or queued rather than pretending it happened immediately. Use public APIs; do not build on FSM_API internals or bypass its safety checks.
+
+The current Forge schema inspector is read-only and does not yet edit configuration or mutate running FSM definitions. These are architectural requirements for the next stages, not claims about current implementation.
+
+### Example: a solar-system materials area
+
+Imagine a section of the Forge that resembles a carefully arranged collection of physical boxes. Each box represents a discoverable asset or authored component: planets, moons, rings, asteroid groups, orbital systems, or other celestial objects. The creator can pick up a planet box and place its contents into a bounded simulation area.
+
+That interaction should be a sequence of explicit operations:
+
+1. **Discover:** show the box's identity, source, version, and available contents.
+2. **Place into the work area:** create an authored reference or instance in the current draft. Do not silently alter the source asset or the live world.
+3. **Inspect:** expose meaningful metadata and relationships around the placed object—name, classification, dimensions, mass, orbital parameters, dependencies, provenance, and domain-specific fields when the supplying schema supports them.
+4. **Edit deliberately:** provide suitable controls for supported fields, explain units and constraints, validate the proposed value, and show whether the edit is draft-only or intended for a live system.
+5. **Preview safely:** show the consequences in an isolated or explicitly bounded simulation.
+6. **Commit or discard:** record accepted changes with their origin; preserve the previous valid draft when validation fails.
+7. **Hand off:** make the resulting Experience artifact's state visible as it enters the conveyor/handoff path. Publication and runtime activation remain separate, explicit outcomes.
+
+The box is a diegetic metaphor for discovery and packaging, not a requirement that every asset be a literal box. Some assets may be represented by a specimen, instrument, model, shelf, hologram, or another suitable form. The shared Forge contract is identity, discoverability, placement semantics, inspection, validated editing, provenance, and clear handoff—not one universal visual shape.
+
+This example is design direction, not implemented functionality. The current schema contract does not itself guarantee that all the listed planetary properties exist; metadata and editable fields must come from explicit domain schemas or authored data, never from guesses based on an object's appearance.
+
 ## Principles worth preserving
 
 ### 1. In-world does not mean trapped in-world
