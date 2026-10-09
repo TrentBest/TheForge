@@ -65,6 +65,64 @@ The Forge may itself be assembled from MicroBundles and Experiences. An in-world
 
 Creators should be able to ask: What did I add? What did the resolver choose? Which dependencies came from a child Experience? Why did validation fail? What changed between these two versions? Answers should come from stored identities, resolution records, and diagnostics—not from reconstructing intent from the visual scene.
 
+## Spatial model: a tethered Forge with a world around it
+
+The creator's description adds a more specific spatial contract to the general diegetic-authoring idea:
+
+**The Forge is a place-like authoring presence that can be tethered to a chosen location in the Experience, without being a literal place that the authored world must contain.**
+
+The tether is relocatable. In an Experience that spans several star systems, a creator could place the Forge near a planet, station, ship, remote outpost, or another meaningful context—and later move it elsewhere. The Experience is not constrained to the Forge's current location, and moving the Forge must not change the Experience's semantic identity or composition.
+
+### Two spatial domains, one authoring session
+
+- **Around the Forge — the authored Experience.** Render the world or context currently being created. Its geography, scale, and contents belong to the Experience and may extend far beyond the creator's immediate surroundings.
+- **Within the Forge — the authoring environment.** Render tools, inspectors, composition relationships, diagnostics, and other authoring affordances contributed by installed tooling.
+- **At the tether — the relationship between them.** Keep the Forge anchored to a meaningful point or context in the authored Experience, while allowing the creator to relocate that anchor without rewriting the artifact.
+
+This is a proposed spatial model, not a description of current code.
+
+### Tooling providers supply representations
+
+A MicroBundle may provide runtime capability, authoring tooling, both, or neither. If it supplies tooling, it should be able to expose a provider contract through which the Forge discovers and presents its authoring representation. That representation might be a workbench, instrument, spatial panel, inspectable object, process visualization, or another interaction surface appropriate to the tool.
+
+The Forge should own the shared hosting rules—not bespoke knowledge of every tool:
+
+1. Discover which installed MicroBundles offer authoring tooling.
+2. Ask each tooling provider for its declared representation and interaction contract.
+3. Place that representation in the Forge's tooling space according to shared layout, placement, lifecycle, and accessibility rules.
+4. Route interactions to the owning tool/provider and make its relevant state and diagnostics visible.
+5. Keep tool presentation metadata distinct from the authored Experience's semantic configuration unless a creator explicitly commits a change to the artifact.
+
+A MicroBundle without a tooling provider remains valid. It may participate in the authored Experience without creating an empty panel, placeholder station, or mandatory Forge UI.
+
+The exact provider API, version negotiation, permissions, lifecycle, and layout contract remain open design work. A provider should not be allowed to silently replace the Forge's trust boundary or acquire permissions merely because its representation is visible.
+
+### Spatial composition is not semantic composition
+
+The Forge's current tether, camera, local arrangement of tools, and open inspection surfaces are presentation/session state. They should not silently alter the Experience being authored. Conversely, a creator's deliberate edit made through a tool—such as changing a bundle's configuration—must be captured as an explicit authoring-model change with understandable provenance.
+
+This suggests three distinct records:
+
+- **Experience definition:** the portable creator-authored composition.
+- **Forge session:** the tether target, spatial arrangement, active tool representations, selections, and other presentation state.
+- **Tooling provider declaration:** the tool's identity, supported representation(s), interaction entry point, required capabilities, and lifecycle/permission needs.
+
+These are conceptual boundaries, not proposed final type names.
+
+### Questions this spatial model must answer
+
+- What can a tether target be: a coordinate, a named entity, a stable world-space anchor, a semantic location, or a combination?
+- What happens when the target moves, disappears, changes identity, or is unavailable in another host?
+- Does a tether describe a persistent preference, a session-only location, or both?
+- Is the Forge's interior spatially bounded, infinitely extensible, or host-adaptive?
+- How do providers request space without controlling the overall layout or obstructing other tools?
+- Can multiple tools share a station or compose into a larger tool experience?
+- How are tools discovered, versioned, permissioned, unloaded, and recovered if a provider fails?
+- Which interaction state persists across sessions, and which state is disposable?
+- What non-diegetic fallback is available for accessibility, debugging, small screens, or hosts without spatial rendering?
+
+**Working recommendation:** make the tether and tool layout portable session metadata, define tooling as an optional provider capability, and keep the portable Experience definition independent of any specific tether, spatial renderer, or tooling presentation.
+
 ## The design questions
 
 These questions should be answered explicitly before they become hidden assumptions in code.
