@@ -8,6 +8,7 @@ The README is the front door. Use this index to move from orientation to the spe
 |---|---|
 | Understand what The Forge is and what it owns | [README](README.md) |
 | Explore what diegetic (in-world) authoring should mean, and the product and architecture questions it raises | [Diegetic Experience Authoring: Questions and Design Principles](docs/diegetic-experience-authoring.md) |
+| Design the MicroBundle claw, inspectable package slot, crank-driven assembly pipeline, honest processing show, and integer-backed artifact mapping | [MicroBundle Assembly Adventure](docs/microbundle-assembly-adventure.md) |
 | Understand how MicroBundles could optionally contribute tools to a relocatable, tethered Forge, and how tooling differs from runtime behavior and configuration schemas | [Forge Tooling Provider Contract: Design Direction](docs/tooling-provider-contract.md) |
 | Understand the smallest testable prototype before committing to a spatial renderer or public provider API | [Tooling Provider: First Vertical Slice](docs/tooling-provider-first-vertical-slice.md) |
 | Understand the current provider-neutral core and proposed nested Experience composition | [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) |
