@@ -206,3 +206,29 @@ The new direction is:
 8. let AnyApp, WebForge, and future server hosts execute the resulting compositions.
 
 The migration should happen incrementally so the architectural decisions are testable at every step.
+
+## Implementation status: current versus intended
+
+The architecture above describes both the direction of the project and capabilities the project intends to provide. They are not all implemented in the current provider-neutral core.
+
+### Present in the current core
+
+- A .NET 8 ForgeExperience editor-side model with an identity, name, ontology coordinates, and a flat collection of MicroBundles.
+- MicroBundle descriptors and opaque configuration bytes.
+- Compilation of that model into the current FSM_COS RuntimeManifest contract.
+- A basic ForgeSubmission validation boundary that does not require a Forge UI.
+- Automated restore, build, and test checks for the provider-neutral core.
+
+### Still design work or future implementation
+
+- A versioned, portable Experience artifact schema and complete serialization round trip.
+- Nested Experience composition and dependency resolution.
+- Complete artifact validation, normalization, integrity verification, and publication.
+- Generic read-only inspection of MicroBundleDefinition schemas.
+- A validated authoring-edit model with provenance.
+- Optional bespoke authoring-tool providers and their lifecycle, compatibility, and permission rules.
+- Diegetic presentation, spatial tethering, and host-rendered authoring tools.
+
+The current flat-list model and manifest compiler are a foundation, not proof that the full artifact or publication pipeline exists. In particular, a runtime manifest is not yet a substitute for a portable, versioned authoring artifact.
+
+The implementation sequence is therefore: prove schema inspection against the published domain contract; establish a separate validated edit boundary; define and test the portable artifact contract; then expand composition, provider tooling, spatial presentation, and publication as independently verifiable capabilities.
