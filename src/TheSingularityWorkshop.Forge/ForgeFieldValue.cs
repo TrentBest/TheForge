@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using TheSingularityWorkshop.MicroBundleDomain;
 
 namespace TheSingularityWorkshop.Forge;
@@ -138,9 +139,25 @@ public static class ForgeFieldValueValidator
                 ValidateNumber(value.FloatValue.Value, field, path, diagnostics);
                 break;
             case ForgeFieldValueKind.Object:
-                var schemaChildren = field.Children.ToDictionary(x => x.Name, StringComparer.Ordinal);
+                var duplicateNames = field.Children
+                    .GroupBy(x => x.Name, StringComparer.Ordinal)
+                    .Where(group => group.Count() > 1)
+                    .Select(group => group.Key)
+                    .ToHashSet(StringComparer.Ordinal);
+                foreach (var duplicateName in duplicateNames.OrderBy(x => x, StringComparer.Ordinal))
+                {
+                    diagnostics.Add(new("duplicate-schema-field", Join(path, duplicateName),
+                        $"Schema field name '{duplicateName}' is declared more than once and cannot be addressed unambiguously."));
+                }
+
+                var schemaChildren = field.Children
+                    .Where(x => !duplicateNames.Contains(x.Name))
+                    .ToDictionary(x => x.Name, StringComparer.Ordinal);
                 foreach (var supplied in value.Children)
                 {
+                    if (duplicateNames.Contains(supplied.Key))
+                        continue;
+
                     if (!schemaChildren.TryGetValue(supplied.Key, out var childSchema))
                     {
                         diagnostics.Add(new("unknown-field", Join(path, supplied.Key),
@@ -161,9 +178,9 @@ public static class ForgeFieldValueValidator
         List<ForgeFieldValueDiagnostic> diagnostics)
     {
         if (field.Minimum is double minimum && value < minimum)
-            diagnostics.Add(new("below-minimum", path, $"Value {value} is below the minimum {minimum}."));
+            diagnostics.Add(new("below-minimum", path, $"Value {value.ToString(CultureInfo.InvariantCulture)} is below the minimum {minimum.ToString(CultureInfo.InvariantCulture)}."));
         if (field.Maximum is double maximum && value > maximum)
-            diagnostics.Add(new("above-maximum", path, $"Value {value} exceeds the maximum {maximum}."));
+            diagnostics.Add(new("above-maximum", path, $"Value {value.ToString(CultureInfo.InvariantCulture)} exceeds the maximum {maximum.ToString(CultureInfo.InvariantCulture)}."));
     }
 
     private static bool TryMapKind(MicroBundleFieldKind kind, out ForgeFieldValueKind valueKind)
