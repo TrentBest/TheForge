@@ -31,7 +31,7 @@ These are related artifacts, not interchangeable files. Compilation may produce 
 
 ## Integration finding: published package versus development source
 
-Forge currently references `TheSingularityWorkshop.FSM_COS` version `0.1.0-alpha.3`. Its existing compiler targets that package's `BundleRequest`-based manifest API and passes opaque configuration bytes through that request.
+Forge currently references `TheSingularityWorkshop.FSM_COS` version `0.1.0-alpha.3`. Its existing compiler targets that package's `BundleRequest`-based manifest API and passes opaque configuration bytes through that request. **This is a deliberately limited bridge, not a lossless composition compiler:** `ForgeExperience.Compile()` currently emits only each MicroBundle's numeric ID and opaque configuration. It does not carry the authored descriptor version, dependencies, provider declarations, or the Experience's ontology into the resulting runtime manifest. Until Forge migrates to a released contract that can represent the required identity/version and configuration boundary, callers must not treat this output as proof that the complete authored composition has been preserved or resolved.
 
 The FSM_COS `development` source has since clarified a different boundary: `RuntimeManifest` contains versioned `MicroBundleManifestEntry` roots, while configuration is supplied through a separate configuration-source contract. The manifest describes **which roots and versions** to compose; it is not the configuration document or the configuration payload.
 
@@ -56,7 +56,7 @@ The schema description alone does not supply enough information to invent the co
 
 ## Implementation status
 
-- **Implemented:** ForgeExperience owns the Experience model and compiles it against the FSM_COS API version currently referenced by Forge.
+- **Implemented, limited:** ForgeExperience owns the editor-side model and emits a minimal manifest against the FSM_COS API version currently referenced by Forge. The output currently omits descriptor versions, dependencies/providers, and ontology; it is not a lossless composition artifact.
 - **Implemented:** ForgeExperienceDraft provides revisioned in-memory edits to Experience name, ontology, composition, and opaque configuration payloads.
 - **Implemented:** MicroBundleSchemaInspector exposes detached read-only field metadata, including nested fields and bounds.
 - **Not implemented:** a durable Forge project/configuration file format and round-trip persistence workflow.
