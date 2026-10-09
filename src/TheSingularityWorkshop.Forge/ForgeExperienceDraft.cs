@@ -106,9 +106,8 @@ public sealed class ForgeExperienceDraft
     }
 
     /// <summary>
-    /// Replaces the opaque configuration payload for a MicroBundle.
-    /// Schema-aware field editing is intentionally separate until a typed
-    /// field-to-payload contract exists.
+    /// Replaces the opaque configuration payload for a MicroBundle. This byte-level
+    /// path remains separate from typed field values until a compatible codec exists.
     /// </summary>
     public bool SetConfiguration(ulong bundleId, ReadOnlyMemory<byte> configuration)
     {
@@ -179,6 +178,26 @@ public sealed class ForgeExperienceDraft
         values[fieldName] = value;
         AdvanceRevision();
         return ForgeFieldEditResult.AcceptedWithChange();
+    }
+
+    /// <summary>
+    /// Removes an accepted typed field edit. Clearing an absent value is a no-op.
+    /// A successful clear advances the revision, even when it restores the baseline.
+    /// </summary>
+    public bool ClearFieldValue(ulong bundleId, string fieldName)
+    {
+        if (string.IsNullOrWhiteSpace(fieldName))
+            throw new ArgumentException("A field name is required.", nameof(fieldName));
+        if (!_bundles.Any(x => x.Descriptor.Id == bundleId))
+            throw new KeyNotFoundException($"MicroBundle {bundleId} is not part of draft Experience {_id}.");
+        if (!_fieldValues.TryGetValue(bundleId, out var values) || !values.Remove(fieldName))
+            return false;
+
+        if (values.Count == 0)
+            _fieldValues.Remove(bundleId);
+
+        AdvanceRevision();
+        return true;
     }
 
     /// <summary>
