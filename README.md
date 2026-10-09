@@ -254,7 +254,7 @@ The Unity material remains in the repository during migration so useful prior wo
 
 ### Current implementation status
 
-The provider-neutral core currently compiles a flat list of MicroBundles into an FSM_COS runtime manifest. Nested Experiences and the complete portable-artifact submission pipeline remain design work; the long-term capabilities described in this README are not a claim that all of them are already implemented.
+The provider-neutral core currently compiles a flat list of MicroBundles into an FSM_COS runtime manifest. It now also has an in-memory `ForgeExperienceDraft` with revisioned semantic edits, baseline-difference tracking, and detached manifest compilation. This is not yet a published-artifact clone: source-version provenance, schema-aware typed editing, validation, revision-bound live preview, and the publication gate remain design and implementation work. Nested Experiences and the complete portable-artifact submission pipeline also remain design work.
 
 See [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) for the current-state boundary, proposed nested-composition rules, validation flow, acceptance tests, and unresolved decisions. For the larger product questions—including diegetic authoring, portable artifacts, lifecycle, and trust—see [Diegetic Experience Authoring: Questions and Design Principles](docs/diegetic-experience-authoring.md).
 
@@ -264,6 +264,7 @@ See [Experience Composition: Current State and Design Direction](docs/experience
 
 - [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md) — product and architecture questions for in-world creation.
 - [Experience Composition Design](docs/experience-composition-design.md) — current implementation boundary and proposed nested composition.
+- [Live Authoring, Ontology Vending, and Cloning](docs/live-authoring-ontology-and-cloning.md) — implemented draft foundation, proposed preview and clone lifecycle, and the intended diegetic creator experience.
 - [Documentation Index](DOCUMENTATION_INDEX.md) — reader-oriented map of the Forge documentation.
 - [Workshop Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md) — shared conventions.
 
