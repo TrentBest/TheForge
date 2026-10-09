@@ -37,7 +37,7 @@ Do not blur authored source, runtime configuration payload, runtime manifest, re
 - Repository: [TrentBest/TheForge](https://github.com/TrentBest/TheForge)
 - Default branch: `master`
 - Active working branch: `forge/native-experience-authoring`
-- Observed branch head before this continuation-brief update: `a54e64d37dcfd0e5f513c1da791aa8875e0d9d4e` (the brief update itself will create a newer commit; verify live head before resuming)
+- Observed branch head before the codec-contract slice: `d1ab422fa2f341b526ec00ebaf9191f00570748b`; verify the live head before resuming.
 - Existing pull request: [#9 — feat: establish Forge as provider-neutral Experience authoring](https://github.com/TrentBest/TheForge/pull/9) (verify current status and head before acting)
 - Current core targets .NET 8 and contains an Experience model, revisioned in-memory draft, read-only MicroBundle schema inspection, immutable typed field values, schema-value validation, and a minimal external-submission wrapper. Typed values/validation are integrated into revision-safe draft edits; runtime payload encoding remains unavailable without a compatible codec.
 - The Forge core currently has direct package references to FSM_COS `0.1.0-alpha.3` and MicroBundleDomain `1.0.1`. Unused GUI.Core and FSM_Serialization references were removed from the core project because no current source uses them; add them back only when a tested capability requires their APIs. Do not target an unpublished API/package.
@@ -125,7 +125,7 @@ Audit in small batches, then update this table as each file is checked against s
 - `src/TheSingularityWorkshop.Forge/TheSingularityWorkshop.Forge.csproj`: removed unused GUI.Core and FSM_Serialization direct dependencies; current code only uses FSM_COS and MicroBundleDomain.
 - Typed value implementation: `aae363f1ef2378bf2e71e9d6fb5c6fc4d504610a`; tests: `b1d41a753c2bcdf7b786f9635a703a9ca48b9157`. CI passed on the test commit via [PR run 37986169800](https://github.com/TrentBest/TheForge/actions/runs/37986169800) and [push run 37986162045](https://github.com/TrentBest/TheForge/actions/runs/37986162045). Subsequent documentation updates are being checked on their exact commit; the workflow is build/test only and contains no publish job.
 
-## Latest incremental implementation (2026-10-09)
+## Earlier typed-value implementation (2026-10-09)
 
 - Added `src/TheSingularityWorkshop.Forge/ForgeFieldValue.cs`: immutable typed values for String, Integer, Float, Boolean, and nested Object; schema validator emits machine-readable diagnostics with dotted field paths, enforces numeric bounds and finite floats, rejects unknown supplied fields, and deliberately neither fills defaults nor serializes runtime bytes.
 - Added `tests/TheSingularityWorkshop.Forge.Tests/ForgeFieldValueTests.cs`: checks detached/read-only object values, duplicate/blank keys, kind mismatch, bounds, culture-independent numeric validation, non-finite floats, nested paths, unknown fields, and omitted values.
@@ -136,10 +136,11 @@ Audit in small batches, then update this table as each file is checked against s
 
 ## Latest incremental implementation (2026-10-09)
 
-- `ForgeExperienceDraft.TrySetFieldValue` accepts a top-level field name, typed value, and MicroBundleDefinition only when the definition's ID/version exactly match the draft entry. It validates the value before mutation; invalid edits preserve values, `IsModified`, and `Revision`.
-- No-op values are accepted without advancing revision. Accepted changes advance revision; `ClearFieldValue` advances revision and can restore the original baseline. `GetFieldValues` returns a detached read-only snapshot.
-- `ToExperience()` throws when typed edits exist without a codec rather than silently discarding typed values into the legacy opaque-byte manifest path. This is deliberate and tested.
-- Code/test commits: initial value model `aae363f1ef2378bf2e71e9d6fb5c6fc4d504610a`; draft integration `794116650b8883c32f8126f07d791218b394f284`; follow-up compile/test corrections `8f61ef9fed708dd674819cfbad4392c476756638`, `f76a28dced931025b9dcce04aa970eccdb051e03`. Latest CI is pending at time of this update; verify before declaring green.
+- `ForgeExperienceDraft.TrySetFieldValue` validates schema-backed edits before mutation; rejection preserves draft values/revision, no-op edits do not advance revision, and clearing an edit can restore baseline without rewinding revision.
+- Added `IForgeMicroBundleConfigurationCodec` and `IForgeMicroBundleConfigurationCodecResolver`, plus `ForgeConfigurationCodecRegistry` with exact MicroBundle ID/version matching and duplicate-registration rejection.
+- `ToExperience(codecResolver)` now uses a matching codec for typed edits and refuses missing/mismatched codecs rather than silently discarding values. The codec owns its payload format and merge semantics.
+- Tests cover exact-version lookup, missing/wrong-version refusal, and a deterministic encode/decode round trip using a **test-only fixture codec**. No production MicroBundle codec exists yet.
+- Codec implementation commits: `b847bdc088ee19a73bbb5a08bbb0875f5e4de65b`, `c353825be740a18bfb6642c2f4ccfe615fa6bf20`, `7f97882041327216308279cdd91432a4a617491b`. Documentation has been aligned; check exact-HEAD Actions before calling the slice green.
 
 ## Acceptance rule for every increment
 
