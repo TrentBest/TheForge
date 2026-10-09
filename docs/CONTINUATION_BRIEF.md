@@ -170,3 +170,22 @@ At the end of each work session, update this brief with:
 ## Workshop footer
 
 <p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong></p>
+
+
+## Direction pivot captured — HeadlessAi and the living Forge (2026-10-09)
+
+- Added [HeadlessAi and the Living Forge](headless-ai-and-living-forge.md) as a **proposed direction note**, and linked it from DOCUMENTATION_INDEX.md. This captures the user's new concept without misrepresenting it as implemented.
+- **HeadlessAi** is proposed as a standalone, provider-neutral NuGet package for configured HTTP-agent communication with AI endpoints. It is not an AI model. GPT, Gemini, Claude, and other providers require explicit request/response contract handling; do not assume one universal body format.
+- **ProtocolAi and GrammarAi are optional integrations**, not required dependencies. The basic HeadlessAi package must remain useful without either one and must not depend on The Forge or FSM_COS.
+- **Horsemen/riders** describe configurable endpoint profiles and agent instances metaphorically. Keep reusable provider profile identity distinct from running agent/session identity, permissions, context, budget, and lifecycle.
+- **Living Forge vision:** Hermit is a full-size humanoid guide/agent that explores tools and demonstrates possible parameter changes. It may be playful, but exploratory activity must remain sandboxed and must not silently commit authored changes or mutate a live runtime.
+- **Visual scale language:** Minions are 1/3 Hermit size; Titans are 3× Hermit size. These are presentation metaphors, not permissions or measures of intelligence. Dramatic staging should be driven by actual task/impact state, not fake progress.
+- **Visible consequence pipeline:** intent → impact analysis → preview/approval → staged work → observable change → verification. Example: changing a distant mountain range's age can dispatch a swarm of small visual workers and a few Titans toward the affected range, with the result grounded in real work states and a verifiable outcome.
+- **Safety/ownership rules:** secrets stay outside ordinary config/artifacts/logs; tool permissions are explicit; model output is not executable by default; consequential changes require approval; distinguish proposal, draft edit, accepted authored change, and live runtime mutation.
+- **Recommended first HeadlessAi slice:** credential-safe provider profile plus one HTTP adapter, injected transport, fixture-based tests, cancellation/timeouts, structured diagnostics, and secret redaction. Validate a second provider before over-generalizing the abstraction.
+- **Recommended first Forge visual slice:** Hermit inspects one real schema parameter, proposes one typed edit, presents impact/preview, and waits for accept/reject. Add theatrical Minion/Titan staging only after task-state mapping is real.
+- **Unresolved HeadlessAi decisions:** generic request vs provider-profile/session API; first provider set; stable identity/version; ownership of conversation history and cost accounting; tool authorization; secure secret resolution; host-independent proposal/task contracts; mapping visual worker counts to real work.
+- Prior exact-head run for 6e9d7e3097fc3ed3279176b6a03c51492f7c5cfd completed successfully: [GitHub Actions run 37987648451](https://github.com/TrentBest/TheForge/actions/runs/37987648451). The new documentation commits still require exact-head CI verification; do not claim them green until checked.
+- Current working branch remains forge/native-experience-authoring; PR #9 remains open against master. No merge, NuGet publication, or FSM_COS edit was performed.
+- **Next actions after this pivot:** (1) verify CI on the new documentation head; (2) pause Forge's earlier parameter-ID/codec implementation queue unless the user redirects back to it; (3) start HeadlessAi contract/provider research in a separate short-lived branch or repository only after checking whether a HeadlessAi repository already exists and agreeing the first provider slice.
+
