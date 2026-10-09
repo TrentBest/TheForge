@@ -11,6 +11,7 @@ The README is the front door. Use this index to move from orientation to the spe
 | Understand how MicroBundles could optionally contribute tools to a relocatable, tethered Forge, and how tooling differs from runtime behavior and configuration schemas | [Forge Tooling Provider Contract: Design Direction](docs/tooling-provider-contract.md) |
 | Understand the smallest testable prototype before committing to a spatial renderer or public provider API | [Tooling Provider: First Vertical Slice](docs/tooling-provider-first-vertical-slice.md) |
 | Understand the current provider-neutral core and proposed nested Experience composition | [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) |
+| Separate current Forge implementation from the intended architecture and future work | [Forge Architecture](docs/ARCHITECTURE.md) |
 | Understand the Workshop's shared documentation conventions | [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md) |
 | Understand the Forge-to-FSM_COS boundary | [README architecture overview](README.md) and the composition design note |
 | Inspect the current implementation | Browse [src](src/) and [tests](tests/) on this branch |
