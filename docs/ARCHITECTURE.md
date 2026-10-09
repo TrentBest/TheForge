@@ -243,8 +243,8 @@ The architecture above describes both the direction of the project and capabilit
 - A versioned, portable Experience artifact schema and complete serialization round trip.
 - Nested Experience composition and dependency resolution.
 - Complete artifact validation, normalization, integrity verification, and publication.
-- Integration of typed values into ForgeExperienceDraft with validation-before-acceptance and revision safety; the schema inspector remains read-only and the current validator does not mutate drafts.
-- Domain-specific configuration codecs and byte-payload generation; typed values are not yet runtime payloads.
+- Domain-specific configuration codecs and byte-payload generation; typed values remain editor-only and are not runtime payloads.
+- Durable typed-value persistence, field-edit provenance, and revision-scoped live preview.
 - Optional bespoke authoring-tool providers and their lifecycle, compatibility, and permission rules.
 - Diegetic presentation, spatial tethering, and host-rendered authoring tools.
 
