@@ -58,6 +58,9 @@ Keep statuses honest: **Implemented** requires code and relevant tests; **Partia
 - [x] Confirm `.github/workflows/forge.yml` runs restore/build/test for the .NET 8 test project and has no package-publish job. Exact-commit CI passed for the documentation commits (PR run [37985504308](https://github.com/TrentBest/TheForge/actions/runs/37985504308), commit `0121b20aded4e83eafa1124f0803bd0f89179a31`).
 
 ### P1 — Complete a useful, testable authoring core
+- [ ] Decide the durable parameter identity contract before a production configuration codec: configuration should be parameter ID + typed override, not display-name strings. MicroBundleDomain 1.0.1 exposes field names but no stable parameter IDs; evaluate whether IDs belong in that domain contract or are supplied by an optional adapter.
+- [ ] Evaluate ProtocolAi as an optional name-to-integer identity adapter, without adding a mandatory dependency until the parameter-ID ownership/versioning contract is explicit.
+
 
 - [x] Introduce an immutable typed field-value model for String, Integer, Float, Boolean, and Object; values do not round-trip through display strings.
 - [x] Establish schema-value rules for type matching, inclusive numeric bounds, non-finite floats, nested diagnostic paths, unknown supplied fields, and read-only detached object values. Missing values are allowed; defaults are not silently applied.
