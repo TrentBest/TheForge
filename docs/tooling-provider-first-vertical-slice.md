@@ -1,6 +1,6 @@
 # Forge Tooling Provider: First Vertical Slice
 
-> **Status:** The read-only schema-inspection adapter, immutable typed field-value model, and schema-value validator are implemented and tested. Revision-safe draft edit acceptance, codec-backed payload generation, the provider API, and spatial Forge remain future work.
+> **Status:** The read-only schema-inspection adapter, immutable typed field-value model, schema-value validator, revision-safe draft edits, and exact-ID/version codec-backed payload path are implemented and tested. The codec round trip currently uses a test-only fixture; a production codec, provider API, and spatial Forge remain future work.
 
 ## Purpose
 
