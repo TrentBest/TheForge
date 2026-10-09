@@ -216,6 +216,8 @@ The architecture above describes both the direction of the project and capabilit
 - A .NET 8 ForgeExperience editor-side model with an identity, name, ontology coordinates, and a flat collection of MicroBundles.
 - MicroBundle descriptors and opaque configuration bytes.
 - Compilation of that model into the current FSM_COS RuntimeManifest contract.
+- A read-only MicroBundleSchemaInspector that projects the published MicroBundleDefinition contract into a detached, recursively inspectable snapshot.
+- Automated tests for schema projection, nested fields, bounds, default-value display, and read-only collection behavior.
 - A basic ForgeSubmission validation boundary that does not require a Forge UI.
 - Automated restore, build, and test checks for the provider-neutral core.
 
@@ -224,8 +226,7 @@ The architecture above describes both the direction of the project and capabilit
 - A versioned, portable Experience artifact schema and complete serialization round trip.
 - Nested Experience composition and dependency resolution.
 - Complete artifact validation, normalization, integrity verification, and publication.
-- Generic read-only inspection of MicroBundleDefinition schemas.
-- A validated authoring-edit model with provenance.
+- A validated authoring-edit model with provenance; the current schema inspector is intentionally read-only and does not apply configuration edits.
 - Optional bespoke authoring-tool providers and their lifecycle, compatibility, and permission rules.
 - Diegetic presentation, spatial tethering, and host-rendered authoring tools.
 
