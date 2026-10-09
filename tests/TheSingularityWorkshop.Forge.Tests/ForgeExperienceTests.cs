@@ -116,6 +116,99 @@ public sealed class ForgeExperienceTests
     }
 
     [Fact]
+    public void DraftAcceptsTypedFieldEditAndAdvancesRevisionOnlyWhenChanged()
+    {
+        var source = new ForgeExperience(3030, "Typed draft");
+        source.AddMicroBundle(4030, "1.0.0");
+        var draft = new ForgeExperienceDraft(source);
+        var schema = new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDefinition(
+            "Example",
+            new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDescriptor(4030, "1.0.0"),
+            [new TheSingularityWorkshop.MicroBundleDomain.MicroBundleField("Count",
+                TheSingularityWorkshop.MicroBundleDomain.MicroBundleFieldKind.Integer, 1, 0, 10)]);
+
+        var accepted = draft.TrySetFieldValue(4030, schema, "Count", ForgeFieldValue.FromInteger(5));
+        Assert.True(accepted.IsAccepted);
+        Assert.True(accepted.HasChanged);
+        Assert.Empty(accepted.Diagnostics);
+        Assert.Equal(1, draft.Revision);
+        Assert.True(draft.IsModified);
+        Assert.Equal(5, draft.GetFieldValues(4030)["Count"].IntegerValue);
+
+        var noOp = draft.TrySetFieldValue(4030, schema, "Count", ForgeFieldValue.FromInteger(5));
+        Assert.True(noOp.IsAccepted);
+        Assert.False(noOp.HasChanged);
+        Assert.Equal(1, draft.Revision);
+    }
+
+    [Fact]
+    public void DraftRejectsInvalidTypedEditWithoutChangingRevisionOrValues()
+    {
+        var source = new ForgeExperience(3031, "Rejected typed draft");
+        source.AddMicroBundle(4031, "1.0.0");
+        var draft = new ForgeExperienceDraft(source);
+        var schema = new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDefinition(
+            "Example",
+            new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDescriptor(4031, "1.0.0"),
+            [new TheSingularityWorkshop.MicroBundleDomain.MicroBundleField("Count",
+                TheSingularityWorkshop.MicroBundleDomain.MicroBundleFieldKind.Integer, 1, 0, 10)]);
+
+        var result = draft.TrySetFieldValue(4031, schema, "Count", ForgeFieldValue.FromInteger(11));
+
+        Assert.False(result.IsAccepted);
+        Assert.False(result.HasChanged);
+        Assert.Equal("above-maximum", Assert.Single(result.Diagnostics).Code);
+        Assert.Equal(0, draft.Revision);
+        Assert.False(draft.IsModified);
+        Assert.Empty(draft.GetFieldValues(4031));
+    }
+
+    [Fact]
+    public void DraftRequiresMatchingSchemaIdentityAndRefusesToCompileTypedEditsWithoutCodec()
+    {
+        var source = new ForgeExperience(3032, "Codec boundary");
+        source.AddMicroBundle(4032, "1.0.0");
+        var draft = new ForgeExperienceDraft(source);
+        var wrongSchema = new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDefinition(
+            "Example",
+            new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDescriptor(4032, "2.0.0"),
+            [new TheSingularityWorkshop.MicroBundleDomain.MicroBundleField("Label",
+                TheSingularityWorkshop.MicroBundleDomain.MicroBundleFieldKind.String, "default")]);
+
+        var rejected = draft.TrySetFieldValue(4032, wrongSchema, "Label", ForgeFieldValue.FromString("edited"));
+        Assert.Equal("schema-identity-mismatch", Assert.Single(rejected.Diagnostics).Code);
+        Assert.Equal(0, draft.Revision);
+
+        var schema = new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDefinition(
+            "Example",
+            new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDescriptor(4032, "1.0.0"),
+            [new TheSingularityWorkshop.MicroBundleDomain.MicroBundleField("Label",
+                TheSingularityWorkshop.MicroBundleDomain.MicroBundleFieldKind.String, "default")]);
+        Assert.True(draft.TrySetFieldValue(4032, schema, "Label", ForgeFieldValue.FromString("edited")).IsAccepted);
+        Assert.Throws<InvalidOperationException>(() => draft.ToExperience());
+    }
+
+    [Fact]
+    public void ClearingTypedEditRestoresBaselineButDoesNotRewindRevision()
+    {
+        var source = new ForgeExperience(3033, "Clear typed edit");
+        source.AddMicroBundle(4033, "1.0.0");
+        var draft = new ForgeExperienceDraft(source);
+        var schema = new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDefinition(
+            "Example",
+            new TheSingularityWorkshop.MicroBundleDomain.MicroBundleDescriptor(4033, "1.0.0"),
+            [new TheSingularityWorkshop.MicroBundleDomain.MicroBundleField("Enabled",
+                TheSingularityWorkshop.MicroBundleDomain.MicroBundleFieldKind.Boolean, false)]);
+
+        Assert.True(draft.TrySetFieldValue(4033, schema, "Enabled", ForgeFieldValue.FromBoolean(true)).IsAccepted);
+        Assert.True(draft.ClearFieldValue(4033, "Enabled"));
+        Assert.Equal(2, draft.Revision);
+        Assert.False(draft.IsModified);
+        Assert.Empty(draft.GetFieldValues(4033));
+        Assert.Single(draft.ToExperience().MicroBundles);
+    }
+
+    [Fact]
     public void ExternalSubmissionDoesNotRequireForgeUi()
     {
         var experience = new ForgeExperience(9001, "Externally Authored Experience");
