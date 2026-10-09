@@ -43,7 +43,7 @@ The provider-neutral ForgeExperience currently:
 - describes each bundle with a MicroBundleDescriptor and opaque configuration bytes;
 - rejects duplicate MicroBundle IDs within the same Experience;
 - compiles that flat list into an FSM_COS RuntimeManifest containing BundleRequest entries;
-- maintains a revisioned in-memory draft with a typed field-value edit seam. `TrySetFieldValue` requires a matching MicroBundle ID/version schema, validates type and bounds before accepting a change, and leaves draft state/revision unchanged on rejection. A typed edit blocks `ToExperience()` until a compatible codec exists, preventing silent loss of authored values.
+- maintains a revisioned in-memory draft with a typed field-value edit seam. `TrySetFieldValue` requires a matching MicroBundle ID/version schema, validates type and bounds before accepting a change, and leaves draft state/revision unchanged on rejection. A typed edit blocks `ToExperience()` unless a resolver supplies a codec for the exact MicroBundle ID/version. The codec owns payload format and merge semantics; the contract is exercised by a test-only fixture codec, not yet by a real MicroBundle implementation.
 
 ForgeSubmission currently provides a minimal wrapper and basic null/format/version checks. This is not yet a full external artifact submission pipeline.
 
