@@ -81,6 +81,25 @@ The tether is relocatable. In an Experience that spans several star systems, a c
 
 This is a proposed spatial model, not a description of current code.
 
+```mermaid
+flowchart TB
+    T["Relocatable Forge tether"]
+    W["Authored Experience renders around the Forge"]
+    subgraph F["Forge authoring space"]
+        D["Shared discovery and layout"]
+        P1["Tooling provider A"]
+        P2["Tooling provider B"]
+        D --> P1
+        D --> P2
+    end
+    T --- W
+    T --- F
+    P1 --> I1["Tool representation + interactions"]
+    P2 --> I2["Tool representation + interactions"]
+```
+
+*Conceptual diagram: the tether relates the Forge to the authored world; providers contribute tool representations inside the Forge. It does not describe implemented classes or APIs.*
+
 ### Tooling providers supply representations
 
 A MicroBundle may provide runtime capability, authoring tooling, both, or neither. If it supplies tooling, it should be able to expose a provider contract through which the Forge discovers and presents its authoring representation. That representation might be a workbench, instrument, spatial panel, inspectable object, process visualization, or another interaction surface appropriate to the tool.
