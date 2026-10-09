@@ -1,0 +1,72 @@
+# Forge-Owned Configuration and Manifest Boundary
+
+> **Status:** Architecture decision for the provider-neutral Forge authoring core. The draft model and manifest compilation are implemented; typed field editing, durable configuration files, and codec-backed payload generation remain future work.
+
+## Decision
+
+**Forge owns the authored Experience, its configuration documents, and the manifest source from which runtime-facing artifacts are produced.** FSM_COS does not become the editor or the owner of Forge project files.
+
+A creator's edits to an Experience belong in Forge even when the resulting configuration will eventually be consumed by another package. Forge is responsible for maintaining the draft, tracking semantic changes, validating what it can validate, and preparing the artifact that crosses the runtime boundary.
+
+Ownership of the authored data does not mean Forge should invent the meaning of every domain field or the byte representation expected by every MicroBundle. Those meanings and representation rules must be explicit contracts.
+
+## Responsibilities by boundary
+
+| Boundary | Owns | Does not own |
+|---|---|---|
+| **Forge** | Experience drafts; authored configuration documents; composition; manifest source; edit history/revision; authoring validation; artifact preparation | Hidden assumptions about a MicroBundle's private payload encoding; live runtime execution |
+| **MicroBundleDomain** | Neutral MicroBundle identity, descriptors, provider/dependency declarations, and inspectable field descriptions | Forge UI, Forge project files, a universal configuration wire format |
+| **Domain-specific configuration codec** | Mapping between typed, schema-backed values and the representation a particular MicroBundle actually consumes; validation that requires domain semantics | The Forge draft lifecycle or overall Experience manifest |
+| **FSM_COS** | Its runtime manifest contract, composition, dependency resolution, loading/arbitration and runtime-facing responsibilities | Editing Forge project/configuration files or becoming the canonical authoring workspace |
+| **FSM_API** | The state-machine definitions, contexts, lifecycle, processing groups, and runtime modification semantics it actually exposes | Forge's authored project model or FSM_COS's composition policy |
+| **Host** | Hosting/execution environment and host-specific effects or resources | Silent mutation of the creator's canonical draft |
+
+## Three things that must not be conflated
+
+1. **The authored configuration document** is Forge-owned creator intent. It should preserve typed values, structure, identity, and versioning as the authoring contract requires.
+2. **The runtime configuration payload** is the representation a particular MicroBundle expects. It may be bytes, but its encoding cannot safely be inferred from the display text of a schema default.
+3. **The FSM_COS runtime manifest** is the machine-oriented composition contract Forge compiles toward. It is an output of authoring, not a replacement for the Forge project or its editable configuration documents.
+
+These are related artifacts, not interchangeable files. Compilation may produce a runtime manifest and configuration payloads without transferring ownership of the authored source to FSM_COS.
+
+## Typed editing without a guessed serializer
+
+MicroBundleDefinition and MicroBundleField provide useful editor-time metadata: field kinds, defaults, numeric bounds, and nested children. Forge's current MicroBundleSchemaInspector deliberately projects that information into a detached, read-only view. Its DefaultValueDisplay is formatted text for inspection; it is not a typed value store or a serialization contract.
+
+The next authoring implementation should therefore stay Forge-owned and separate these responsibilities:
+
+1. Keep editable values typed in the draft rather than round-tripping through formatted display strings.
+2. Validate a proposed edit before accepting it. A rejected edit must preserve the last valid draft and must not advance its revision.
+3. Let Forge own the document, edit lifecycle, and artifact preparation.
+4. Use an explicit codec/adapter when a schema-backed value must become a MicroBundle's runtime payload. The codec must define validation, encoding, decoding (where supported), and compatibility/version behavior.
+5. Refuse to claim that a typed edit is ready for runtime use when no compatible codec exists. Opaque payload editing remains available as a separate, honest capability.
+6. Compile the resulting Experience through the existing FSM_COS manifest contract, and keep draft revision, validation result, and preview result associated with the specific artifact revision.
+
+The schema description alone does not supply enough information to invent the codec. In particular, a generic binary package provides byte-stream primitives, not automatic semantics for every schema. Forge must not silently assume JSON, a universal binary layout, or a field order that the consuming MicroBundle never declared.
+
+## Implementation status
+
+- **Implemented:** ForgeExperience owns the Experience model and compiles it to the current FSM_COS RuntimeManifest contract.
+- **Implemented:** ForgeExperienceDraft provides revisioned in-memory edits to Experience name, ontology, composition, and opaque configuration payloads.
+- **Implemented:** MicroBundleSchemaInspector exposes detached read-only field metadata, including nested fields and bounds.
+- **Not implemented:** a durable Forge project/configuration file format and round-trip persistence workflow.
+- **Not implemented:** a typed editable-value tree, typed validation pipeline, or codec-backed conversion from typed values to a MicroBundle's runtime bytes.
+- **Not implemented:** a revision-scoped live preview pipeline or publication workflow.
+
+Do not describe these future capabilities as complete merely because the schema can be inspected or a manifest can be compiled.
+
+## Acceptance criteria for the next increment
+
+- [ ] Forge can represent a field edit as a typed value without converting it to display text first.
+- [ ] Supported field kinds have explicit type and range validation, including nested object structure.
+- [ ] Invalid edits leave the last valid draft and its revision intact.
+- [ ] The codec contract is explicit and associated with the intended MicroBundle identity/version.
+- [ ] Encode/decode round trips are tested for codecs that support both directions; unsupported or malformed payloads fail visibly.
+- [ ] Culture changes do not alter numeric encoding or validation results.
+- [ ] A missing or incompatible codec is reported as a limitation, not hidden behind a guessed format.
+- [ ] Runtime-manifest compilation remains a separate step from saving the Forge-owned source document.
+- [ ] No change requires FSM_COS to own or edit Forge project files.
+
+---
+
+<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong></p>
