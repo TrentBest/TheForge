@@ -1,6 +1,6 @@
 # Forge Tooling Provider: First Vertical Slice
 
-> **Status:** Proposed test plan. This is not an implemented provider API or spatial Forge.
+> **Status:** The read-only schema-inspection adapter and its tests are implemented. The provider API, validated edit model, and spatial Forge remain proposed.
 
 ## Purpose
 
@@ -61,6 +61,18 @@ The current `master` source of `TheSingularityWorkshop.MicroBundleDomain` confir
 The source and tests demonstrate schema construction, nested fields, bounds, duplicate-name rejection, descriptor providers, and runtime contract behavior. They do **not** yet demonstrate generic editing of serialized configuration, safe application of edits to a portable Experience, or a bespoke authoring-provider lifecycle.
 
 **Design consequence:** the first vertical slice should adapt `MicroBundleDefinition` and `MicroBundleField` into a read-only generic inspector first. Define a separate validated edit model before adding write controls. Keep bespoke tools as an optional Forge-side contribution; do not reinterpret `MicroBundleProvider` as a tool-provider contract without an explicit compatibility design.
+
+## Implemented first step: read-only schema inspection
+
+The Forge core now exposes `MicroBundleSchemaInspector.Inspect(MicroBundleDefinition)`. It produces a detached inspection snapshot containing the definition's name, identity, version, dependency IDs, provider IDs, and recursively nested field metadata.
+
+- Field kinds and inclusive numeric bounds are preserved.
+- Default values are projected to invariant display text; they are not treated as editable values or serialized configuration.
+- The returned collections are read-only snapshots.
+- Inspection accepts the editor-time definition and does not load or execute an `IMicroBundle`.
+- Automated tests cover identity and descriptor projection, nested fields, defaults and bounds, read-only collection behavior, and null input.
+
+This is deliberately an inspection model, not a write path. It does not validate or deserialize the opaque configuration bytes held by a `ForgeMicroBundle`, prove that runtime configuration matches the schema, apply edits, discover bespoke tools, enforce provider permissions, or implement spatial tethering. The current domain contract does not provide enough information to safely infer those behaviors.
 
 ## Decision gate
 
