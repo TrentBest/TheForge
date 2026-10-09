@@ -20,6 +20,34 @@ public sealed class ForgeExperienceTests
     }
 
     [Fact]
+    public void ExperienceCollectionsCannotBeMutatedThroughDowncasts()
+    {
+        var ontologyInput = new[] { 1, 2, 3 };
+        var experience = new ForgeExperience(3011, "Protected snapshots", ontologyInput);
+        ontologyInput[0] = 99;
+
+        Assert.Equal(1, experience.Ontology[0]);
+        Assert.Throws<NotSupportedException>(() => ((IList<int>)experience.Ontology)[0] = 42);
+
+        experience.AddMicroBundle(4011, "1.0.0");
+        Assert.Throws<NotSupportedException>(() =>
+            ((IList<ForgeMicroBundle>)experience.MicroBundles).Clear());
+    }
+
+    [Fact]
+    public void ExperienceCopiesConfigurationInputBuffer()
+    {
+        var configuration = new byte[] { 1, 2, 3 };
+        var experience = new ForgeExperience(3012, "Configuration snapshot");
+        experience.AddMicroBundle(4012, "1.0.0", configuration: configuration);
+
+        configuration[0] = 99;
+
+        var request = Assert.Single(experience.Compile().Bundles);
+        Assert.Equal(new byte[] { 1, 2, 3 }, request.Configuration.ToArray());
+    }
+
+    [Fact]
     public void ExternalSubmissionDoesNotRequireForgeUi()
     {
         var experience = new ForgeExperience(9001, "Externally Authored Experience");
