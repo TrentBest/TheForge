@@ -1,6 +1,6 @@
 # Live Authoring, Ontology Vending, and the Cloning Machine
 
-> **Status:** Proposed product and authoring-model direction. The vending machine, live preview loop, cloning workflow, immutable publication policy, and dirty-draft gate described here are not yet implemented.
+> **Status:** Mixed. A first in-memory `ForgeExperienceDraft` now supports revisioned semantic edits and a baseline-difference check. The live preview loop, published-source provenance, cloning workflow, immutable publication policy, dirty-draft gate, and diegetic vending machine remain proposed and are not yet implemented.
 
 ## Governing rule
 
@@ -135,7 +135,7 @@ The first implementation should prove the authoring loop before investing in ela
 - [ ] The same authoring operations remain available without the diegetic vending machine or cloning machine.
 - [ ] Building or publishing an artifact is not conflated with changing a live FSM or running an Experience.
 
-These criteria are proposed. The current Forge schema inspector is read-only; it does not yet provide this complete editable draft, live preview, clone, or publication workflow.
+The first revisioned in-memory draft model is implemented, but it is deliberately narrower than this full workflow: it has no published artifact/version provenance, typed schema-field editing, validation service, preview host, clone-from-published operation, or publication gate. The schema inspector remains read-only, and the vending-machine presentation is not implemented.
 
 ---
 
