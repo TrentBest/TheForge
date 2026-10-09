@@ -1,6 +1,6 @@
 # Forge Tooling Provider: First Vertical Slice
 
-> **Status:** The read-only schema-inspection adapter and its tests are implemented. The provider API, validated edit model, and spatial Forge remain proposed.
+> **Status:** The read-only schema-inspection adapter, immutable typed field-value model, and schema-value validator are implemented and tested. Revision-safe draft edit acceptance, codec-backed payload generation, the provider API, and spatial Forge remain future work.
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Prove that Forge can host optional MicroBundle authoring tools without hard-codi
 1. **Schema-only capability:** provides a MicroBundle description/schema but no bespoke authoring tool. A generic inspector handles supported fields.
 2. **Tool-enabled capability:** provides a schema and an optional domain-specific authoring contribution.
 3. **Tool host:** discovers contributions, checks compatibility and permissions, manages lifecycle, and routes edits through a narrow authoring boundary.
-4. **Authoring model:** stores deliberate, validated changes to Experience content.
+4. **Authoring model:** stores deliberate, validated changes to Experience content. The typed-value validator now establishes a narrow schema-checking seam, but it is not yet connected to revisioned draft edits.
 5. **Session state:** stores selection and presentation preferences separately from the portable Experience.
 
 The existing MicroBundleDomain description contract can inform generic inspection. It is not, by itself, a spatial representation or interaction contract. The exact provider API remains undecided until these participants can be tested against real package types.
