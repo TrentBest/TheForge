@@ -47,6 +47,21 @@ Only after the non-spatial seam is demonstrated:
 
 MicroBundleDomain defines capability and description semantics. It must not depend on Forge, FSM_COS, or a renderer. Forge consumes domain contracts and hosts optional tooling. A concrete host renders the Forge. Tooling presence is not permission to access arbitrary data or perform privileged operations.
 
+## Verified MicroBundleDomain contract findings
+
+The current `master` source of `TheSingularityWorkshop.MicroBundleDomain` confirms the following:
+
+- `MicroBundleDefinition` is an editor-time description with a human-readable name, a `MicroBundleDescriptor`, and recursively inspectable `MicroBundleField` entries.
+- `MicroBundleFieldKind` currently defines `String`, `Integer`, `Float`, `Boolean`, and `Object`. Object fields can contain child fields; numeric fields can declare inclusive minimum and maximum bounds.
+- Field defaults are exposed as `object?`; the schema does not currently provide a complete portable value-type, validation, serialization, or edit-application contract. A generic inspector must not assume that a declared default alone defines all validation rules.
+- `MicroBundleDescriptor` exposes identity, version, dependencies, and opaque provider identifiers. The domain preserves provider IDs without assigning them presentation or tooling semantics.
+- `IMicroBundle` is an executable runtime contract. Forge authoring tools should not require loading or executing an `IMicroBundle` merely to inspect its `MicroBundleDefinition`.
+- The domain schema has no host geometry, spatial anchor, rendering, input, lifecycle, permission, or authoring-session contract. Those remain Forge/host concerns unless a separately justified domain-neutral contract is designed.
+
+The source and tests demonstrate schema construction, nested fields, bounds, duplicate-name rejection, descriptor providers, and runtime contract behavior. They do **not** yet demonstrate generic editing of serialized configuration, safe application of edits to a portable Experience, or a bespoke authoring-provider lifecycle.
+
+**Design consequence:** the first vertical slice should adapt `MicroBundleDefinition` and `MicroBundleField` into a read-only generic inspector first. Define a separate validated edit model before adding write controls. Keep bespoke tools as an optional Forge-side contribution; do not reinterpret `MicroBundleProvider` as a tool-provider contract without an explicit compatibility design.
+
 ## Decision gate
 
 Do not finalize public provider interfaces until a small prototype establishes:
