@@ -130,6 +130,8 @@ The intended interface is therefore a **living composition graph** rather than a
 
 **The Forge authors. FSM_COS composes. The host makes it real.**
 
+For changes to live state-machine behavior, Forge design and implementation must explicitly reference the Workshop's [FSM_API](https://github.com/TrentBest/FSM_API): its runtime-modifiable definitions, POCO contexts, processing groups, instance lifecycle, and deferred structural mutation rules. Forge must not replace these real capabilities with a narrower generic abstraction or imply that editing a draft or compiling a manifest has already changed a live runtime. See [Forge Architecture](docs/ARCHITECTURE.md) and [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md).
+
 ## <img src="docs/assets/section-markers/09-core-concepts.svg" alt="" width="20" height="20"> 09 Core concepts: what the Forge creates
 
 <img src="docs/assets/section-dividers/09-core-concepts.svg" alt="" width="100%">
