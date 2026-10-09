@@ -126,7 +126,7 @@ This suggests three distinct records:
 - **Forge session:** the tether target, spatial arrangement, active tool representations, selections, and other presentation state.
 - **Tooling provider declaration:** the tool's identity, supported representation(s), interaction entry point, required capabilities, and lifecycle/permission needs.
 
-These are conceptual boundaries, not proposed final type names.
+These are conceptual boundaries, not proposed final type names. The proposed responsibilities and lifecycle for an optional authoring-tool contribution are developed in [Forge Tooling Provider Contract: Design Direction](tooling-provider-contract.md).
 
 ### Questions this spatial model must answer
 
