@@ -243,7 +243,7 @@ The architecture above describes both the direction of the project and capabilit
 - A versioned, portable Experience artifact schema and complete serialization round trip.
 - Nested Experience composition and dependency resolution.
 - Complete artifact validation, normalization, integrity verification, and publication.
-- Domain-specific configuration codecs and byte-payload generation; typed values remain editor-only and are not runtime payloads.
+- A production codec for a real MicroBundle and consumer-acceptance proof; the versioned codec interface/registry and draft integration exist, but only a fixture codec has been exercised.
 - Durable typed-value persistence, field-edit provenance, and revision-scoped live preview.
 - Optional bespoke authoring-tool providers and their lifecycle, compatibility, and permission rules.
 - Diegetic presentation, spatial tethering, and host-rendered authoring tools.
