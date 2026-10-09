@@ -37,10 +37,10 @@ Do not blur authored source, runtime configuration payload, runtime manifest, re
 - Repository: [TrentBest/TheForge](https://github.com/TrentBest/TheForge)
 - Default branch: `master`
 - Active working branch: `forge/native-experience-authoring`
-- Observed branch head after establishing this brief and linking it from the index: `0121b20aded4e83eafa1124f0803bd0f89179a31` (verify live head before resuming)
+- Observed branch head at the latest documentation/dependency cleanup: `48a608b2a7956a09e00c75bc93da81a75b094223` (verify live head before resuming)
 - Existing pull request: [#9 — feat: establish Forge as provider-neutral Experience authoring](https://github.com/TrentBest/TheForge/pull/9) (verify current status and head before acting)
 - Current core targets .NET 8 and contains an Experience model, revisioned in-memory draft, read-only MicroBundle schema inspection, and a minimal external-submission wrapper.
-- The branch's Forge project references FSM_COS `0.1.0-alpha.3`, MicroBundleDomain `1.0.1`, GUI.Core `0.1.0-alpha.3`, and FSM_Serialization `0.1.0-alpha.2`. These are snapshot facts, not a recommendation to pin those versions indefinitely. Do not target an unpublished API/package.
+- The Forge core currently has direct package references to FSM_COS `0.1.0-alpha.3` and MicroBundleDomain `1.0.1`. Unused GUI.Core and FSM_Serialization references were removed from the core project because no current source uses them; add them back only when a tested capability requires their APIs. Do not target an unpublished API/package.
 - At the time this brief was created, the branch was focused on a provider-neutral authoring core; do not assume a browser/desktop Forge UI is already connected to it.
 - The repository includes a legacy Unity project. Preserve useful design history, but do not treat Unity as the new runtime foundation or let legacy files obscure the provider-neutral path.
 
@@ -113,8 +113,14 @@ Audit in small batches, then update this table as each file is checked against s
 - `docs/forge-owned-configuration-boundary.md`: first-pass review matches current code: the draft and compiler target the currently pinned FSM_COS package, schema inspection is read-only, and typed editing, codecs, persistence, and migration to a newer manifest/configuration-source contract remain unimplemented.
 - `docs/experience-composition-design.md`: first-pass review correctly labels the portable artifact/nested graph pipeline as proposed and distinguishes it from the currently flat editor model. Current compiler output still only emits `BundleRequest` ID/configuration; descriptor version, dependencies/providers, and ontology are not represented by that legacy runtime manifest. Treat this as a real integration limitation, not as successful end-to-end composition.
 - `docs/live-authoring-ontology-and-cloning.md`: first-pass status accurately identifies the in-memory draft as implemented while preview, cloning from published repository artifacts, provenance, publication gate, and diegetic vending remain proposed.
-- `README.md` and `docs/ARCHITECTURE.md`: read for orientation; full claim-by-claim audit remains open.
-- CI: exact commit `0121b20aded4e83eafa1124f0803bd0f89179a31` passed on [PR run 37985504308](https://github.com/TrentBest/TheForge/actions/runs/37985504308). The workflow is build/test only and contains no publish job.
+- `docs/diegetic-experience-authoring.md`: correctly labeled design exploration; spatial model, authoring lifecycle, nested composition, and publication/trust concerns are not presented as complete implementation.
+- `docs/microbundle-assembly-adventure.md`: correctly labeled proposed pipeline; the claw, assembly show, integer-backed mapping, and publication flow are not claimed to exist.
+- `docs/tooling-provider-contract.md`: correctly labeled proposed; no public diegetic tooling-provider API is claimed to exist.
+- `docs/tooling-provider-first-vertical-slice.md`: accurately distinguishes the implemented read-only schema inspector from proposed editing/provider/spatial behavior.
+- `docs/ARCHITECTURE.md`: first-pass status separates present core from future work; full line-by-line source verification remains open.
+- `README.md`: updated to link the continuation brief and all major design documents, to expose the lossy legacy manifest compilation limitation, and to list only current direct package dependencies.
+- `src/TheSingularityWorkshop.Forge/TheSingularityWorkshop.Forge.csproj`: removed unused GUI.Core and FSM_Serialization direct dependencies; current code only uses FSM_COS and MicroBundleDomain.
+- CI: exact commit `0121b20aded4e83eafa1124f0803bd0f89179a31` passed on [PR run 37985504308](https://github.com/TrentBest/TheForge/actions/runs/37985504308). Later documentation and dependency commits are awaiting fresh exact-HEAD verification at the time of this update; the workflow is build/test only and contains no publish job.
 
 ## Acceptance rule for every increment
 
