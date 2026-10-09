@@ -1,9 +1,12 @@
-# 00 ⚫ The Forge
+# <img src="docs/assets/section-markers/00-identity.svg" alt="" width="20" height="20"> 00 The Forge
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<img src="docs/assets/section-dividers/00-identity.svg" alt="" width="100%">
+
 [![Build](https://img.shields.io/github/actions/workflow/status/TrentBest/TheForge/forge.yml?branch=master&style=flat-square&logo=github)](https://github.com/TrentBest/TheForge/actions)
 
-## 01 🔵 Definition
+## <img src="docs/assets/section-markers/01-definition.svg" alt="" width="20" height="20"> 01 Definition
+
+<img src="docs/assets/section-dividers/01-definition.svg" alt="" width="100%">
 
 **The Forge is a provider-neutral authoring Experience for composing, validating, and preparing portable Experiences from reusable MicroBundles.**
 
@@ -19,7 +22,9 @@ It is the place where Experiences and MicroBundles can be selected, composed, co
 
 The Forge itself is an Experience. That means it participates in the same ecosystem it creates.
 
-## 07 🟠 Architecture and ecosystem
+## <img src="docs/assets/section-markers/07-architecture-ecosystem.svg" alt="" width="20" height="20"> 07 Architecture and ecosystem
+
+<img src="docs/assets/section-dividers/07-architecture-ecosystem.svg" alt="" width="100%">
 
 ```
                          ┌─────────────────────────┐
@@ -53,7 +58,9 @@ The Forge itself is an Experience. That means it participates in the same ecosys
 
 **The Forge authors. FSM_COS composes. The host makes it real.**
 
-## 09 🟪 Core concepts: what the Forge creates
+## <img src="docs/assets/section-markers/09-core-concepts.svg" alt="" width="20" height="20"> 09 Core concepts: what the Forge creates
+
+<img src="docs/assets/section-dividers/09-core-concepts.svg" alt="" width="100%">
 
 ### MicroBundles
 
@@ -86,7 +93,9 @@ The Forge can eventually author Experiences that:
 
 The same machinery can author the Workshop itself.
 
-## 06 🟢 Responsibility boundary: authoring is not locked to the Forge
+## <img src="docs/assets/section-markers/06-responsibility-boundary.svg" alt="" width="20" height="20"> 06 Responsibility boundary: authoring is not locked to the Forge
+
+<img src="docs/assets/section-dividers/06-responsibility-boundary.svg" alt="" width="100%">
 
 This is a deliberate design constraint.
 
@@ -149,7 +158,9 @@ Visuals are not decoration here. The Forge exists to expose relationships that a
 
 The intended interface is therefore a **living composition graph** rather than a conventional collection of property forms.
 
-## 10 🩵 External authoring and submission
+## <img src="docs/assets/section-markers/10-usage-examples.svg" alt="" width="20" height="20"> 10 External authoring and submission
+
+<img src="docs/assets/section-dividers/10-usage-examples.svg" alt="" width="100%">
 
 The Workshop should be capable of accepting an Experience built somewhere else.
 
@@ -194,7 +205,9 @@ The same published composition can eventually be consumed by:
 
 FSM_COS remains the host-neutral composition boundary.
 
-## 11 🩶 Current migration and verification
+## <img src="docs/assets/section-markers/11-verification-development.svg" alt="" width="20" height="20"> 11 Current migration and verification
+
+<img src="docs/assets/section-dividers/11-verification-development.svg" alt="" width="100%">
 
 The original Forge was built heavily around Unity. It contains useful architectural history:
 
@@ -230,7 +243,9 @@ CI builds and tests the new Forge core independently of Unity.
 
 The Unity material remains in the repository during migration so useful prior work is not discarded before its concepts have been recovered.
 
-## 13 🟨 Related projects and Workshop identity
+## <img src="docs/assets/section-markers/13-related-projects.svg" alt="" width="20" height="20"> 13 Related projects and Workshop identity
+
+<img src="docs/assets/section-dividers/13-related-projects.svg" alt="" width="100%">
 
 - [FSM_API](https://github.com/TrentBest/FSM_API) — state/process foundation
 - [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) — composition and runtime assembly
@@ -249,7 +264,9 @@ The Forge provides a vocabulary and composition system.
 It does not define the limits of imagination.
 
 
-## 09 🟪 Experience composition: implementation status
+## <img src="docs/assets/section-markers/09-core-concepts.svg" alt="" width="20" height="20"> 09 Experience composition: implementation status
+
+<img src="docs/assets/section-dividers/09-core-concepts.svg" alt="" width="100%">
 
 The current provider-neutral core compiles a flat list of MicroBundles into an FSM_COS runtime manifest. Nested Experiences and the complete portable-artifact submission pipeline remain design work; the README's long-term capabilities are not a claim that all of them are already implemented.
 
