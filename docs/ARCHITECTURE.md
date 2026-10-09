@@ -232,6 +232,8 @@ The architecture above describes both the direction of the project and capabilit
 - MicroBundle descriptors and opaque configuration bytes.
 - Compilation of that model into the current FSM_COS RuntimeManifest contract.
 - A read-only MicroBundleSchemaInspector that projects the published MicroBundleDefinition contract into a detached, recursively inspectable snapshot.
+- An immutable typed ForgeFieldValue model for String, Integer, Float, Boolean, and nested Object values.
+- ForgeFieldValueValidator tests for kind mismatches, inclusive numeric bounds, non-finite floats, nested diagnostic paths, unknown fields, and invariant numeric behavior. Missing values are allowed and defaults are not applied.
 - Automated tests for schema projection, nested fields, bounds, default-value display, and read-only collection behavior.
 - A basic ForgeSubmission validation boundary that does not require a Forge UI.
 - Automated restore, build, and test checks for the provider-neutral core.
@@ -241,10 +243,11 @@ The architecture above describes both the direction of the project and capabilit
 - A versioned, portable Experience artifact schema and complete serialization round trip.
 - Nested Experience composition and dependency resolution.
 - Complete artifact validation, normalization, integrity verification, and publication.
-- A validated authoring-edit model with provenance; the current schema inspector is intentionally read-only and does not apply configuration edits.
+- Integration of typed values into ForgeExperienceDraft with validation-before-acceptance and revision safety; the schema inspector remains read-only and the current validator does not mutate drafts.
+- Domain-specific configuration codecs and byte-payload generation; typed values are not yet runtime payloads.
 - Optional bespoke authoring-tool providers and their lifecycle, compatibility, and permission rules.
 - Diegetic presentation, spatial tethering, and host-rendered authoring tools.
 
 The current flat-list model and manifest compiler are a foundation, not proof that the full artifact or publication pipeline exists. In particular, a runtime manifest is not yet a substitute for a portable, versioned authoring artifact.
 
-The implementation sequence is therefore: prove schema inspection against the published domain contract; establish a separate validated edit boundary; define and test the portable artifact contract; then expand composition, provider tooling, spatial presentation, and publication as independently verifiable capabilities.
+The implementation sequence is therefore: prove schema inspection against the published domain contract; establish typed values and schema validation (first slice now implemented); integrate validation into revision-safe draft edits; define and test explicit configuration codecs and the portable artifact contract; then expand composition, provider tooling, spatial presentation, and publication as independently verifiable capabilities.
