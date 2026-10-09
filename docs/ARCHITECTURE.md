@@ -38,6 +38,21 @@ FSM_COS owns **runtime composition**.
 
 A host owns the facilities required to make the resulting RuntimeAssembly real.
 
+## Runtime modification: FSM_API is the reference implementation
+
+When Forge work concerns changing behavior in a live runtime, use the Workshop's actual [FSM_API](https://github.com/TrentBest/FSM_API) as the reference—not a generic state-machine model.
+
+FSM_API supports runtime-modifiable FSM definitions and instances, POCO-backed contexts, named processing groups, and deferred structural mutation so changes can be safely processed after an update cycle. Forge must preserve those semantics and use the public API rather than bypassing safety checks through internal machinery.
+
+Keep these boundaries distinct:
+
+- **Forge authoring model:** proposed Experience composition and deliberate configuration edits.
+- **FSM_COS:** resolves/composes runtime requests and manifests according to its own contract.
+- **FSM_API:** the runtime state-machine API whose actual mutation and lifecycle capabilities govern live FSM changes.
+- **Host:** provides the execution loop, presentation, and other facilities required by the deployment.
+
+A Forge action that changes a draft is not automatically a live runtime change. A manifest or compilation result is not proof that an active FSM has been modified. When a structural change is deferred by FSM_API, the authoring/runtime UI should represent it as pending until the public API's lifecycle makes the result observable. This repository's current schema inspector is read-only; it does not yet apply configuration edits or perform live FSM mutation.
+
 ## The Forge is not the only author
 
 The authoring boundary must remain broader than the Forge UI.
