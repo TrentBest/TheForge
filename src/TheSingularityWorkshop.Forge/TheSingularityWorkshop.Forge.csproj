@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="TheSingularityWorkshop.FSM_COS" Version="0.1.0-alpha.3" />
-    <PackageReference Include="TheSingularityWorkshop.MicroBundleDomain" Version="0.1.0-alpha.1" />
+    <PackageReference Include="TheSingularityWorkshop.MicroBundleDomain" Version="1.0.1" />
     <PackageReference Include="TheSingularityWorkshop.GUI.Core" Version="0.1.0-alpha.3" />
     <PackageReference Include="TheSingularityWorkshop.FSM_Serialization" Version="0.1.0-alpha.2" />
   </ItemGroup>
