@@ -216,25 +216,45 @@ public sealed class ForgeExperienceDraft
     }
 
     /// <summary>
-    /// Produces a detached editor-time Experience snapshot suitable for the existing
-    /// FSM_COS manifest compiler. Typed field edits cannot be compiled until a
-    /// compatible payload codec exists, so this method refuses to discard them.
+    /// Produces a detached editor-time Experience snapshot. If typed edits exist, an
+    /// exact ID/version codec must be available for each affected MicroBundle.
+    /// Codec implementations own payload encoding and merge semantics.
     /// </summary>
-    public ForgeExperience ToExperience()
+    public ForgeExperience ToExperience(
+        IForgeMicroBundleConfigurationCodecResolver? codecResolver = null)
     {
-        if (_fieldValues.Values.Any(values => values.Count > 0))
-            throw new InvalidOperationException(
-                "This draft contains typed field edits, but no compatible MicroBundle configuration codec is registered. Typed edits cannot be compiled into runtime payload bytes.");
-
         var experience = new ForgeExperience(_id, _name, _ontology);
         foreach (var bundle in _bundles)
         {
+            var configuration = bundle.Configuration;
+            if (_fieldValues.TryGetValue(bundle.Descriptor.Id, out var values) && values.Count > 0)
+            {
+                if (codecResolver is null ||
+                    !codecResolver.TryGetCodec(bundle.Descriptor.Id, bundle.Descriptor.Version, out var codec) ||
+                    codec is null)
+                {
+                    throw new InvalidOperationException(
+                        $"No configuration codec is registered for MicroBundle {bundle.Descriptor.Id} version '{bundle.Descriptor.Version}'. Typed edits cannot be compiled into runtime payload bytes.");
+                }
+
+                if (codec.MicroBundleId != bundle.Descriptor.Id ||
+                    !string.Equals(codec.MicroBundleVersion, bundle.Descriptor.Version, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(
+                        $"The resolved codec identity/version does not match MicroBundle {bundle.Descriptor.Id} version '{bundle.Descriptor.Version}'.");
+                }
+
+                var detachedValues = new System.Collections.ObjectModel.ReadOnlyDictionary<string, ForgeFieldValue>(
+                    new Dictionary<string, ForgeFieldValue>(values, StringComparer.Ordinal));
+                configuration = codec.Encode(detachedValues, configuration).ToArray();
+            }
+
             experience.AddMicroBundle(
                 bundle.Descriptor.Id,
                 bundle.Descriptor.Version,
                 bundle.Descriptor.Dependencies,
                 bundle.Descriptor.Providers,
-                bundle.Configuration);
+                configuration);
         }
 
         return experience;
