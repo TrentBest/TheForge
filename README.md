@@ -241,12 +241,12 @@ The migration therefore keeps the repository and its history while establishing 
 
 The new core consumes Workshop NuGet packages rather than recreating their responsibilities.
 
-Current foundation:
+Current direct package dependencies of the provider-neutral core:
 
-- `TheSingularityWorkshop.FSM_COS`
-- `TheSingularityWorkshop.MicroBundleDomain`
-- `TheSingularityWorkshop.GUI.Core`
-- `TheSingularityWorkshop.FSM_Serialization`
+- `TheSingularityWorkshop.FSM_COS` — currently used by the legacy manifest compiler.
+- `TheSingularityWorkshop.MicroBundleDomain` — currently used for MicroBundle descriptors and schema inspection.
+
+`GUI.Core` and `FSM_Serialization` remain possible future integrations, but the current core does not use their APIs, so they are not direct dependencies yet. Add each only when a concrete, tested Forge capability needs it. This keeps the authoring core's dependency graph honest and avoids packaging future intent as present functionality.
 
 The old Unity implementation can be retired incrementally after the new contracts prove themselves.
 
