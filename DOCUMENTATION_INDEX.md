@@ -9,7 +9,7 @@ The README is the front door. Use this index to move from orientation to the spe
 | Understand what The Forge is and what it owns | [README](README.md) |
 | Understand the current provider-neutral core and proposed nested Experience composition | [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) |
 | Understand the Workshop's shared documentation conventions | [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md) |
-| Understand the Forge-to-FSM_COS boundary | [README architecture section](README.md#-architecture-and-ecosystem) and the composition design note |
+| Understand the Forge-to-FSM_COS boundary | [README architecture overview](README.md) and the composition design note |
 | Inspect the current implementation | Browse [src](src/) and [tests](tests/) on this branch |
 | Understand the historical Unity implementation during migration | Browse the legacy project areas; treat them as history unless current source and tests establish otherwise |
 
