@@ -10,6 +10,7 @@ namespace TheSingularityWorkshop.Forge;
 public sealed class ForgeExperience
 {
     private readonly List<ForgeMicroBundle> _bundles = [];
+    private readonly IReadOnlyList<ForgeMicroBundle> _bundleView;
 
     public ForgeExperience(ulong id, string name, IEnumerable<int>? ontology = null)
     {
@@ -18,14 +19,15 @@ public sealed class ForgeExperience
 
         Id = id;
         Name = name;
-        Ontology = (ontology ?? []).ToArray();
+        Ontology = Array.AsReadOnly((ontology ?? []).ToArray());
+        _bundleView = _bundles.AsReadOnly();
     }
 
     public ulong Id { get; }
     public string Name { get; }
     public IReadOnlyList<int> Ontology { get; }
 
-    public IReadOnlyList<ForgeMicroBundle> MicroBundles => _bundles;
+    public IReadOnlyList<ForgeMicroBundle> MicroBundles => _bundleView;
 
     public ForgeMicroBundle AddMicroBundle(
         ulong bundleId,
@@ -35,7 +37,9 @@ public sealed class ForgeExperience
         ReadOnlyMemory<byte> configuration = default)
     {
         var descriptor = new MicroBundleDescriptor(bundleId, version, dependencies, providers);
-        var bundle = new ForgeMicroBundle(descriptor, configuration);
+        // Own a snapshot of caller-provided bytes so later edits to the input buffer
+        // cannot silently change the Experience that Compile() will emit.
+        var bundle = new ForgeMicroBundle(descriptor, configuration.ToArray());
 
         if (_bundles.Any(x => x.Descriptor.Id == bundleId))
             throw new InvalidOperationException($"MicroBundle {bundleId} is already part of Experience {Id}.");
