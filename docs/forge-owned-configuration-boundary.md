@@ -1,6 +1,6 @@
 # Forge-Owned Configuration and Manifest Boundary
 
-> **Status:** Architecture decision for the provider-neutral Forge authoring core. The draft model and manifest compilation are implemented; typed field editing, durable configuration files, and codec-backed payload generation remain future work.
+> **Status:** Architecture decision for the provider-neutral Forge authoring core. The draft model and compilation against Forge's currently referenced FSM_COS package are implemented; typed field editing, durable configuration files, and codec-backed payload generation remain future work.
 
 ## Decision
 
@@ -29,6 +29,16 @@ Ownership of the authored data does not mean Forge should invent the meaning of 
 
 These are related artifacts, not interchangeable files. Compilation may produce a runtime manifest and configuration payloads without transferring ownership of the authored source to FSM_COS.
 
+## Integration finding: published package versus development source
+
+Forge currently references `TheSingularityWorkshop.FSM_COS` version `0.1.0-alpha.3`. Its existing compiler targets that package's `BundleRequest`-based manifest API and passes opaque configuration bytes through that request.
+
+The FSM_COS `development` source has since clarified a different boundary: `RuntimeManifest` contains versioned `MicroBundleManifestEntry` roots, while configuration is supplied through a separate configuration-source contract. The manifest describes **which roots and versions** to compose; it is not the configuration document or the configuration payload.
+
+These contracts must not be treated as interchangeable. Until Forge deliberately adopts a compatible released FSM_COS version, its build must continue targeting the package it actually references. When that migration is undertaken, Forge should compile its authored manifest source into the new versioned root entries and adapt configuration delivery separately. It must not silently depend on an unpublished development API, nor force Forge-owned editable configuration into the runtime manifest.
+
+The FSM_COS development branch also records a passed correctness gate for duplicate roots and conflicting requested versions. Forge's authoring validation should report conflicting versions before runtime composition where possible; FSM_COS must still enforce its own runtime correctness rules.
+
 ## Typed editing without a guessed serializer
 
 MicroBundleDefinition and MicroBundleField provide useful editor-time metadata: field kinds, defaults, numeric bounds, and nested children. Forge's current MicroBundleSchemaInspector deliberately projects that information into a detached, read-only view. Its DefaultValueDisplay is formatted text for inspection; it is not a typed value store or a serialization contract.
@@ -40,17 +50,18 @@ The next authoring implementation should therefore stay Forge-owned and separate
 3. Let Forge own the document, edit lifecycle, and artifact preparation.
 4. Use an explicit codec/adapter when a schema-backed value must become a MicroBundle's runtime payload. The codec must define validation, encoding, decoding (where supported), and compatibility/version behavior.
 5. Refuse to claim that a typed edit is ready for runtime use when no compatible codec exists. Opaque payload editing remains available as a separate, honest capability.
-6. Compile the resulting Experience through the existing FSM_COS manifest contract, and keep draft revision, validation result, and preview result associated with the specific artifact revision.
+6. Keep Forge's manifest compiler pinned to the actual referenced FSM_COS package contract. Treat the newer development manifest/configuration-source contract as a deliberate compatibility migration, not an implicit assumption.
 
 The schema description alone does not supply enough information to invent the codec. In particular, a generic binary package provides byte-stream primitives, not automatic semantics for every schema. Forge must not silently assume JSON, a universal binary layout, or a field order that the consuming MicroBundle never declared.
 
 ## Implementation status
 
-- **Implemented:** ForgeExperience owns the Experience model and compiles it to the current FSM_COS RuntimeManifest contract.
+- **Implemented:** ForgeExperience owns the Experience model and compiles it against the FSM_COS API version currently referenced by Forge.
 - **Implemented:** ForgeExperienceDraft provides revisioned in-memory edits to Experience name, ontology, composition, and opaque configuration payloads.
 - **Implemented:** MicroBundleSchemaInspector exposes detached read-only field metadata, including nested fields and bounds.
 - **Not implemented:** a durable Forge project/configuration file format and round-trip persistence workflow.
 - **Not implemented:** a typed editable-value tree, typed validation pipeline, or codec-backed conversion from typed values to a MicroBundle's runtime bytes.
+- **Not implemented:** migration to the newer FSM_COS development manifest and separate configuration-source contract.
 - **Not implemented:** a revision-scoped live preview pipeline or publication workflow.
 
 Do not describe these future capabilities as complete merely because the schema can be inspected or a manifest can be compiled.
@@ -65,6 +76,7 @@ Do not describe these future capabilities as complete merely because the schema 
 - [ ] Culture changes do not alter numeric encoding or validation results.
 - [ ] A missing or incompatible codec is reported as a limitation, not hidden behind a guessed format.
 - [ ] Runtime-manifest compilation remains a separate step from saving the Forge-owned source document.
+- [ ] Any migration to the newer FSM_COS manifest contract is explicit and targets a compatible package version.
 - [ ] No change requires FSM_COS to own or edit Forge project files.
 
 ---
