@@ -111,6 +111,45 @@ public sealed class ForgeFieldValueTests
     }
 
     [Fact]
+    public void ValidatorReportsDuplicateSchemaNamesInsteadOfThrowing()
+    {
+        var schema = new MicroBundleField(
+            "Settings",
+            MicroBundleFieldKind.Object,
+            children:
+            [
+                new MicroBundleField("Label", MicroBundleFieldKind.String),
+                new MicroBundleField("Label", MicroBundleFieldKind.String)
+            ]);
+
+        var diagnostic = Assert.Single(ForgeFieldValueValidator.Validate(
+            schema,
+            ForgeFieldValue.FromObject(("Label", ForgeFieldValue.FromString("value")))));
+
+        Assert.Equal("duplicate-schema-field", diagnostic.Code);
+        Assert.Equal("Settings.Label", diagnostic.Path);
+    }
+
+    [Fact]
+    public void NumericDiagnosticTextIsInvariantAcrossCultures()
+    {
+        var schema = new MicroBundleField("Weight", MicroBundleFieldKind.Float, 1.0, 0, 2);
+        var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("fr-FR");
+            var diagnostic = Assert.Single(
+                ForgeFieldValueValidator.Validate(schema, ForgeFieldValue.FromFloat(2.5)));
+
+            Assert.Equal("Value 2.5 exceeds the maximum 2.", diagnostic.Message);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = previousCulture;
+        }
+    }
+
+    [Fact]
     public void ValidatorAllowsOmittedFieldsWithoutApplyingDisplayDefaults()
     {
         var schema = new MicroBundleField(
