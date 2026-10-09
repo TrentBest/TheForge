@@ -63,9 +63,10 @@ Keep statuses honest: **Implemented** requires code and relevant tests; **Partia
 - [x] Establish schema-value rules for type matching, inclusive numeric bounds, non-finite floats, nested diagnostic paths, unknown supplied fields, and read-only detached object values. Missing values are allowed; defaults are not silently applied.
 - [ ] Define stable field-path identity and decide how duplicate/invalid schema field names are reported.
 - [x] Integrate validation-before-acceptance into ForgeExperienceDraft: rejected edits preserve the previous valid state and revision; no-op edits do not advance revision; clearing an edit restores baseline while revision remains monotonic.
-- [ ] Define an explicit codec interface tied to MicroBundle identity/version. Never guess JSON, binary layout, or field order from schema metadata.
+- [x] Define `IForgeMicroBundleConfigurationCodec` and an exact-ID/version registry; codecs own payload format, decode behavior, and merge semantics. The draft uses them only when an exact matching codec is supplied.
+- [ ] Implement a production codec for a real MicroBundle and prove its emitted payload is accepted by that MicroBundle. Never guess JSON, binary layout, or field order from schema metadata.
 - [x] Add tests for culture independence, bounds, nested paths, detached snapshots, unknown fields, rejected edits, no-op edits, identity mismatch, revision preservation, clear-to-baseline, and refusing to compile typed edits without a codec.
-- [ ] Keep opaque byte-payload editing separate from typed editing when no compatible codec exists.
+- [x] Keep opaque byte-payload editing separate from typed editing; when typed edits exist, require an exact-ID/version codec and refuse silent loss.
 - [ ] Define a portable Forge project/Experience artifact format and round-trip persistence only after its schema/version and compatibility semantics are explicit.
 - [ ] Preserve provenance and diagnostics through parse → validate → resolve → compile.
 
@@ -111,7 +112,7 @@ Audit in small batches, then update this table as each file is checked against s
 ## First-pass audit notes (2026-10-09)
 
 - `DOCUMENTATION_INDEX.md`: updated to link this brief; CI passed on the resulting commit.
-- `docs/forge-owned-configuration-boundary.md`: updated to reflect the implemented typed-value and revision-safe draft edit seam. Codecs, persistence, and migration to a newer released FSM_COS manifest/configuration-source contract remain unimplemented.
+- `docs/forge-owned-configuration-boundary.md`: updated to reflect typed-value editing, exact-ID/version codec resolution, and codec-backed compilation; production codec and persistence remain open.
 - `docs/experience-composition-design.md`: first-pass review correctly labels the portable artifact/nested graph pipeline as proposed and distinguishes it from the currently flat editor model. Current compiler output still only emits `BundleRequest` ID/configuration; descriptor version, dependencies/providers, and ontology are not represented by that legacy runtime manifest. Treat this as a real integration limitation, not as successful end-to-end composition.
 - `docs/live-authoring-ontology-and-cloning.md`: updated to distinguish the implemented revision-safe typed field-edit seam from still-proposed preview, published-source cloning, provenance, publication gate, and diegetic vending.
 - `docs/experience-composition-design.md`: updated to describe the typed draft-edit seam without overstating the still-missing portable artifact, graph resolution, or codec stages.
@@ -131,7 +132,7 @@ Audit in small batches, then update this table as each file is checked against s
 - CI passed on `f76a28dced931025b9dcce04aa970eccdb051e03` via [PR run 37986541190](https://github.com/TrentBest/TheForge/actions/runs/37986541190) and [push run 37986537112](https://github.com/TrentBest/TheForge/actions/runs/37986537112), including the revision-safe draft edit implementation and tests. Later documentation commits are still being verified on exact HEAD; check latest status before calling the branch green.
 - Integrated typed values into `ForgeExperienceDraft.TrySetFieldValue` with exact schema identity/version matching, validation-before-acceptance, no-op handling, monotonic revision changes, clear-to-baseline support, and an explicit refusal to compile typed edits without a codec. Tests cover accepted/rejected/no-op edits, revision safety, identity mismatch, and the codec boundary.
 - Corrected a compile issue found by CI (explicit diagnostic constructors) and removed a test that tried to construct duplicate schema fields, which MicroBundleDomain correctly forbids. The validator retains defensive duplicate handling.
-- Updated configuration-boundary, vertical-slice, architecture, and README status. Next work: define a real codec contract for one concrete MicroBundle identity/version, including encode/decode and compatibility rules, then add a deterministic round-trip test. Do not add generic payload encoding based on schema display defaults.
+- Added `IForgeMicroBundleConfigurationCodec`, exact-ID/version `ForgeConfigurationCodecRegistry`, and `ForgeExperienceDraft.ToExperience(codecResolver)`. Typed edits now require an exact codec; encode/decode is tested with a test-only fixture codec, not a real MicroBundle implementation. Next work: identify a concrete MicroBundle with an explicit payload contract and implement its codec plus a consumer-acceptance test. Do not mistake the fixture format for a production wire format.
 
 ## Latest incremental implementation (2026-10-09)
 
