@@ -25,7 +25,7 @@ public sealed class ForgeExperienceDraft
         _name = source.Name;
         _ontology = source.Ontology.ToList();
         _bundles.AddRange(source.MicroBundles.Select(CloneBundle));
-        _baseline = DraftBaseline.Capture(_id, _name, _ontology, _bundles);
+        _baseline = DraftBaseline.Capture(_name, _ontology, _bundles);
     }
 
     public ulong Id => _id;
@@ -46,7 +46,7 @@ public sealed class ForgeExperienceDraft
     /// True when the current semantic content differs from the copied baseline.
     /// This is not yet a publication-readiness or validation result.
     /// </summary>
-    public bool IsModified => !_baseline.Matches(_id, _name, _ontology, _bundles);
+    public bool IsModified => !_baseline.Matches(_name, _ontology, _bundles);
 
     public bool SetName(string name)
     {
@@ -163,14 +163,12 @@ public sealed class ForgeExperienceDraft
         }
 
         public static DraftBaseline Capture(
-            ulong id,
             string name,
             IEnumerable<int> ontology,
             IEnumerable<ForgeMicroBundle> bundles) =>
             new(name, ontology.ToArray(), bundles.Select(CloneBundle).ToArray());
 
         public bool Matches(
-            ulong id,
             string name,
             IReadOnlyList<int> ontology,
             IReadOnlyList<ForgeMicroBundle> bundles)
