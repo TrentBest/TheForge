@@ -7,6 +7,7 @@ The README is the front door. Use this index to move from orientation to the spe
 | If you want to... | Start here |
 |---|---|
 | Understand what The Forge is and what it owns | [README](README.md) |
+| Explore what diegetic (in-world) authoring should mean, and the product and architecture questions it raises | [Diegetic Experience Authoring: Questions and Design Principles](docs/diegetic-experience-authoring.md) |
 | Understand the current provider-neutral core and proposed nested Experience composition | [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) |
 | Understand the Workshop's shared documentation conventions | [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md) |
 | Understand the Forge-to-FSM_COS boundary | [README architecture overview](README.md) and the composition design note |
@@ -21,7 +22,7 @@ The README is the front door. Use this index to move from orientation to the spe
 - **Decision required** means a semantic or product choice remains open.
 - **Deferred** means intentionally outside the current work.
 
-The README and design note distinguish current behavior from the intended architecture. When they disagree with source or tests, record and resolve the discrepancy rather than treating prose as proof.
+The README and design notes distinguish current behavior from the intended architecture. When they disagree with source or tests, record and resolve the discrepancy rather than treating prose as proof.
 
 ---
 
