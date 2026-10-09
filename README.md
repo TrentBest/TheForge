@@ -238,3 +238,12 @@ The Unity material remains in the repository during migration so useful prior wo
 The Forge provides a vocabulary and composition system.
 
 It does not define the limits of imagination.
+
+
+## Experience composition: implementation status
+
+The current provider-neutral core compiles a flat list of MicroBundles into an FSM_COS runtime manifest. Nested Experiences and the complete portable-artifact submission pipeline remain design work; the README's long-term capabilities are not a claim that all of them are already implemented.
+
+See [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) for the current-state boundary, proposed nested-composition rules, validation flow, acceptance tests, and decisions still requiring an explicit choice.
+
+The design note is provisional with respect to the Workshop-wide documentation standard. Its status labels and diagrams should be reconciled with the authoritative standard once that document is identified.
