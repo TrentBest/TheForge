@@ -42,11 +42,12 @@ The provider-neutral ForgeExperience currently:
 - stores a flat list of ForgeMicroBundle entries;
 - describes each bundle with a MicroBundleDescriptor and opaque configuration bytes;
 - rejects duplicate MicroBundle IDs within the same Experience;
-- compiles that flat list into an FSM_COS RuntimeManifest containing BundleRequest entries.
+- compiles that flat list into an FSM_COS RuntimeManifest containing BundleRequest entries;
+- maintains a revisioned in-memory draft with a typed field-value edit seam. `TrySetFieldValue` requires a matching MicroBundle ID/version schema, validates type and bounds before accepting a change, and leaves draft state/revision unchanged on rejection. A typed edit blocks `ToExperience()` until a compatible codec exists, preventing silent loss of authored values.
 
 ForgeSubmission currently provides a minimal wrapper and basic null/format/version checks. This is not yet a full external artifact submission pipeline.
 
-The current model does **not** yet establish a serialized, versioned portable Experience schema, nested Experience references, graph-cycle detection, identity/version resolution, configuration override rules, or complete submission diagnostics. Do not describe these as implemented until code and tests prove them.
+The current model does **not** yet establish a serialized, versioned portable Experience schema, nested Experience references, graph-cycle detection, artifact identity/version resolution, configuration override rules, typed-value persistence, runtime payload codecs, or complete submission diagnostics. Do not describe these as implemented until code and tests prove them.
 
 **Important current compiler limitation:** the legacy FSM_COS manifest emitted by `ForgeExperience.Compile()` currently carries only MicroBundle ID and opaque configuration bytes. It drops the descriptor version, dependency/provider declarations, and Experience ontology. This makes compilation a narrow API-compatibility smoke path, not a lossless or runtime-ready compilation of the full authored model. The migration must preserve and validate those semantics against an actually released runtime contract; it must not silently pretend the omitted data was applied.
 
@@ -164,11 +165,12 @@ These are deliberately not settled by this proposal:
 
 ## Immediate implementation sequence
 
-1. Define the portable artifact DTO/schema and serialization round-trip before changing runtime compilation.
-2. Add a resolver abstraction for immutable artifact identities and versions; keep storage implementation outside the Forge core.
-3. Build a graph-expansion/validation stage with structured diagnostics and provenance.
-4. Define configuration and shared-reference semantics through explicit decisions and tests.
-5. Compile a validated, resolved graph to the existing FSM_COS contracts.
-6. Add external-author parity tests and only then describe the artifact as portable end-to-end.
+1. Define a codec contract for one concrete MicroBundle identity/version and prove typed-value encode/decode where the domain contract supports it; do not guess a universal format.
+2. Define the portable artifact DTO/schema and serialization round-trip before changing runtime compilation.
+3. Add a resolver abstraction for immutable artifact identities and versions; keep storage implementation outside the Forge core.
+4. Build a graph-expansion/validation stage with structured diagnostics and provenance.
+5. Define configuration and shared-reference semantics through explicit decisions and tests.
+6. Compile a validated, resolved graph to the existing FSM_COS contracts.
+7. Add external-author parity tests and only then describe the artifact as portable end-to-end.
 
 No NuGet publication is part of this work. No branch merge should occur without review.
