@@ -94,18 +94,18 @@ Audit in small batches, then update this table as each file is checked against s
 
 | File | Main question | Initial status |
 |---|---|---|
-| `README.md` | Does the front door clearly separate vision, current implementation, and next working path? | Audit |
-| `DOCUMENTATION_INDEX.md` | Does every major document have a useful entry and status? | Add this brief; audit |
-| `docs/ARCHITECTURE.md` | Are package ownership and current-vs-proposed behavior accurate? | Audit |
-| `docs/diegetic-experience-authoring.md` | Which in-world authoring ideas are decisions, open questions, or implementable slices? | Audit |
-| `docs/experience-composition-design.md` | Are portable artifact, graph, validation, and runtime compilation boundaries explicit? | Audit |
-| `docs/forge-owned-configuration-boundary.md` | Does the draft/typed-value/codec/persistence boundary match code? | Audit |
-| `docs/live-authoring-ontology-and-cloning.md` | What is the smallest safe revision/clone/preview increment? | Audit |
-| `docs/microbundle-assembly-adventure.md` | Which metaphorical assembly stages map to tested contracts? | Audit |
-| `docs/tooling-provider-contract.md` | Are provider/tool semantics distinguished from runtime MicroBundle providers? | Audit |
-| `docs/tooling-provider-first-vertical-slice.md` | Is the read-only inspector accurately described and is the next slice concrete? | Audit |
-| `src/**`, `tests/**` | Do all public behaviors and stated claims have relevant tests? | Inspect per increment |
-| `.github/workflows/**` | Are build/test jobs active and package publication explicitly gated? | Audit |
+| `README.md` | Does the front door clearly separate vision, current implementation, and next working path? | First pass updated; deeper review remains |
+| `DOCUMENTATION_INDEX.md` | Does every major document have a useful entry and status? | Updated with continuation brief; first pass complete |
+| `docs/ARCHITECTURE.md` | Are package ownership and current-vs-proposed behavior accurate? | First pass complete; deeper source audit remains |
+| `docs/diegetic-experience-authoring.md` | Which in-world authoring ideas are decisions, open questions, or implementable slices? | First pass complete; design-only status is explicit |
+| `docs/experience-composition-design.md` | Are portable artifact, graph, validation, and runtime compilation boundaries explicit? | Updated for lossy compiler limitation; first pass complete |
+| `docs/forge-owned-configuration-boundary.md` | Does the draft/typed-value/codec/persistence boundary match code? | Updated for lossy compiler limitation; first pass complete |
+| `docs/live-authoring-ontology-and-cloning.md` | What is the smallest safe revision/clone/preview increment? | First pass complete; preview/clone remain proposed |
+| `docs/microbundle-assembly-adventure.md` | Which metaphorical assembly stages map to tested contracts? | First pass complete; proposed pipeline is explicit |
+| `docs/tooling-provider-contract.md` | Are provider/tool semantics distinguished from runtime MicroBundle providers? | First pass complete; proposed API status is explicit |
+| `docs/tooling-provider-first-vertical-slice.md` | Is the read-only inspector accurately described and is the next slice concrete? | First pass complete; inspector is distinguished from editing |
+| `src/**`, `tests/**` | Do all public behaviors and stated claims have relevant tests? | Current core/tests inspected; full claim-by-claim audit remains |
+| `.github/workflows/**` | Are build/test jobs active and package publication explicitly gated? | Build/test workflow verified; no publish job exists in this workflow |
 
 ## First-pass audit notes (2026-10-09)
 
@@ -120,7 +120,7 @@ Audit in small batches, then update this table as each file is checked against s
 - `docs/ARCHITECTURE.md`: first-pass status separates present core from future work; full line-by-line source verification remains open.
 - `README.md`: updated to link the continuation brief and all major design documents, to expose the lossy legacy manifest compilation limitation, and to list only current direct package dependencies.
 - `src/TheSingularityWorkshop.Forge/TheSingularityWorkshop.Forge.csproj`: removed unused GUI.Core and FSM_Serialization direct dependencies; current code only uses FSM_COS and MicroBundleDomain.
-- CI: exact commit `0121b20aded4e83eafa1124f0803bd0f89179a31` passed on [PR run 37985504308](https://github.com/TrentBest/TheForge/actions/runs/37985504308). Later documentation and dependency commits are awaiting fresh exact-HEAD verification at the time of this update; the workflow is build/test only and contains no publish job.
+- CI: exact commit `db42b436fc3beca26dafe8c414bd28aa6f02b267` passed on [PR run 37985803397](https://github.com/TrentBest/TheForge/actions/runs/37985803397) and [push run 37985797306](https://github.com/TrentBest/TheForge/actions/runs/37985797306). The workflow is build/test only and contains no publish job. The next documentation update will trigger a fresh run.
 
 ## Acceptance rule for every increment
 
