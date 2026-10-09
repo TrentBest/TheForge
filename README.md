@@ -29,6 +29,71 @@ The Forge is envisioned as a place-like authoring presence that can be tethered 
 
 The tether and tool arrangement are authoring-session presentation, not hidden changes to the portable Experience. This spatial/provider model is **proposed design**, not implemented behavior. See [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md#spatial-model-a-tethered-forge-with-a-world-around-it) and the proposed [Tooling Provider Contract](docs/tooling-provider-contract.md).
 
+## <img src="docs/assets/section-markers/06-responsibility-boundary.svg" alt="" width="20" height="20"> 06 Responsibility boundary: authoring is not locked to the Forge
+
+<img src="docs/assets/section-dividers/06-responsibility-boundary.svg" alt="" width="100%">
+
+This is a deliberate design constraint.
+
+A creator may use:
+
+- the Forge UI;
+- another editor;
+- a domain-specific authoring application;
+- a custom program;
+- generated data;
+- independently published MicroBundles.
+
+The resulting portable artifact should be able to enter the same validation and publication path.
+
+```
+             Forge author
+                  │
+External author ──┼──► Experience artifact
+                  │
+                  ▼
+          validation / classification
+                  │
+                  ▼
+              publication
+                  │
+                  ▼
+               FSM_COS
+```
+
+The Forge is therefore an **authoring client**, not an authoring prison.
+
+This is one of the most important architectural decisions in the project.
+
+### Ontology and visual composition
+
+The Forge is where human semantic choices can become machine-oriented composition.
+
+```
+[ONTOLOGY]
+     │
+     ▼
+[CAPABILITY MEMBERSHIP]
+     │
+     ▼
+[MICROBUNDLES]
+     │
+     ▼
+[EXPERIENCE]
+     │
+     ▼
+[MANIFEST / EXECUTION STRUCTURE]
+     │
+     ▼
+[FSM_COS]
+```
+
+The visual representation should eventually be an operational map of this composition.
+
+Visuals are not decoration here. The Forge exists to expose relationships that are otherwise difficult to see.
+
+The intended interface is therefore a **living composition graph** rather than a conventional collection of property forms.
+
 ## <img src="docs/assets/section-markers/07-architecture-ecosystem.svg" alt="" width="20" height="20"> 07 Architecture and ecosystem
 
 <img src="docs/assets/section-dividers/07-architecture-ecosystem.svg" alt="" width="100%">
@@ -99,71 +164,6 @@ The Forge can eventually author Experiences that:
 - publish immutable artifacts.
 
 The same machinery can author the Workshop itself.
-
-## <img src="docs/assets/section-markers/06-responsibility-boundary.svg" alt="" width="20" height="20"> 06 Responsibility boundary: authoring is not locked to the Forge
-
-<img src="docs/assets/section-dividers/06-responsibility-boundary.svg" alt="" width="100%">
-
-This is a deliberate design constraint.
-
-A creator may use:
-
-- the Forge UI;
-- another editor;
-- a domain-specific authoring application;
-- a custom program;
-- generated data;
-- independently published MicroBundles.
-
-The resulting portable artifact should be able to enter the same validation and publication path.
-
-```
-             Forge author
-                  │
-External author ──┼──► Experience artifact
-                  │
-                  ▼
-          validation / classification
-                  │
-                  ▼
-              publication
-                  │
-                  ▼
-               FSM_COS
-```
-
-The Forge is therefore an **authoring client**, not an authoring prison.
-
-This is one of the most important architectural decisions in the project.
-
-### Ontology and visual composition
-
-The Forge is where human semantic choices can become machine-oriented composition.
-
-```
-[ONTOLOGY]
-     │
-     ▼
-[CAPABILITY MEMBERSHIP]
-     │
-     ▼
-[MICROBUNDLES]
-     │
-     ▼
-[EXPERIENCE]
-     │
-     ▼
-[MANIFEST / EXECUTION STRUCTURE]
-     │
-     ▼
-[FSM_COS]
-```
-
-The visual representation should eventually be an operational map of this composition.
-
-Visuals are not decoration here. The Forge exists to expose relationships that are otherwise difficult to see.
-
-The intended interface is therefore a **living composition graph** rather than a conventional collection of property forms.
 
 ## <img src="docs/assets/section-markers/10-usage-examples.svg" alt="" width="20" height="20"> 10 External authoring and submission
 
