@@ -64,7 +64,7 @@ Keep statuses honest: **Implemented** requires code and relevant tests; **Partia
 - [ ] Define stable field-path identity and decide how duplicate/invalid schema field names are reported.
 - [x] Integrate validation-before-acceptance into ForgeExperienceDraft: rejected edits preserve the previous valid state and revision; no-op edits do not advance revision; clearing an edit restores baseline while revision remains monotonic.
 - [ ] Define an explicit codec interface tied to MicroBundle identity/version. Never guess JSON, binary layout, or field order from schema metadata.
-- [x] Add tests for culture independence, bounds, nested paths, detached snapshots, and unknown fields. Rejected draft-edit tests remain pending because draft integration is not implemented.
+- [x] Add tests for culture independence, bounds, nested paths, detached snapshots, unknown fields, rejected edits, no-op edits, identity mismatch, revision preservation, clear-to-baseline, and refusing to compile typed edits without a codec.
 - [ ] Keep opaque byte-payload editing separate from typed editing when no compatible codec exists.
 - [ ] Define a portable Forge project/Experience artifact format and round-trip persistence only after its schema/version and compatibility semantics are explicit.
 - [ ] Preserve provenance and diagnostics through parse → validate → resolve → compile.
@@ -111,15 +111,15 @@ Audit in small batches, then update this table as each file is checked against s
 ## First-pass audit notes (2026-10-09)
 
 - `DOCUMENTATION_INDEX.md`: updated to link this brief; CI passed on the resulting commit.
-- `docs/forge-owned-configuration-boundary.md`: first-pass review matches current code: the draft and compiler target the currently pinned FSM_COS package, schema inspection is read-only, and typed editing, codecs, persistence, and migration to a newer manifest/configuration-source contract remain unimplemented.
+- `docs/forge-owned-configuration-boundary.md`: updated to reflect the implemented typed-value and revision-safe draft edit seam. Codecs, persistence, and migration to a newer released FSM_COS manifest/configuration-source contract remain unimplemented.
 - `docs/experience-composition-design.md`: first-pass review correctly labels the portable artifact/nested graph pipeline as proposed and distinguishes it from the currently flat editor model. Current compiler output still only emits `BundleRequest` ID/configuration; descriptor version, dependencies/providers, and ontology are not represented by that legacy runtime manifest. Treat this as a real integration limitation, not as successful end-to-end composition.
 - `docs/live-authoring-ontology-and-cloning.md`: updated to distinguish the implemented revision-safe typed field-edit seam from still-proposed preview, published-source cloning, provenance, publication gate, and diegetic vending.
 - `docs/experience-composition-design.md`: updated to describe the typed draft-edit seam without overstating the still-missing portable artifact, graph resolution, or codec stages.
 - `docs/diegetic-experience-authoring.md`: correctly labeled design exploration; spatial model, authoring lifecycle, nested composition, and publication/trust concerns are not presented as complete implementation.
 - `docs/microbundle-assembly-adventure.md`: correctly labeled proposed pipeline; the claw, assembly show, integer-backed mapping, and publication flow are not claimed to exist.
 - `docs/tooling-provider-contract.md`: correctly labeled proposed; no public diegetic tooling-provider API is claimed to exist.
-- `docs/tooling-provider-first-vertical-slice.md`: updated to record typed values/schema validation while distinguishing them from revision-safe draft editing, codec support, providers, and spatial behavior.
-- `docs/ARCHITECTURE.md`: updated to record the typed-value/validator slice; full line-by-line source verification remains open.
+- `docs/tooling-provider-first-vertical-slice.md`: updated to record typed values and revision-safe draft editing while distinguishing them from codec support, providers, and spatial behavior.
+- `docs/ARCHITECTURE.md`: updated to record typed values and revision-safe draft editing; full line-by-line source verification remains open.
 - `README.md`: updated to link the continuation brief and major design documents, expose the lossy legacy compiler limitation, list only current direct package dependencies, and distinguish the new typed validator from not-yet-integrated draft editing.
 - `src/TheSingularityWorkshop.Forge/TheSingularityWorkshop.Forge.csproj`: removed unused GUI.Core and FSM_Serialization direct dependencies; current code only uses FSM_COS and MicroBundleDomain.
 - Typed value implementation: `aae363f1ef2378bf2e71e9d6fb5c6fc4d504610a`; tests: `b1d41a753c2bcdf7b786f9635a703a9ca48b9157`. CI passed on the test commit via [PR run 37986169800](https://github.com/TrentBest/TheForge/actions/runs/37986169800) and [push run 37986162045](https://github.com/TrentBest/TheForge/actions/runs/37986162045). Subsequent documentation updates are being checked on their exact commit; the workflow is build/test only and contains no publish job.
