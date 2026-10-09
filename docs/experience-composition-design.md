@@ -35,6 +35,9 @@ flowchart TD
 Lower-level packages must not acquire a dependency on The Forge.
 
 ## What the current core proves
+> **Parameter-ID caveat:** the first typed-edit API currently addresses fields by schema name because the pinned MicroBundleDomain contract has no stable parameter IDs. Treat this as a prototype. The intended durable configuration is parameter-ID + typed override; settle ID ownership, nested addressing, and version compatibility before defining a production payload codec. ProtocolAi may be an optional identity adapter, not a required Forge dependency.
+
+
 
 The provider-neutral ForgeExperience currently:
 
