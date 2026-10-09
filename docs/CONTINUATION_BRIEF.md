@@ -6,7 +6,7 @@
 
 ## Resume immediately
 
-1. Confirm the live branch head and open pull requests before changing files. The initial snapshot was `ca8283b67266d30580a681fdedde1dc6066bb24d`; most recently observed before this brief update was `82ed6a829fe2ffa016c0150ba0042951e89c6d61`. Re-check because another contributor/LLM may have advanced it.
+1. Confirm the live branch head and open pull requests before changing files. The initial snapshot was `ca8283b67266d30580a681fdedde1dc6066bb24d`; most recently observed before this brief update was `a54e64d37dcfd0e5f513c1da791aa8875e0d9d4e`. Re-check because another contributor/LLM may have advanced it.
 2. Work only in `TrentBest/TheForge` unless the user explicitly redirects the task. Do not make further FSM_COS changes.
 3. Review the documentation inventory and source/tests together. Treat prose as a claim to verify, not proof that a feature exists.
 4. Choose one small, observable vertical slice at a time. Implement it in the provider-neutral .NET core first, add tests, then connect it to a host/UI.
@@ -37,7 +37,7 @@ Do not blur authored source, runtime configuration payload, runtime manifest, re
 - Repository: [TrentBest/TheForge](https://github.com/TrentBest/TheForge)
 - Default branch: `master`
 - Active working branch: `forge/native-experience-authoring`
-- Observed branch head before this continuation-brief update: `82ed6a829fe2ffa016c0150ba0042951e89c6d61` (the brief update itself will create a newer commit; verify live head before resuming)
+- Observed branch head before this continuation-brief update: `a54e64d37dcfd0e5f513c1da791aa8875e0d9d4e` (the brief update itself will create a newer commit; verify live head before resuming)
 - Existing pull request: [#9 — feat: establish Forge as provider-neutral Experience authoring](https://github.com/TrentBest/TheForge/pull/9) (verify current status and head before acting)
 - Current core targets .NET 8 and contains an Experience model, revisioned in-memory draft, read-only MicroBundle schema inspection, immutable typed field values, schema-value validation, and a minimal external-submission wrapper. Typed values/validation are integrated into revision-safe draft edits; runtime payload encoding remains unavailable without a compatible codec.
 - The Forge core currently has direct package references to FSM_COS `0.1.0-alpha.3` and MicroBundleDomain `1.0.1`. Unused GUI.Core and FSM_Serialization references were removed from the core project because no current source uses them; add them back only when a tested capability requires their APIs. Do not target an unpublished API/package.
@@ -99,7 +99,7 @@ Audit in small batches, then update this table as each file is checked against s
 | `DOCUMENTATION_INDEX.md` | Does every major document have a useful entry and status? | Updated with continuation brief; first pass complete |
 | `docs/ARCHITECTURE.md` | Are package ownership and current-vs-proposed behavior accurate? | Updated with typed-value milestone; deeper source audit remains |
 | `docs/diegetic-experience-authoring.md` | Which in-world authoring ideas are decisions, open questions, or implementable slices? | First pass complete; design-only status is explicit |
-| `docs/experience-composition-design.md` | Are portable artifact, graph, validation, and runtime compilation boundaries explicit? | Updated for lossy compiler limitation; first pass complete |
+| `docs/experience-composition-design.md` | Are portable artifact, graph, validation, and runtime compilation boundaries explicit? | Updated for typed draft validation and lossy compiler limitation; first pass complete |
 | `docs/forge-owned-configuration-boundary.md` | Does the draft/typed-value/codec/persistence boundary match code? | Updated with typed values, validation, and revision-safe draft edits; codecs remain open |
 | `docs/live-authoring-ontology-and-cloning.md` | What is the smallest safe revision/clone/preview increment? | First pass complete; preview/clone remain proposed |
 | `docs/microbundle-assembly-adventure.md` | Which metaphorical assembly stages map to tested contracts? | First pass complete; proposed pipeline is explicit |
@@ -114,6 +114,7 @@ Audit in small batches, then update this table as each file is checked against s
 - `docs/forge-owned-configuration-boundary.md`: first-pass review matches current code: the draft and compiler target the currently pinned FSM_COS package, schema inspection is read-only, and typed editing, codecs, persistence, and migration to a newer manifest/configuration-source contract remain unimplemented.
 - `docs/experience-composition-design.md`: first-pass review correctly labels the portable artifact/nested graph pipeline as proposed and distinguishes it from the currently flat editor model. Current compiler output still only emits `BundleRequest` ID/configuration; descriptor version, dependencies/providers, and ontology are not represented by that legacy runtime manifest. Treat this as a real integration limitation, not as successful end-to-end composition.
 - `docs/live-authoring-ontology-and-cloning.md`: updated to distinguish the implemented revision-safe typed field-edit seam from still-proposed preview, published-source cloning, provenance, publication gate, and diegetic vending.
+- `docs/experience-composition-design.md`: updated to describe the typed draft-edit seam without overstating the still-missing portable artifact, graph resolution, or codec stages.
 - `docs/diegetic-experience-authoring.md`: correctly labeled design exploration; spatial model, authoring lifecycle, nested composition, and publication/trust concerns are not presented as complete implementation.
 - `docs/microbundle-assembly-adventure.md`: correctly labeled proposed pipeline; the claw, assembly show, integer-backed mapping, and publication flow are not claimed to exist.
 - `docs/tooling-provider-contract.md`: correctly labeled proposed; no public diegetic tooling-provider API is claimed to exist.
