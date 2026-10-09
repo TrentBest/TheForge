@@ -46,7 +46,7 @@ MicroBundleDefinition and MicroBundleField provide useful editor-time metadata: 
 The next authoring implementation should therefore stay Forge-owned and separate these responsibilities:
 
 1. Keep editable values typed in the draft rather than round-tripping through formatted display strings. **The detached value model now exists; wiring it into the draft is the next increment.**
-2. Validate a proposed edit before accepting it. A rejected edit must preserve the last valid draft and must not advance its revision. The validator now exists, but revision-safe edit acceptance is not yet implemented.
+2. Validate a proposed edit before accepting it. **Implemented:** `TrySetFieldValue` validates before mutation; a rejected edit preserves values and revision, a no-op does not advance revision, and `ClearFieldValue` can restore the baseline without rewinding revision.
 3. Let Forge own the document, edit lifecycle, and artifact preparation.
 4. Use an explicit codec/adapter when a schema-backed value must become a MicroBundle's runtime payload. The codec must define validation, encoding, decoding (where supported), and compatibility/version behavior.
 5. Refuse to claim that a typed edit is ready for runtime use when no compatible codec exists. Opaque payload editing remains available as a separate, honest capability.
