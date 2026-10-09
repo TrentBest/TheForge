@@ -1,6 +1,6 @@
 # Forge-Owned Configuration and Manifest Boundary
 
-> **Status:** Architecture decision for the provider-neutral Forge authoring core. The draft model and compilation against Forge's currently referenced FSM_COS package are implemented; typed field editing, durable configuration files, and codec-backed payload generation remain future work.
+> **Status:** Architecture decision for the provider-neutral Forge authoring core. The draft model, immutable typed field-value model, schema-value validator, and compilation against Forge's currently referenced FSM_COS package are implemented. Draft-integrated edit acceptance, durable configuration files, and codec-backed payload generation remain future work.
 
 ## Decision
 
@@ -41,12 +41,12 @@ The FSM_COS development branch also records a passed correctness gate for duplic
 
 ## Typed editing without a guessed serializer
 
-MicroBundleDefinition and MicroBundleField provide useful editor-time metadata: field kinds, defaults, numeric bounds, and nested children. Forge's current MicroBundleSchemaInspector deliberately projects that information into a detached, read-only view. Its DefaultValueDisplay is formatted text for inspection; it is not a typed value store or a serialization contract.
+MicroBundleDefinition and MicroBundleField provide useful editor-time metadata: field kinds, defaults, numeric bounds, and nested children. Forge's MicroBundleSchemaInspector projects that information into a detached, read-only view. Its DefaultValueDisplay is formatted text for inspection; it is not a typed value store or a serialization contract. Forge now also has an immutable ForgeFieldValue model and ForgeFieldValueValidator for String, Integer, Float, Boolean, and nested Object values. The validator checks kind compatibility, numeric bounds, nested paths, and unknown supplied fields. Missing fields remain omitted; defaults are not silently injected. This is the first typed-validation slice, not yet an edit API on ForgeExperienceDraft.
 
 The next authoring implementation should therefore stay Forge-owned and separate these responsibilities:
 
-1. Keep editable values typed in the draft rather than round-tripping through formatted display strings.
-2. Validate a proposed edit before accepting it. A rejected edit must preserve the last valid draft and must not advance its revision.
+1. Keep editable values typed in the draft rather than round-tripping through formatted display strings. **The detached value model now exists; wiring it into the draft is the next increment.**
+2. Validate a proposed edit before accepting it. A rejected edit must preserve the last valid draft and must not advance its revision. The validator now exists, but revision-safe edit acceptance is not yet implemented.
 3. Let Forge own the document, edit lifecycle, and artifact preparation.
 4. Use an explicit codec/adapter when a schema-backed value must become a MicroBundle's runtime payload. The codec must define validation, encoding, decoding (where supported), and compatibility/version behavior.
 5. Refuse to claim that a typed edit is ready for runtime use when no compatible codec exists. Opaque payload editing remains available as a separate, honest capability.
