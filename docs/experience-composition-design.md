@@ -2,7 +2,7 @@
 
 > **Status:** Design proposal — not yet implemented.
 >
-> This document describes the current provider-neutral Forge core and proposes a portable composition model. It is not a replacement for the Workshop-wide documentation standard; align its visual conventions and required sections with that standard when its authoritative location is confirmed.
+> This document describes the current provider-neutral Forge core and proposes a portable composition model. It follows the [Workshop Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). As a focused design document, it uses local headings rather than assigning global README section IDs to unrelated topics.
 
 ## The promise
 
