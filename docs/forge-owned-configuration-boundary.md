@@ -22,6 +22,23 @@ Ownership of the authored data does not mean Forge should invent the meaning of 
 | **Host** | Hosting/execution environment and host-specific effects or resources | Silent mutation of the creator's canonical draft |
 
 ## Three things that must not be conflated
+## Parameter identity is the next schema decision
+
+The current typed-edit API addresses a top-level field by its display/schema name because the currently referenced MicroBundleDomain contract exposes MicroBundleField.Name but no stable parameter ID. Treat that as an authoring prototype, not the final configuration identity.
+
+The intended configuration shape should be **parameter identity + typed override value**. A human-readable field name is useful for authoring and diagnostics, but should not silently become the durable wire identity. Before implementing a production codec or portable configuration file, settle:
+
+- who assigns and owns a parameter ID;
+- whether IDs are stable across MicroBundle versions or version-scoped;
+- how nested parameters are addressed without ambiguous display-name paths;
+- how removed, renamed, unknown, or incompatible parameter IDs are reported;
+- whether the MicroBundle schema owns IDs directly or an optional semantic vocabulary maps names to IDs.
+
+[ProtocolAi](https://github.com/TrentBest/TheSingularityWorkshop.ProtocolAi) is a promising candidate for an optional name-to-integer identity adapter: it provides application-owned vocabularies and deterministic resolution while leaving domain meaning with the owning application. Do not add it as a mandatory Forge dependency or assume its protocol identity is the final parameter contract until these questions are answered. The Forge core remains provider-neutral.
+
+ForgeConfigurationCodecRegistry currently keys codecs by exact MicroBundle ID/version; that is codec compatibility identity, not a substitute for stable parameter IDs inside a configuration document.
+
+
 
 1. **The authored configuration document** is Forge-owned creator intent. It should preserve typed values, structure, identity, and versioning as the authoring contract requires.
 2. **The runtime configuration payload** is the representation a particular MicroBundle expects. It may be bytes, but its encoding cannot safely be inferred from the display text of a schema default.
