@@ -268,10 +268,15 @@ See [Experience Composition: Current State and Design Direction](docs/experience
 
 <img src="docs/assets/section-dividers/12-documentation-map.svg" alt="" width="100%">
 
-- [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md) — product and architecture questions for in-world creation.
+- [Forge Continuation Brief](docs/CONTINUATION_BRIEF.md) — ordered work queue, architecture guardrails, audit status, and reset/resume instructions.
+- [Forge-Owned Configuration and Manifest Boundary](docs/forge-owned-configuration-boundary.md) — authored source, typed editing, runtime payload codecs, and the current legacy compiler limitation.
 - [Experience Composition Design](docs/experience-composition-design.md) — current implementation boundary and proposed nested composition.
 - [Live Authoring, Ontology Vending, and Cloning](docs/live-authoring-ontology-and-cloning.md) — implemented draft foundation, proposed preview and clone lifecycle, and the intended diegetic creator experience.
-- [Documentation Index](DOCUMENTATION_INDEX.md) — reader-oriented map of the Forge documentation.
+- [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md) — product and architecture questions for in-world creation.
+- [MicroBundle Assembly Adventure](docs/microbundle-assembly-adventure.md) — proposed visual metaphor for inspectable composition and publication stages.
+- [Tooling Provider Contract](docs/tooling-provider-contract.md) and [First Vertical Slice](docs/tooling-provider-first-vertical-slice.md) — optional authoring tools and the read-only inspector proof.
+- [Forge Architecture](docs/ARCHITECTURE.md) — package boundaries, current implementation, and migration direction.
+- [Documentation Index](DOCUMENTATION_INDEX.md) — full reader-oriented map of the Forge documentation.
 - [Workshop Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md) — shared conventions.
 
 ## <img src="docs/assets/section-markers/13-related-projects.svg" alt="" width="20" height="20"> 13 Related projects and Workshop identity
