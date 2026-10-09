@@ -243,6 +243,21 @@ CI builds and tests the new Forge core independently of Unity.
 
 The Unity material remains in the repository during migration so useful prior work is not discarded before its concepts have been recovered.
 
+### Current implementation status
+
+The provider-neutral core currently compiles a flat list of MicroBundles into an FSM_COS runtime manifest. Nested Experiences and the complete portable-artifact submission pipeline remain design work; the long-term capabilities described in this README are not a claim that all of them are already implemented.
+
+See [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) for the current-state boundary, proposed nested-composition rules, validation flow, acceptance tests, and unresolved decisions. For the larger product questions—including diegetic authoring, portable artifacts, lifecycle, and trust—see [Diegetic Experience Authoring: Questions and Design Principles](docs/diegetic-experience-authoring.md).
+
+## 🟪 12 Documentation map and further reading
+
+<img src="docs/assets/section-dividers/13-related-projects.svg" alt="" width="100%">
+
+- [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md) — product and architecture questions for in-world creation.
+- [Experience Composition Design](docs/experience-composition-design.md) — current implementation boundary and proposed nested composition.
+- [Documentation Index](DOCUMENTATION_INDEX.md) — reader-oriented map of the Forge documentation.
+- [Workshop Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md) — shared conventions.
+
 ## <img src="docs/assets/section-markers/13-related-projects.svg" alt="" width="20" height="20"> 13 Related projects and Workshop identity
 
 <img src="docs/assets/section-dividers/13-related-projects.svg" alt="" width="100%">
@@ -264,12 +279,3 @@ The Forge provides a vocabulary and composition system.
 It does not define the limits of imagination.
 
 
-## <img src="docs/assets/section-markers/09-core-concepts.svg" alt="" width="20" height="20"> 09 Experience composition: implementation status
-
-<img src="docs/assets/section-dividers/09-core-concepts.svg" alt="" width="100%">
-
-The current provider-neutral core compiles a flat list of MicroBundles into an FSM_COS runtime manifest. Nested Experiences and the complete portable-artifact submission pipeline remain design work; the README's long-term capabilities are not a claim that all of them are already implemented.
-
-See [Experience Composition: Current State and Design Direction](docs/experience-composition-design.md) for the current-state boundary, proposed nested-composition rules, validation flow, acceptance tests, and decisions still requiring an explicit choice.
-
-The design note follows the Workshop-wide documentation standard. Its implementation-status statements must still be checked against source and tests; proposed architecture is not evidence of implemented behavior.
