@@ -6,7 +6,7 @@
 
 ## Resume immediately
 
-1. Confirm the live branch head and open pull requests before changing files. The initial snapshot was `ca8283b67266d30580a681fdedde1dc6066bb24d`; most recently observed before this brief update was `657dd57f939be8e06242ed0556b364f77ad4c18b`. Re-check because another contributor/LLM may have advanced it.
+1. Confirm the live branch head and open pull requests before changing files. The initial snapshot was `ca8283b67266d30580a681fdedde1dc6066bb24d`; most recently observed before this brief update was `d1ff04231d0a00405cd92a4717e83e21881bb8ac`. Re-check because another contributor/LLM may have advanced it.
 2. Work only in `TrentBest/TheForge` unless the user explicitly redirects the task. Do not make further FSM_COS changes.
 3. Review the documentation inventory and source/tests together. Treat prose as a claim to verify, not proof that a feature exists.
 4. Choose one small, observable vertical slice at a time. Implement it in the provider-neutral .NET core first, add tests, then connect it to a host/UI.
@@ -37,7 +37,7 @@ Do not blur authored source, runtime configuration payload, runtime manifest, re
 - Repository: [TrentBest/TheForge](https://github.com/TrentBest/TheForge)
 - Default branch: `master`
 - Active working branch: `forge/native-experience-authoring`
-- Observed branch head before this continuation-brief update: `657dd57f939be8e06242ed0556b364f77ad4c18b` (the brief update itself will create a newer commit; verify live head before resuming)
+- Observed branch head before this continuation-brief update: `d1ff04231d0a00405cd92a4717e83e21881bb8ac` (the brief update itself will create a newer commit; verify live head before resuming)
 - Existing pull request: [#9 — feat: establish Forge as provider-neutral Experience authoring](https://github.com/TrentBest/TheForge/pull/9) (verify current status and head before acting)
 - Current core targets .NET 8 and contains an Experience model, revisioned in-memory draft, read-only MicroBundle schema inspection, immutable typed field values, schema-value validation, and a minimal external-submission wrapper. Typed values/validation are not yet integrated into revision-safe draft edits or runtime payload encoding.
 - The Forge core currently has direct package references to FSM_COS `0.1.0-alpha.3` and MicroBundleDomain `1.0.1`. Unused GUI.Core and FSM_Serialization references were removed from the core project because no current source uses them; add them back only when a tested capability requires their APIs. Do not target an unpublished API/package.
@@ -127,7 +127,7 @@ Audit in small batches, then update this table as each file is checked against s
 
 - Added `src/TheSingularityWorkshop.Forge/ForgeFieldValue.cs`: immutable typed values for String, Integer, Float, Boolean, and nested Object; schema validator emits machine-readable diagnostics with dotted field paths, enforces numeric bounds and finite floats, rejects unknown supplied fields, and deliberately neither fills defaults nor serializes runtime bytes.
 - Added `tests/TheSingularityWorkshop.Forge.Tests/ForgeFieldValueTests.cs`: checks detached/read-only object values, duplicate/blank keys, kind mismatch, bounds, culture-independent numeric validation, non-finite floats, nested paths, unknown fields, and omitted values.
-- CI passed for implementation+tests at `b1d41a753c2bcdf7b786f9635a703a9ca48b9157` on PR run 37986169800 and push run 37986162045. Later documentation-only commits are queued/running at the time of this note; verify latest HEAD CI before treating the whole branch as green.
+- CI passed for the initial implementation+tests at `b1d41a753c2bcdf7b786f9635a703a9ca48b9157` on PR run 37986169800 and push run 37986162045. Added explicit handling/tests for duplicate schema field names and invariant-culture diagnostic text in commits `8325b7a1d3145f4dbbbcb871a29632fda117a837` and `d1ff04231d0a00405cd92a4717e83e21881bb8ac`; CI for those latest commits is still in progress and must be checked before calling the slice green.
 - Updated configuration-boundary, vertical-slice, architecture, and README status. Next work: connect the value model to `ForgeExperienceDraft` with validate-before-acceptance and revision safety; first decide deterministic schema field identity/duplicate handling. Do not add payload encoding until a real codec contract exists.
 
 ## Acceptance rule for every increment
