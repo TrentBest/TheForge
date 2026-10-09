@@ -1,6 +1,6 @@
 # Live Authoring, Ontology Vending, and the Cloning Machine
 
-> **Status:** Mixed. A first in-memory `ForgeExperienceDraft` now supports revisioned semantic edits and a baseline-difference check. The live preview loop, published-source provenance, cloning workflow, immutable publication policy, dirty-draft gate, and diegetic vending machine remain proposed and are not yet implemented.
+> **Status:** Mixed. A first in-memory `ForgeExperienceDraft` now supports revisioned semantic edits and a baseline-difference check. The live preview loop, published-source provenance, cloning workflow, immutable publication policy, dirty-draft gate, and diegetic vending machine remain proposed and are not yet implemented. A limited schema-validated typed field edit is now available in the draft, but it is not a codec or publication workflow.
 
 ## Governing rule
 
@@ -135,7 +135,7 @@ The first implementation should prove the authoring loop before investing in ela
 - [ ] The same authoring operations remain available without the diegetic vending machine or cloning machine.
 - [ ] Building or publishing an artifact is not conflated with changing a live FSM or running an Experience.
 
-The first revisioned in-memory draft model is implemented, but it is deliberately narrower than this full workflow: it has no published artifact/version provenance, typed schema-field editing, validation service, preview host, clone-from-published operation, or publication gate. The schema inspector remains read-only, and the vending-machine presentation is not implemented.
+The revisioned in-memory draft and a first typed field-edit seam are implemented, but they are deliberately narrower than this full workflow. `ForgeExperienceDraft.TrySetFieldValue` validates a typed value against a matching MicroBundle ID/version schema before accepting it; rejected edits preserve the draft and revision, and accepted edits are revisioned. There is still no published artifact/version provenance, full validation service, preview host, clone-from-published operation, or publication gate. The schema inspector remains read-only, and the vending-machine presentation is not implemented. Typed edits cannot yet be converted to runtime bytes: compilation refuses to proceed while such edits exist without a compatible codec.
 
 ---
 
