@@ -1,8 +1,8 @@
 # Experience Composition: Current State and Design Direction
 
-> **Status:** Design proposal — not yet implemented.
+> **Status:** Partial implementation — a versioned, UI-independent JSON envelope for a flat Experience is implemented; complete composition and submission are not.
 >
-> This document describes the current provider-neutral Forge core and proposes a portable composition model. It follows the [Workshop Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). As a focused design document, it uses local headings rather than assigning global README section IDs to unrelated topics.
+> This document describes the current provider-neutral Forge core, the implemented artifact envelope, and the remaining portable composition model. It follows the [Workshop Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/development/DOCUMENTATION_STANDARD.md). As a focused design document, it uses local headings rather than assigning global README section IDs to unrelated topics.
 
 ## The promise
 
@@ -39,18 +39,19 @@ Lower-level packages must not acquire a dependency on The Forge.
 
 
 
-The provider-neutral ForgeExperience currently:
+The provider-neutral ForgeExperience and artifact serializer currently:
 
 - has a non-zero numeric ID, a name, and an integer ontology list;
 - stores a flat list of ForgeMicroBundle entries;
 - describes each bundle with a MicroBundleDescriptor and opaque configuration bytes;
 - rejects duplicate MicroBundle IDs within the same Experience;
-- compiles that flat list into an FSM_COS RuntimeManifest containing BundleRequest entries;
+- compiles that flat list into an FSM_COS RuntimeManifest containing BundleRequest entries (a deliberately lossy compatibility bridge);
+- round-trips a version-1 UTF-8 JSON artifact containing Experience ID/name/ontology and ordered MicroBundle IDs, versions, dependencies, providers, and opaque configuration bytes; unknown properties and unsupported schema versions are rejected;
 - maintains a revisioned in-memory draft with a typed field-value edit seam. `TrySetFieldValue` requires a matching MicroBundle ID/version schema, validates type and bounds before accepting a change, and leaves draft state/revision unchanged on rejection. A typed edit blocks `ToExperience()` unless a resolver supplies a codec for the exact MicroBundle ID/version. The codec owns payload format and merge semantics; the contract is exercised by a test-only fixture codec, not yet by a real MicroBundle implementation.
 
 ForgeSubmission currently provides a minimal wrapper and basic null/format/version checks. This is not yet a full external artifact submission pipeline.
 
-The current model does **not** yet establish a serialized, versioned portable Experience schema, nested Experience references, graph-cycle detection, artifact identity/version resolution, configuration override rules, typed-value persistence, runtime payload codecs, or complete submission diagnostics. Do not describe these as implemented until code and tests prove them.
+The current artifact is only a first flat interchange envelope. It does **not** yet establish Experience version/provenance, nested Experience references, graph-cycle detection, catalog identity/version resolution, configuration override rules, typed field-value persistence, a production runtime payload codec, or a complete external submission/validation pipeline. The artifact serializer preserves opaque configuration bytes; it does not infer or serialize typed field edits. Do not describe the larger pipeline as implemented.
 
 **Important current compiler limitation:** the legacy FSM_COS manifest emitted by `ForgeExperience.Compile()` currently carries only MicroBundle ID and opaque configuration bytes. It drops the descriptor version, dependency/provider declarations, and Experience ontology. This makes compilation a narrow API-compatibility smoke path, not a lossless or runtime-ready compilation of the full authored model. The migration must preserve and validate those semantics against an actually released runtime contract; it must not silently pretend the omitted data was applied.
 
@@ -58,7 +59,7 @@ The current model does **not** yet establish a serialized, versioned portable Ex
 
 Keep the authoring artifact distinct from FSM_COS.RuntimeManifest. The authoring artifact records creator intent and portable references; the runtime manifest is a target-specific compilation product.
 
-A first schema should define:
+The current version-1 envelope defines only Experience ID/name/ontology and flat MicroBundle entries with ID/version/dependencies/providers/opaque configuration bytes. It uses strict schema-version matching and rejects unknown properties. The next schema evolution should define:
 
 - **Schema identity:** format identifier and schema version, independent of the Experience's own version.
 - **Experience identity:** stable ID, human-readable name, version, and ontology/classification references.
