@@ -216,3 +216,10 @@ At the end of each work session, update this brief with:
 - Added the explicit format identifier `thesingularityworkshop.experience` alongside schema version 1, and a test that rejects a different format identifier. The artifact reader remains strict about unknown properties and schema versions.
 - Follow-up source/test/documentation commits: `0c363a9050d7b0f2cd6f556e9b90c1976b5679a3`, `33780fe5842ed16eeab19282e617483be05c604b`, `080318bf1e3e892dfe994b9c087cb01749d3d458`, `7b1ac62fa897ed25abaff965bd2ef4cd3097eb6f`, `96f443469445df9c5b5251187acec7a92faefd97`, and `77b1f53aaf62dee2778c8000870202adbae8e222`.
 - Verification is green on commit `4cbd902bdb2562682942d39e0bf105de2ae3fac5`: [GitHub Actions run 38181453923](https://github.com/TrentBest/TheForge/actions/runs/38181453923) completed Restore, Build, and Test successfully.
+
+
+## Latest verification — portable artifact golden contract (2026-10-11)
+
+- Added a golden JSON contract test for the exact version-1 envelope shape, including the format identifier and Base64 configuration representation. This complements round-trip/determinism and invalid-format/version/property tests.
+- Exact PR-head commit `d70f4341675075f5111223594376ce3eedd401ac` passed GitHub Actions run [38181527942](https://github.com/TrentBest/TheForge/actions/runs/38181527942), run 273: Restore, Build, and Test all succeeded.
+- PR #9 remains open and unmerged, base `master`; no NuGet publication or release-gate change was made. The serializer is still an initial flat artifact envelope, not a full composition/submission pipeline.
