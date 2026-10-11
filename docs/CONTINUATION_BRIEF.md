@@ -19,7 +19,7 @@
 
 The Forge is itself an Experience: a provider-neutral authoring environment for assembling, configuring, inspecting, validating, and eventually publishing portable Experiences from versioned MicroBundles. It must not become a mandatory authoring client. External tools and programmatic authors must be able to submit portable artifacts through the same validation path.
 
-The intended authoring experience is visual and alive, eventually diegetic/tethered, but the first proof must be a coherent, testable vertical slice—not a renderer-first rewrite.
+The product requirement is a **fully diegetic Forge**: Forge is a place inside the authored Experience, with the authored world around it and authoring tools encountered in-world. Tethering/relocation and diegetic interaction are core product behavior, not an optional mode or merely a future visual layer. Build toward that through small, testable vertical slices; do not pretend the current provider-neutral .NET core already implements the spatial experience, and do not let renderer-first work substitute for a functioning authoring loop.
 
 ## Ownership boundaries
 
