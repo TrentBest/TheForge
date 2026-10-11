@@ -1,8 +1,10 @@
 # The Forge — Architecture
 
-The Forge is an **Experience**.
+The Forge is a **fully diegetic Experience**.
 
-It is also the Experience through which Experiences and MicroBundles can be authored, composed, inspected, configured, validated, and published.
+It is the Experience through which Experiences and MicroBundles can be authored, composed, inspected, configured, validated, and published from within an Experience. The authored world remains around the creator; the Forge is a tetherable place within that world, not an external editor with an optional in-world skin.
+
+**Implementation status:** the current provider-neutral core establishes authoring contracts and artifact groundwork. It does not yet implement the complete diegetic environment, tethering, or in-world interaction loop.
 
 That distinction is fundamental:
 
