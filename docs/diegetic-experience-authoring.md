@@ -1,12 +1,14 @@
 # Diegetic Experience Authoring: Questions and Design Principles
 
-> **Status:** Design exploration — these principles and questions are not yet implemented as a complete authoring/runtime model.
+> **Product requirement:** The Forge is fully diegetic: it is a place within the authored Experience, with authoring tools encountered and used in-world. Tethering or relocating that place must not dictate where the authored Experience takes place.
 >
-> This document uses *diegetic* in its usual design sense: something that exists within the world or reality of an Experience, rather than only in an external interface about that world. It applies the term carefully; not every editor control needs to pretend to be an in-world object.
+> **Implementation status:** The current provider-neutral authoring core does not yet implement the complete diegetic environment, tethering, or in-world interaction loop. This document defines product constraints and open engineering questions; it is not evidence that those behaviors are already implemented.
+>
+> *Diegetic* means that the Forge and its authoring interactions belong within the world or reality of an Experience, rather than existing only as an external interface about that world. The tools should feel native to the Experience without pretending every control must be a literal physical object.
 
 ## The central idea
 
-**The Forge should be able to author an Experience from within an Experience, without making the resulting artifact dependent on the Forge.**
+**The Forge is a fully diegetic authoring Experience that creates Experiences and MicroBundles from within an Experience, without making the resulting artifact dependent on the Forge.**
 
 A creator might be inside a world, encounter a workshop, open a tool, arrange capabilities, test a change, and save a new Experience. The authoring tools themselves may be represented as objects, places, characters, instruments, or processes that belong to that world. The same authoring model should also be usable by a conventional editor, command-line tool, external application, or automated producer.
 
