@@ -1,6 +1,6 @@
 # Forge-Owned Configuration and Manifest Boundary
 
-> **Status:** Architecture decision for the provider-neutral Forge authoring core. The draft model, immutable typed field-value model, schema-value validator, and compilation against Forge's currently referenced FSM_COS package are implemented. Durable configuration files and codec-backed payload generation remain future work.
+> **Status:** Partial implementation. The revisioned draft, immutable typed field-value model, schema validator, and version-1 portable Experience JSON envelope are implemented. Stable parameter IDs, durable typed-override documents, a production MicroBundle codec, and lossless compilation into a newer runtime contract remain future work.
 
 ## Decision
 
@@ -46,7 +46,7 @@ ForgeConfigurationCodecRegistry currently keys codecs by exact MicroBundle ID/ve
 
 These are related artifacts, not interchangeable files. Compilation may produce a runtime manifest and configuration payloads without transferring ownership of the authored source to FSM_COS.
 
-## Integration finding: published package versus development source
+## Portable Experience artifact v1\n\n`ForgeExperienceArtifactSerializer` writes and reads a strict version-1 UTF-8 JSON envelope for a flat `ForgeExperience`: Experience ID, name, ontology, ordered MicroBundle IDs/versions/dependencies/providers, and opaque configuration bytes. It is UI-independent and distinct from `FSM_COS.RuntimeManifest`. Unsupported schema versions and unknown properties are rejected. This first envelope does not serialize the revisioned draft's typed field-value dictionary, nested Experiences, provenance, or stable parameter-ID/value overrides. Typed edits must be encoded through a compatible MicroBundle codec before they can appear in the artifact as runtime configuration bytes.\n\n## Integration finding: published package versus development source
 
 Forge currently references `TheSingularityWorkshop.FSM_COS` version `0.1.0-alpha.3`. Its existing compiler targets that package's `BundleRequest`-based manifest API and passes opaque configuration bytes through that request. **This is a deliberately limited bridge, not a lossless composition compiler:** `ForgeExperience.Compile()` currently emits only each MicroBundle's numeric ID and opaque configuration. It does not carry the authored descriptor version, dependencies, provider declarations, or the Experience's ontology into the resulting runtime manifest. Until Forge migrates to a released contract that can represent the required identity/version and configuration boundary, callers must not treat this output as proof that the complete authored composition has been preserved or resolved.
 
