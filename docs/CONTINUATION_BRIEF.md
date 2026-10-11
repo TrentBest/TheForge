@@ -209,3 +209,10 @@ At the end of each work session, update this brief with:
 - Commits for this increment: serializer `2224f251ea37a1d05226a3c77319aecb368f5b94`; tests `2547aa838e0ecde0a85dc52833eea8ebeac72378`; docs `903d82f99f888194c9997d7ce75cd215fe062e34`, `4fed27a1c475ed59c3da2b4a0d95dbd5d8af3211`, `581e004d75ad2e0cf53b65ed9b7fc8f634f6cd00`; this continuation update follows them.
 - **Verification status: not yet verified.** GitHub reports no combined status or workflow run for the latest commit at the time of this check, and the execution environment could not clone GitHub to run `dotnet test`. Do not claim this increment builds or passes tests until the exact PR head has a green run. No merge, publish, or release-gate change was made.
 - Next: obtain exact-head CI evidence; fix any compile/test failures; then add a focused artifact round-trip compatibility review. Keep parameter-ID ownership as a separate explicit decision before changing typed value keys or creating a production codec.
+
+
+### Artifact envelope clarification — format identity
+
+- Added the explicit format identifier `thesingularityworkshop.experience` alongside schema version 1, and a test that rejects a different format identifier. The artifact reader remains strict about unknown properties and schema versions.
+- Follow-up source/test/documentation commits: `0c363a9050d7b0f2cd6f556e9b90c1976b5679a3`, `33780fe5842ed16eeab19282e617483be05c604b`, `080318bf1e3e892dfe994b9c087cb01749d3d458`, `7b1ac62fa897ed25abaff965bd2ef4cd3097eb6f`, `96f443469445df9c5b5251187acec7a92faefd97`, and `77b1f53aaf62dee2778c8000870202adbae8e222`.
+- Verification remains pending. The current PR head has no reported combined status/workflow run in the connector response, and this environment cannot access GitHub directly to clone and execute the .NET tests. Exact-head CI is required before calling the slice complete.
