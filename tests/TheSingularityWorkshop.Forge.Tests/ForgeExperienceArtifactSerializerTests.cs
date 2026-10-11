@@ -55,7 +55,7 @@ public sealed class ForgeExperienceArtifactSerializerTests
     }
 
     [Fact]
-    public void VersionOneArtifactMatchesThePublishedShape()
+    public void VersionOneArtifactMatchesGoldenJsonContract()
     {
         var experience = new ForgeExperience(7105, "Golden", [3, 1]);
         experience.AddMicroBundle(
