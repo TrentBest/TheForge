@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TheSingularityWorkshop.MicroBundleDomain;
@@ -105,6 +106,22 @@ public static class ForgeExperienceArtifactSerializer
         }
 
         return experience;
+    }
+
+    /// <summary>
+    /// Reads a supported artifact into the minimal external-submission boundary.
+    /// This validates the envelope and wrapper metadata; it does not resolve dependencies,
+    /// establish source trust, publish the artifact, or claim full composition validation.
+    /// </summary>
+    public static ForgeSubmission DeserializeSubmission(ReadOnlyMemory<byte> utf8Json)
+    {
+        var experience = Deserialize(utf8Json);
+        var submission = new ForgeSubmission(
+            experience,
+            FormatId,
+            CurrentSchemaVersion.ToString(CultureInfo.InvariantCulture));
+        submission.Validate();
+        return submission;
     }
 
     [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
