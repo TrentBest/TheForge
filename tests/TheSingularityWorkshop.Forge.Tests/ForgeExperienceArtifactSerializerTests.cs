@@ -17,7 +17,7 @@ public sealed class ForgeExperienceArtifactSerializerTests
             "1.2.3",
             dependencies: [new MicroBundleDependency(7201)],
             providers: [new MicroBundleProvider("renderer"), new MicroBundleProvider("lighting")],
-            configuration: [0, 1, 2, 127, 255]);
+            configuration: new byte[] { 0, 1, 2, 127, 255 });
         source.AddMicroBundle(7201, "4.5.6", configuration: Encoding.UTF8.GetBytes("opaque"));
 
         var bytes = ForgeExperienceArtifactSerializer.Serialize(source);
@@ -47,7 +47,7 @@ public sealed class ForgeExperienceArtifactSerializerTests
             "1.0.0",
             dependencies: [new MicroBundleDependency(7203), new MicroBundleDependency(7204)],
             providers: [new MicroBundleProvider("zeta"), new MicroBundleProvider("alpha")],
-            configuration: [4, 3, 2, 1]);
+            configuration: new byte[] { 4, 3, 2, 1 });
 
         Assert.Equal(
             ForgeExperienceArtifactSerializer.Serialize(experience),
