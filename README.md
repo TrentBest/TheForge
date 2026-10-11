@@ -1,73 +1,106 @@
-﻿# TheForge
+# TheForge
 
 ### *Where Logic Meets Construction*
 
-Welcome to **TheForge**, the central development environment and architectural foundation for **The Singularity Workshop**. This project serves as a high-level "Meta-Framework" for Unity, designed to bridge the gap between complex software patterns (Finite State Machines, Micro Packages) and intuitive, data-driven editor tools.
+**TheForge is the authoring environment for The Singularity Workshop.** Its long-term responsibility is to let people and tools define, inspect, validate, compose, and preview Experiences and MicroBundles—then prepare the artifacts that runtime systems need.
 
-TheForge isn't just a collection of scripts; it is an automated pipeline for building, simulating, and documenting complex systems—from architectural BIM-inspired structures to autonomous drone swarms.
+The Forge is not the runtime itself, not the MicroBundle repository, and not a second FSM framework. It is an editor-time construction environment. It should become a first-class Experience whose available authoring tools are supplied by capabilities rather than hard-coded into one monolithic editor.
 
----
+> **Spend computation while constructing. Deliver prepared work to runtime.**
 
-## 🏗 Core Philosophy: The "Micro Package"
+## The architectural direction
 
-TheForge is built upon the **Micro Package** architecture. Instead of monolithic systems, functionality is broken down into atomic, independent units that are:
+```text
+Authoring capabilities + Experience intent + configuration
+                         |
+                         v
+                    THE FORGE
+       discover -> validate -> compose -> prepare
+                         |
+                         v
+          Prepared, versioned runtime artifacts
+       manifest + defaults/overrides + FSM plans
+       bounded outcome tables + data-layout metadata
+                         |
+                         v
+             Runtime assembly / host
+       execute prepared work; track changing inputs
+       reuse valid outputs; invalidate affected work
+```
 
-* **Self-Describing:** Using `ISingularityDefinition` to manage their own metadata and library paths.
-* **Registry-Backed:** Automatically serialized and tracked via the `SingularityRegistry<T>`, which manages JSON persistence within Unity's `StreamingAssets`.
-* **Arbitrated:** Using an `IPackageArbitrator` to resolve dependencies and interactions between disparate packages at runtime.
+This is the target architecture, not a claim that every stage is implemented today. The repository contains earlier editor and builder experiments; they are starting material to evaluate, not a reason to preserve outdated architectural boundaries.
 
-## 🛠 Key Systems
+### Forge time and runtime are different jobs
 
-### 1. The Singularity Workshop Hub
+**Forge time** is where we can afford expensive, deterministic work: dependency and capability resolution, configuration validation, pipeline construction, compatibility checks, precomputation of bounded outcomes, and generation of packed runtime artifacts.
 
-The **Hub** (`SingularityWorkshopHub.cs`) is your central nervous system within the Unity Editor. It provides a unified docking station for all development activities, including:
+**Runtime** consumes those prepared results. It should not repeatedly arbitrate the same capabilities or rebuild plans that could have been prepared by the Forge. Runtime still responds to genuinely changing inputs, tracks validity, and performs the work that cannot be known in advance.
 
-* **System Metrics:** Real-time tracking of FSM Definitions and active Handles.
-* **Integrated CRUD Tabs:** Dedicated interfaces for managing FSMs, States, Logic Methods, and Transitions without leaving the Hub.
-* **Dynamic Viewports:** A custom-built navigation system that allows for seamless switching between different workshop tools.
+A manifest may omit optional configuration. In that case, a MicroBundle's declared defaults remain effective. Explicit configuration overrides only the values it supplies; omitted fields do not become accidental zeroes or mandatory manifest boilerplate.
 
-### 2. Graphical User Interface Builder (OneGUI)
+### MetaDev is driven by the Forge
 
-To support the complex data requirements of TheForge, we developed a fluent **GUI Builder** API (`GraphicalUserInterfaceBuilder.cs`). This system allows us to:
+MetaDev is an intended editor-time capability, **not an independent live system before it has a proper Forge driver**. The Forge must exist as a working authoring and preparation environment first. It can then drive MetaDev to collect measurements, compare alternatives, inspect output, and help prepare artifacts.
 
-* **Build via Code:** Define complex UIElements layouts using a chainable, readable API.
-* **Context-Aware UI:** Toggle between "Editor Mode" (for data entry/creation) and "Simulation Mode" (for runtime visualization).
-* **Modular Layouts:** Features like `WithAutoGrow`, `WithScrollable`, and nested `WithPanel` support create a responsive, modern editor experience.
+Development and test evidence may eventually include memory use, workload quantities, resize events, timing, quality, and device capabilities. Those measurements could inform candidate device profiles and scaling projections. Projection is a hypothesis to validate against actual results—not permission to guess that a faster device scales linearly in every dimension.
 
-### 3. Experience & Forge Builders
+## Prepared outcomes and data-oriented runtime artifacts
 
-The project introduces the concept of **Manifest-Driven Development**:
+When a decision space is finite and manageable, the Forge can calculate its possible outcomes once and store a compact lookup table or buffer. A system with roughly 2,000 relevant outcomes may be better served by preparing those outcomes in advance than by repeating the same expensive reasoning at runtime.
 
-* **Experience Builder:** A tool to define "Experience Manifests" that combine different sensory inputs (Vision, Audio, Touch) and providers into a single JSON-backed configuration.
-* **The Forge Contract:** Interfaces like `IForgeBuilder` and `IBuilder` ensure that every system in the project knows how to generate its own runtime instance and its own Editor UI.
+That is a workload-specific optimization, not a universal rule. The Forge should record the assumptions and version of each prepared artifact, and runtime must detect when its inputs no longer match those assumptions. Unbounded or rapidly changing problems still need runtime computation.
 
----
+Prepared data should be designed for its consumer. For high-volume simulation or GPU work, prefer contiguous, structured data and bulk transfer over a heap of tiny per-entity objects that creates garbage-collection pressure. Page-aligned shelves and external validity/dirty tracking are promising design directions; alignment, memory limits, and GPU transfer behavior must be measured on each target.
 
-## 🚀 Projects Powered by TheForge
+## Where FSM_API fits
 
-* **raWWar:** A tactical showcase utilizing the `FSM_API` for advanced unit AI.
-* **Builders:** A world-building application applying BIM (Building Information Modeling) principles to game environments.
-* **SpaceShip Sim:** A celestial body and ship design simulation utilizing the modularity of Forge Builders.
+FSM_API remains the Workshop's reusable state-machine substrate. The Forge can prepare meaningful stateful work sequences and runtime processing groups using its existing capabilities. We should not create a parallel FSM engine, nor schedule every arithmetic operation or pixel as an individual FSM.
 
----
+A prepared pipeline may contain optional stages or different preconfigured sequences. The Forge resolves which sequence applies; runtime executes it and invalidates only results affected by changed inputs.
 
-## 📂 Project Structure
+## A simulation example: coordinated skylanes
 
-| Directory | Purpose |
+The previous drone-swarm work demonstrates why the data layout and the model must be designed together. A skylane can be modeled as a collection of directional cells with a slipstream for entry/exit and a hover cell where a drone waits for a safe opening.
+
+- A drone enters a directional lane only when the destination cell is available at the required separation.
+- Direction changes leave the lane through a slipstream, decelerate, and wait in the hover lane for a compatible opening in the new direction.
+- Before a transition, the coordinator checks the destination and the relevant slipstream cells; occupancy must not be claimed by two drones.
+- High-volume state should be stored in compact structured arrays suitable for bulk simulation and GPU access, not as one garbage-collected object graph per drone.
+
+The expensive coordination rules should be explicit, testable, and optimized around cell occupancy and safe reservation. Precomputation can help with finite policies and transition lookup, but live occupancy remains dynamic and cannot simply be replaced by a static table.
+
+This example is a design reference for rebuilding the lost capability in modular form; it is not a claim that the current repository already implements the swarm.
+
+## Architectural boundaries
+
+| Component | Responsibility |
 | --- | --- |
-| `Editor/` | The Hub, Experience Manifest Editors, and custom Inspector windows. |
-| `Scripts/Builders/` | Implementation of the Fluent UI API and system-specific constructors. |
-| `Scripts/MicroPackages/` | The interfaces and logic for the atomic "Singularity" architecture. |
-| `Scripts/FSMs/` | (Integration) Bridges the core FSM_API with the Unity environment. |
+| **TheForge** | Editor-time authoring, validation, composition, precomputation, prepared artifacts |
+| **MicroBundleDomain** | Describes bundle identity, dependencies, providers, and configuration contracts |
+| **MicroBundleRepository** | Stores and delivers immutable artifacts |
+| **FSM_API** | Reusable FSM definitions, transitions, groups, and execution primitives |
+| **FSM_COS** | Composes prepared capabilities into a runtime assembly |
+| **Renderer** | Observer-aware visual representation, Event Horizons, buckets, and invalidation |
+| **Visualize / host adapters** | Bulk presentation and platform-specific device operations |
+| **SingularityWarehouse** | Portable information/data fabric; not automatically the runtime memory allocator |
 
----
+The Warehouse's historical class-based and structured-data experiments are valuable design evidence. Its persistent application-data responsibilities must not be conflated with a high-throughput runtime memory pool. Host-specific Revit/Inventor work should be isolated behind adapters and preserved for later—not deleted to make the core portable.
 
-## ⚡ Quick Start for Developers
+Lower-level packages must not depend upward on TheForge or FSM_COS merely to remain useful.
 
-1. Open the **Singularity Hub** via `Singularity > Workshop Hub` to see the current system stats.
-2. Use the **Experience Manifest Editor** (`Tools > Builders > Experience Manifest Editor`) to define new sensory configurations.
-3. All data is saved to `StreamingAssets/Singularity/` in a clean, version-control-friendly JSON format.
+## Bootstrap without circular dependency
 
----
+The Forge must eventually author MicroBundles, but the first MicroBundles cannot require a completed Forge in order to exist. The initial bootstrap path remains source-authored, tested, and packaged. The Forge later becomes a richer front end for the same artifact contracts; it does not replace the contracts, repository, or runtime composer.
 
-*“We are not just coding games; we are forging the architectures of the future.”* — **Trent Best**, The Singularity Workshop
+## Current status and next milestones
+
+This README describes architectural intent and separates it from implementation status. The immediate sequence is:
+
+1. Establish a usable, platform-independent Forge preparation pipeline.
+2. Define a versioned prepared-artifact contract and deterministic validation.
+3. Prove one bounded precomputation case end-to-end, including invalidation when inputs change.
+4. Add structured, bulk-friendly runtime data layouts only where measurements justify them.
+5. Give MetaDev a Forge-owned editor-time driver, then use it to gather evidence and validate scaling hypotheses.
+6. Reintroduce specialized host integrations through adapters without making a host SDK a prerequisite for the core.
+
+The goal is not to move all work into the editor. It is to **move repeatable decisions to construction time and leave runtime with prepared work and genuinely live decisions**.
