@@ -69,7 +69,7 @@ public static class ForgeExperienceArtifactSerializer
 
         if (!string.Equals(document.Format, FormatId, StringComparison.Ordinal))
             throw new NotSupportedException(
-                $\"Experience artifact format '{document.Format}' is not supported. Expected '{FormatId}'.\");
+                $"Experience artifact format '{document.Format}' is not supported. Expected '{FormatId}'.");
 
         if (document.SchemaVersion != CurrentSchemaVersion)
             throw new NotSupportedException(
