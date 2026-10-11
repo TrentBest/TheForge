@@ -71,6 +71,23 @@ public sealed class ForgeExperienceArtifactSerializerTests
     }
 
     [Fact]
+    public void PortableArtifactCanEnterTheExternalSubmissionBoundary()
+    {
+        var source = new ForgeExperience(7106, "External submission");
+        source.AddMicroBundle(7206, "2.0.0", configuration: new byte[] { 6, 7, 8 });
+        var bytes = ForgeExperienceArtifactSerializer.Serialize(source);
+
+        var submission = ForgeExperienceArtifactSerializer.DeserializeSubmission(bytes);
+        submission.Validate();
+
+        Assert.Equal(ForgeExperienceArtifactSerializer.FormatId, submission.SourceFormat);
+        Assert.Equal("1", submission.SourceVersion);
+        Assert.Equal(source.Id, submission.Experience.Id);
+        Assert.Equal(source.Name, submission.Experience.Name);
+        Assert.Equal(new byte[] { 6, 7, 8 }, Assert.Single(submission.Experience.MicroBundles).Configuration.ToArray());
+    }
+
+    [Fact]
     public void DeserializerRejectsUnsupportedSchemaVersion()
     {
         var experience = new ForgeExperience(7102, "Version check");
