@@ -189,3 +189,13 @@ At the end of each work session, update this brief with:
 - Current working branch remains forge/native-experience-authoring; PR #9 remains open against master. No merge, NuGet publication, or FSM_COS edit was performed.
 - **Next actions after this pivot:** (1) verify CI on the new documentation head; (2) pause Forge's earlier parameter-ID/codec implementation queue unless the user redirects back to it; (3) start HeadlessAi contract/provider research in a separate short-lived branch or repository only after checking whether a HeadlessAi repository already exists and agreeing the first provider slice.
 
+
+
+## Continuation update — Forge-time preparation boundary (2026-10-11)
+
+- Reconciled the current Forge authoring work with the Forge-time/runtime split documented in [PR #14](https://github.com/TrentBest/TheForge/pull/14) and tracked by [issue #13](https://github.com/TrentBest/TheForge/issues/13). This is a proposed architecture direction; no compiler, prepared artifact pipeline, or MetaDev driver is claimed implemented.
+- The existing Forge core remains an in-memory authoring model. `ForgeExperience.Compile()` currently emits the current FSM_COS `RuntimeManifest`, but the current projection carries only MicroBundle ID and configuration bytes; ontology, version, dependencies, and providers are not represented in that runtime manifest. Do not describe this as a complete portable artifact or complete composition pipeline.
+- Read-only inspection of MicroBundleDomain 1.0.1 confirms `MicroBundleField` exposes a name, kind, default, numeric bounds, and nested children, but no stable parameter ID. Names are validated as non-empty and unique among siblings. The current Forge typed editor therefore addresses fields by names and paths; those are not safe substitutes for stable parameter identities.
+- **Still blocked:** a production configuration codec that writes parameter-ID/value overrides needs a clear parameter-ID owner and cross-version compatibility rule. Keep ProtocolAi optional; do not add it as a required dependency or invent IDs from display names.
+- Next implementation sequence: (1) keep the portable authoring/artifact contract separate from FSM_COS's runtime manifest; (2) resolve stable parameter identity ownership before changing typed-value keys or writing a production codec; (3) implement deterministic preparation only after the artifact schema and invalidation rules are explicit; (4) validate with tests on the exact branch head.
+- Constraints remain unchanged: work in TheForge for this task; do not modify FSM_COS; no merge, package publication, or release-gate changes without explicit authorization.
