@@ -1,73 +1,61 @@
-﻿# TheForge
+# <img src="docs/assets/section-markers/00-identity.svg" alt="" width="20" height="20"> The Forge
 
-### *Where Logic Meets Construction*
+<img src="docs/assets/section-dividers/00-identity.svg" alt="" width="100%">
 
-Welcome to **TheForge**, the central development environment and architectural foundation for **The Singularity Workshop**. This project serves as a high-level "Meta-Framework" for Unity, designed to bridge the gap between complex software patterns (Finite State Machines, Micro Packages) and intuitive, data-driven editor tools.
+[![Build](https://img.shields.io/github/actions/workflow/status/TrentBest/TheForge/forge.yml?branch=forge/native-experience-authoring&style=flat-square&logo=github)](https://github.com/TrentBest/TheForge/actions)
 
-TheForge isn't just a collection of scripts; it is an automated pipeline for building, simulating, and documenting complex systems—from architectural BIM-inspired structures to autonomous drone swarms.
+## 01 The problem
 
----
+Creating software often means stitching together tools, capabilities, configuration, and runtime behavior without a clear view of how they fit. The Forge makes that composition visible and authorable.
 
-## 🏗 Core Philosophy: The "Micro Package"
+## 02 What it is
 
-TheForge is built upon the **Micro Package** architecture. Instead of monolithic systems, functionality is broken down into atomic, independent units that are:
+**The Forge is an Experience that creates Experiences and MicroBundles.**
 
-* **Self-Describing:** Using `ISingularityDefinition` to manage their own metadata and library paths.
-* **Registry-Backed:** Automatically serialized and tracked via the `SingularityRegistry<T>`, which manages JSON persistence within Unity's `StreamingAssets`.
-* **Arbitrated:** Using an `IPackageArbitrator` to resolve dependencies and interactions between disparate packages at runtime.
+It belongs to The Singularity Workshop, and participates in the same Experience ecosystem it helps creators build. A creator can discover and compose reusable MicroBundles, create nested Experiences, configure capabilities, inspect relationships, and prepare portable artifacts.
 
-## 🛠 Key Systems
+## 03 Why it is different
 
-### 1. The Singularity Workshop Hub
+**The Forge is fully diegetic.** It is a place within the authored Experience—not a conventional editor floating outside the world. The authored world remains around the creator; Forge tools are encountered and used in-world. The Forge can be tethered to a chosen place in an Experience rather than dictating where the Experience must happen.
 
-The **Hub** (`SingularityWorkshopHub.cs`) is your central nervous system within the Unity Editor. It provides a unified docking station for all development activities, including:
+The diegetic environment is the product requirement, not a decorative skin or optional future mode. The current provider-neutral .NET core is groundwork for the authoring model; it does **not** yet implement the full in-world environment or interaction loop. Documentation distinguishes implemented behavior from intended experience.
 
-* **System Metrics:** Real-time tracking of FSM Definitions and active Handles.
-* **Integrated CRUD Tabs:** Dedicated interfaces for managing FSMs, States, Logic Methods, and Transitions without leaving the Hub.
-* **Dynamic Viewports:** A custom-built navigation system that allows for seamless switching between different workshop tools.
+## 04 See it in a minute
 
-### 2. Graphical User Interface Builder (OneGUI)
+```text
+                 THE FORGE
+             an Experience itself
+                      │
+          ┌───────────┴───────────┐
+          ▼                       ▼
+     MicroBundles             Experiences
+   reusable capabilities    composed worlds
+          └───────────┬───────────┘
+                      ▼
+             portable Experience
+                      │
+                      ▼
+                   FSM_COS
+                      │
+                      ▼
+             host makes it real
+```
 
-To support the complex data requirements of TheForge, we developed a fluent **GUI Builder** API (`GraphicalUserInterfaceBuilder.cs`). This system allows us to:
+**The Forge authors. FSM_COS composes. The host makes it real.**
 
-* **Build via Code:** Define complex UIElements layouts using a chainable, readable API.
-* **Context-Aware UI:** Toggle between "Editor Mode" (for data entry/creation) and "Simulation Mode" (for runtime visualization).
-* **Modular Layouts:** Features like `WithAutoGrow`, `WithScrollable`, and nested `WithPanel` support create a responsive, modern editor experience.
+## How to explore the work
 
-### 3. Experience & Forge Builders
-
-The project introduces the concept of **Manifest-Driven Development**:
-
-* **Experience Builder:** A tool to define "Experience Manifests" that combine different sensory inputs (Vision, Audio, Touch) and providers into a single JSON-backed configuration.
-* **The Forge Contract:** Interfaces like `IForgeBuilder` and `IBuilder` ensure that every system in the project knows how to generate its own runtime instance and its own Editor UI.
-
----
-
-## 🚀 Projects Powered by TheForge
-
-* **raWWar:** A tactical showcase utilizing the `FSM_API` for advanced unit AI.
-* **Builders:** A world-building application applying BIM (Building Information Modeling) principles to game environments.
-* **SpaceShip Sim:** A celestial body and ship design simulation utilizing the modularity of Forge Builders.
-
----
-
-## 📂 Project Structure
-
-| Directory | Purpose |
-| --- | --- |
-| `Editor/` | The Hub, Experience Manifest Editors, and custom Inspector windows. |
-| `Scripts/Builders/` | Implementation of the Fluent UI API and system-specific constructors. |
-| `Scripts/MicroPackages/` | The interfaces and logic for the atomic "Singularity" architecture. |
-| `Scripts/FSMs/` | (Integration) Bridges the core FSM_API with the Unity environment. |
+- [Documentation index](DOCUMENTATION_INDEX.md) — a guided map of the design, contracts, and implementation.
+- [Diegetic Experience Authoring](docs/diegetic-experience-authoring.md) — the in-world product model and its design constraints.
+- [Experience Composition](docs/experience-composition-design.md) — current implementation and nested-composition direction.
+- [Forge-Owned Configuration Boundary](docs/forge-owned-configuration-boundary.md) — authored values, codecs, and runtime manifest boundaries.
+- [Continuation brief](docs/CONTINUATION_BRIEF.md) — current work order, guardrails, and evidence.
+- [Architecture](docs/ARCHITECTURE.md) — ownership boundaries across Forge, MicroBundleDomain, MicroBundleRepository, FSM_API, FSM_COS, and hosts.
+- [MicroBundleRepository](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleRepository) — artifact storage and retrieval.
+- [MicroBundleDomain](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleDomain) — neutral MicroBundle definitions.
+- [FSM_API](https://github.com/TrentBest/FSM_API) — the state-machine substrate.
+- [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) — runtime composition and assembly.
 
 ---
 
-## ⚡ Quick Start for Developers
-
-1. Open the **Singularity Hub** via `Singularity > Workshop Hub` to see the current system stats.
-2. Use the **Experience Manifest Editor** (`Tools > Builders > Experience Manifest Editor`) to define new sensory configurations.
-3. All data is saved to `StreamingAssets/Singularity/` in a clean, version-control-friendly JSON format.
-
----
-
-*“We are not just coding games; we are forging the architectures of the future.”* — **Trent Best**, The Singularity Workshop
+<p align="center"><em>The Singularity Workshop — Tools for the curious, the bold, and the systemically inclined.</em><br><strong>Because state shouldn't be a mess.</strong></p>
