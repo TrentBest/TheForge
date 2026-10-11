@@ -66,6 +66,17 @@ public sealed class ForgeExperienceArtifactSerializerTests
     }
 
     [Fact]
+    public void DeserializerRejectsAnUnknownArtifactFormat()
+    {
+        var experience = new ForgeExperience(7104, "Format check");
+        var json = Encoding.UTF8.GetString(ForgeExperienceArtifactSerializer.Serialize(experience))
+            .Replace(ForgeExperienceArtifactSerializer.FormatId, "another.format", StringComparison.Ordinal);
+
+        Assert.Throws<NotSupportedException>(() =>
+            ForgeExperienceArtifactSerializer.Deserialize(Encoding.UTF8.GetBytes(json)));
+    }
+
+    [Fact]
     public void DeserializerRejectsUnknownPropertiesInsteadOfSilentlyIgnoringThem()
     {
         var experience = new ForgeExperience(7103, "Strict schema");
