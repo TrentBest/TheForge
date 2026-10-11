@@ -15,7 +15,7 @@ public static class ForgeExperienceArtifactSerializer
     /// Current version of the portable Forge Experience artifact envelope.
     /// Unsupported versions are rejected rather than silently reinterpreted.
     /// </summary>
-    public const int CurrentSchemaVersion = 1;
+    public const string FormatId = "thesingularityworkshop.experience";\n\n    public const int CurrentSchemaVersion = 1;
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -35,7 +35,7 @@ public static class ForgeExperienceArtifactSerializer
 
         var document = new ArtifactDocument
         {
-            SchemaVersion = CurrentSchemaVersion,
+            Format = FormatId,\n            SchemaVersion = CurrentSchemaVersion,
             ExperienceId = experience.Id,
             Name = experience.Name,
             Ontology = experience.Ontology.ToArray(),
@@ -64,7 +64,7 @@ public static class ForgeExperienceArtifactSerializer
         var document = JsonSerializer.Deserialize<ArtifactDocument>(utf8Json.Span, SerializerOptions)
             ?? throw new JsonException("The Experience artifact document cannot be null.");
 
-        if (document.SchemaVersion != CurrentSchemaVersion)
+        if (!string.Equals(document.Format, FormatId, StringComparison.Ordinal))\n            throw new NotSupportedException(\n                $\"Experience artifact format '{document.Format}' is not supported. Expected '{FormatId}'.\");\n\n        if (document.SchemaVersion != CurrentSchemaVersion)
             throw new NotSupportedException(
                 $"Experience artifact schema version {document.SchemaVersion} is not supported. Expected {CurrentSchemaVersion}.");
 
@@ -105,7 +105,7 @@ public static class ForgeExperienceArtifactSerializer
     {
         public ArtifactDocument() { }
 
-        public required int SchemaVersion { get; init; }
+        public required string? Format { get; init; }\n        public required int SchemaVersion { get; init; }
         public required ulong ExperienceId { get; init; }
         public required string? Name { get; init; }
         public required int[]? Ontology { get; init; }
