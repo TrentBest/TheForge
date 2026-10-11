@@ -55,6 +55,22 @@ public sealed class ForgeExperienceArtifactSerializerTests
     }
 
     [Fact]
+    public void VersionOneArtifactMatchesThePublishedShape()
+    {
+        var experience = new ForgeExperience(7105, "Golden", [3, 1]);
+        experience.AddMicroBundle(
+            7205,
+            "1.0.0",
+            configuration: new byte[] { 1, 2, 3 });
+
+        var json = Encoding.UTF8.GetString(ForgeExperienceArtifactSerializer.Serialize(experience));
+
+        Assert.Equal(
+            "{\"format\":\"thesingularityworkshop.experience\",\"schemaVersion\":1,\"experienceId\":7105,\"name\":\"Golden\",\"ontology\":[3,1],\"microBundles\":[{\"id\":7205,\"version\":\"1.0.0\",\"dependencies\":[],\"providers\":[],\"configuration\":\"AQID\"}]}",
+            json);
+    }
+
+    [Fact]
     public void DeserializerRejectsUnsupportedSchemaVersion()
     {
         var experience = new ForgeExperience(7102, "Version check");
