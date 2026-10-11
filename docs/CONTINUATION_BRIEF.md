@@ -223,3 +223,11 @@ At the end of each work session, update this brief with:
 - Added a golden JSON contract test for the exact version-1 envelope shape, including the format identifier and Base64 configuration representation. This complements round-trip/determinism and invalid-format/version/property tests.
 - Exact PR-head commit `d70f4341675075f5111223594376ce3eedd401ac` passed GitHub Actions run [38181527942](https://github.com/TrentBest/TheForge/actions/runs/38181527942), run 273: Restore, Build, and Test all succeeded.
 - PR #9 remains open and unmerged, base `master`; no NuGet publication or release-gate change was made. The serializer is still an initial flat artifact envelope, not a full composition/submission pipeline.
+
+
+## External artifact submission entry point — 2026-10-11
+
+- Added `ForgeExperienceArtifactSerializer.DeserializeSubmission`. It parses only the supported format/schema, wraps the result in `ForgeSubmission`, records format ID and schema version, and runs the wrapper's basic validation. It deliberately does **not** claim dependency resolution, source trust, publication, or full submission diagnostics.
+- Added a test proving a portable artifact can enter that submission boundary without using a Forge UI, and updated README/composition docs to distinguish the entry point from the full future pipeline.
+- Exact PR-head commit `7d2ef545af6c18bbdf26ab878ca9731078bf2a47` passed GitHub Actions run [38181620265](https://github.com/TrentBest/TheForge/actions/runs/38181620265), run 282: Restore, Build, and Test all succeeded.
+- The PR remains open/unmerged; no publication or release-gate change was made. The next substantive blocker is still stable parameter-ID ownership and cross-version semantics, not JSON serialization.
