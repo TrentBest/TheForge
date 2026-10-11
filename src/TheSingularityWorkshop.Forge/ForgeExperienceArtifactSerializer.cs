@@ -11,12 +11,12 @@ namespace TheSingularityWorkshop.Forge;
 /// </summary>
 public static class ForgeExperienceArtifactSerializer
 {
-    /// <summary>
-    /// Current version of the portable Forge Experience artifact envelope.
-    /// Unsupported versions are rejected rather than silently reinterpreted.
-    /// </summary>
+    /// <summary>Stable format identifier for portable Forge Experience artifacts.</summary>
     public const string FormatId = "thesingularityworkshop.experience";
 
+    /// <summary>
+    /// Current schema version. Unsupported versions are rejected rather than silently reinterpreted.
+    /// </summary>
     public const int CurrentSchemaVersion = 1;
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
