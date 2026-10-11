@@ -59,7 +59,7 @@ The current artifact is only a first flat interchange envelope. It does **not** 
 
 Keep the authoring artifact distinct from FSM_COS.RuntimeManifest. The authoring artifact records creator intent and portable references; the runtime manifest is a target-specific compilation product.
 
-The current version-1 envelope defines only Experience ID/name/ontology and flat MicroBundle entries with ID/version/dependencies/providers/opaque configuration bytes. It uses strict schema-version matching and rejects unknown properties. The next schema evolution should define:
+The current `thesingularityworkshop.experience` version-1 envelope defines only Experience ID/name/ontology and flat MicroBundle entries with ID/version/dependencies/providers/opaque configuration bytes. It uses strict format/schema-version matching and rejects unknown properties. The next schema evolution should define:
 
 - **Schema identity:** format identifier and schema version, independent of the Experience's own version.
 - **Experience identity:** stable ID, human-readable name, version, and ontology/classification references.
