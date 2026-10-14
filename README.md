@@ -15,6 +15,9 @@ TheForge isn't just a collection of scripts; it is an automated pipeline for bui
 
 ---
 
+
+This README follows the Workshop's shared [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/master/DOCUMENTATION_STANDARD.md), while keeping this repository's own purpose and implementation authoritative.
+
 ## 🏗 Core Philosophy: The "Micro Package"
 
 TheForge is built upon the **Micro Package** architecture. Instead of monolithic systems, functionality is broken down into atomic, independent units that are:
