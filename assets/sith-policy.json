@@ -1,0 +1,23 @@
+{
+  "repository": "TrentBest/TheForge",
+  "policy": "exactly-master-and-development",
+  "required_branches": [
+    "development",
+    "master"
+  ],
+  "actual_branches": [
+    "InitialExperienceBuildoutDefinition",
+    "UnityServices",
+    "blazor-assimilation",
+    "development",
+    "exploration/forge-time-compilation-model",
+    "feature/about-workshop-people-education",
+    "forge/native-experience-authoring",
+    "master"
+  ],
+  "branch_count": 8,
+  "status": "NON-COMPLIANT",
+  "evaluated_at": "2026-11-05T04:30:02Z",
+  "workflow_run": "https://github.com/TrentBest/TheForge/actions/runs/41968146118",
+  "triggering_commit": "b335787bc1223f4cb95845631ebc465f636ba284"
+}
