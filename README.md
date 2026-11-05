@@ -1,3 +1,5 @@
+
+[![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheForge/actions/workflows/sith-policy.yml)
 <!-- The Singularity Workshop moniker -->
 <p align="center">
   <a href="https://github.com/TrentBest">
@@ -14,7 +16,6 @@ Welcome to **TheForge**, the central development environment and architectural f
 TheForge isn't just a collection of scripts; it is an automated pipeline for building, simulating, and documenting complex systems—from architectural BIM-inspired structures to autonomous drone swarms.
 
 ---
-
 
 This README follows the Workshop's shared [Documentation Standard](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/master/DOCUMENTATION_STANDARD.md), while keeping this repository's own purpose and implementation authoritative.
 
