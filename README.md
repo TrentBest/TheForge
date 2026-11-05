@@ -1,3 +1,4 @@
+[![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheForge/actions/workflows/sith-policy.yml)
 <!-- The Singularity Workshop moniker -->
 <p align="center">
   <a href="https://github.com/TrentBest">
