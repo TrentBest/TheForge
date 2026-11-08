@@ -17,7 +17,7 @@
   ],
   "branch_count": 8,
   "status": "NON-COMPLIANT",
-  "evaluated_at": "2026-11-07T11:03:52Z",
-  "workflow_run": "https://github.com/TrentBest/TheForge/actions/runs/42366552741",
-  "triggering_commit": "e321074521f61195ee18b835f834f9aba93776a7"
+  "evaluated_at": "2026-11-08T11:16:13Z",
+  "workflow_run": "https://github.com/TrentBest/TheForge/actions/runs/42474973770",
+  "triggering_commit": "01a955e57dab13dbc4c1b016e8f6aac63ff02bc3"
 }
